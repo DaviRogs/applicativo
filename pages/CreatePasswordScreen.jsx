@@ -23,7 +23,7 @@ const CreatePasswordScreen = ({ navigation }) => {
   const handleContinue = () => {
     const passwordErrors = validatePassword(password);
     if (password !== confirmPassword) {
-      passwordErrors.push('Requisito (4)');
+      passwordErrors.push('Senhas não conferem');
     }
     setErrors(passwordErrors);
     
@@ -91,6 +91,7 @@ const CreatePasswordScreen = ({ navigation }) => {
 
 const styles = StyleSheet.create({
   container: {
+    
     flex: 1,
     backgroundColor: '#fff',
   },
