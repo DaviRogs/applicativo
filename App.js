@@ -26,7 +26,7 @@ const App = () => {
           screenOptions={{
             headerShown: false,
           }} >
-          <Stack.Screen name="Anamnesis" component={AnamnesisScreen} />
+          {/* <Stack.Screen name="Anamnesis" component={AnamnesisScreen} /> */}
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
           {/* <Stack.Screen name="Home" component={HomeScreen} />  */}
