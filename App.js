@@ -12,6 +12,9 @@ import SuccessScreen from './pages/SuccessScreen';
 import InitialScreen from './pages/InitialScreen';
 import RegisterScreen from './pages/RegisterScreen';
 import HomeScreen from './pages/HomeScreen';
+import NovoAtendimentoScreen from './pages/NovoAtendimendoScree';
+import NovoPacienteScreen from './pages/NovoPacienteScreen';
+import AnamnesisScreen from './pages/AnamnesisScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -23,10 +26,12 @@ const App = () => {
           screenOptions={{
             headerShown: false,
           }} >
-
-          {/* <Stack.Screen name="Home" component={HomeScreen} /> 
-          <Stack.Screen name="Register" component={RegisterScreen} /> */}
-          <Stack.Screen name="Initial" component={InitialScreen} /> 
+          <Stack.Screen name="Anamnesis" component={AnamnesisScreen} />
+          <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
+          <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
+          {/* <Stack.Screen name="Home" component={HomeScreen} />  */}
+          <Stack.Screen name="Register" component={RegisterScreen} />
+          {/* <Stack.Screen name="Initial" component={InitialScreen} />  */}
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="FirstAccess" component={FirstAccessScreen} />
           <Stack.Screen name="Verification" component={VerificationScreen} />
