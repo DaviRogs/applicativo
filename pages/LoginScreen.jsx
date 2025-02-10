@@ -8,40 +8,73 @@ import {
   StyleSheet,
   Alert,
   ScrollView,
-  Image
+  Image,
+  ActivityIndicator,
+  Platform
 } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { login } from '../store/authSlice';
 
 const LoginScreen = ({ navigation }) => {
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
+  const dispatch = useDispatch();
+  const { loading, error } = useSelector((state) => state.auth);
+  
   const logo1 = require('../assets/logo1.png');
   const logo2 = require('../assets/logo2.png');
   const logo3 = require('../assets/logo3.png');
 
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!cpf || !password) {
-      Alert.alert('Erro', 'Preencha todos os campos');
+      const message = 'Preencha todos os campos';
+      if (Platform.OS === 'web') {
+        window.alert(message);
+      } else {
+        Alert.alert('Erro', message);
+      }
       return;
     }
-    Alert.alert('Sucesso', 'Login realizado com sucesso');
+
+    try {
+      const resultAction = await dispatch(login({ username: cpf, password }));
+      if (login.fulfilled.match(resultAction)) {
+        navigation.navigate('Home');
+      }
+    } catch (err) {
+      const message = 'Erro ao fazer login. Tente novamente.';
+      if (Platform.OS === 'web') {
+        window.alert(message);
+      } else {
+        Alert.alert('Erro', message);
+      }
+    }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
+          <TouchableOpacity 
+            style={styles.backButton} 
+            onPress={() => navigation.goBack()}
+          >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Login</Text>
         </View>
+
         <View style={styles.logoContainer}>
           <Image source={logo3} style={styles.logo} />
         </View>
 
         <View style={styles.formContainer}>
           <Text style={styles.formTitle}>Acesse sua conta</Text>
+
+          {error && (
+            <Text style={styles.errorText}>{error}</Text>
+          )}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>CPF</Text>
@@ -51,6 +84,8 @@ const LoginScreen = ({ navigation }) => {
               placeholderTextColor="#999"
               value={cpf}
               onChangeText={setCpf}
+              keyboardType="numeric"
+              maxLength={11}
             />
           </View>
 
@@ -67,11 +102,25 @@ const LoginScreen = ({ navigation }) => {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.continueButton} onPress={handleLogin}>
-              <Text style={styles.continueButtonText}>Entrar</Text>
+            <TouchableOpacity 
+              style={[
+                styles.continueButton,
+                loading && styles.disabledButton
+              ]} 
+              onPress={handleLogin}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color="#fff" />
+              ) : (
+                <Text style={styles.continueButtonText}>Entrar</Text>
+              )}
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.cancelButton} onPress={() => navigation.navigate('FirstAccess')}>
+            <TouchableOpacity 
+              style={styles.cancelButton} 
+              onPress={() => navigation.navigate('FirstAccess')}
+            >
               <Text style={styles.cancelButtonText}>Não possuo cadastro</Text>
             </TouchableOpacity>
           </View>

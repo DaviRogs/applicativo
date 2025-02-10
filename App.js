@@ -16,23 +16,28 @@ import NovoAtendimentoScreen from './pages/NovoAtendimendoScree';
 import NovoPacienteScreen from './pages/NovoPacienteScreen';
 import AnamnesisScreen from './pages/AnamnesisScreen';
 
+import store from './store/store';
+import { Provider } from 'react-redux';
+
 const Stack = createNativeStackNavigator();
 
 const App = () => {
   return (
+     <Provider store={store}>
     <SafeAreaView style={{ flex: 1 }}>
       <NavigationContainer>
         <Stack.Navigator
           screenOptions={{
             headerShown: false,
           }} >
+           <Stack.Screen name="Login" component={LoginScreen} />
+
           {/* <Stack.Screen name="Anamnesis" component={AnamnesisScreen} /> */}
-          <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
-          <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
-          {/* <Stack.Screen name="Home" component={HomeScreen} />  */}
-          <Stack.Screen name="Register" component={RegisterScreen} />
+          {/* <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} /> */}
+          {/* <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} /> */}
+          <Stack.Screen name="Home" component={HomeScreen} /> 
+          {/* <Stack.Screen name="Register" component={RegisterScreen} /> */}
           {/* <Stack.Screen name="Initial" component={InitialScreen} />  */}
-          <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="FirstAccess" component={FirstAccessScreen} />
           <Stack.Screen name="Verification" component={VerificationScreen} />
           <Stack.Screen name="Loading" component={LoadingScreen} />
@@ -41,6 +46,7 @@ const App = () => {
         </Stack.Navigator>
       </NavigationContainer>
     </SafeAreaView>
+    </Provider>
   );
 };
 

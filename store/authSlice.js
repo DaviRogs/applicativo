@@ -1,55 +1,99 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
-  token: null,
+  accessToken: null,
+  refreshToken: null,
   isAuthenticated: false,
   loading: false,
   error: null,
   user: null
 };
 
+export const login = createAsyncThunk(
+  'auth/login',
+  async ({ username, password }, { rejectWithValue }) => {
+    try {
+      const formData = new URLSearchParams();
+      formData.append('grant_type', 'password');
+      formData.append('username', username);
+      formData.append('password', password);
+      formData.append('scope', '');
+      formData.append('client_id', 'string');
+      formData.append('client_secret', 'string');
+
+      const response = await fetch('http://localhost:8004/token', {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString()
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        return rejectWithValue(errorData.detail || 'Login failed');
+      }
+
+      const data = await response.json();
+      
+      await AsyncStorage.setItem('accessToken', data.access_token);
+      await AsyncStorage.setItem('refreshToken', data.refresh_token);
+      
+      return data;
+    } catch (error) {
+      return rejectWithValue('Network error occurred');
+    }
+  }
+);
+
+export const restoreTokens = createAsyncThunk(
+  'auth/restoreTokens',
+  async () => {
+    const accessToken = await AsyncStorage.getItem('accessToken');
+    const refreshToken = await AsyncStorage.getItem('refreshToken');
+    return { accessToken, refreshToken };
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
   reducers: {
-    loginStart: (state) => {
-      state.loading = true;
-      state.error = null;
-    },
-    loginSuccess: (state, action) => {
-      state.loading = false;
-      state.isAuthenticated = true;
-      state.token = action.payload.token;
-      state.user = action.payload.user;
-      // Save token to AsyncStorage
-      AsyncStorage.setItem('token', action.payload.token);
-    },
-    loginFailure: (state, action) => {
-      state.loading = false;
-      state.error = action.payload;
-    },
     logout: (state) => {
-      state.token = null;
+      state.accessToken = null;
+      state.refreshToken = null;
       state.isAuthenticated = false;
       state.user = null;
-      // Remove token from AsyncStorage
-      AsyncStorage.removeItem('token');
+      AsyncStorage.removeItem('accessToken');
+      AsyncStorage.removeItem('refreshToken');
     },
-    // Action to restore token from AsyncStorage on app launch
-    restoreToken: (state, action) => {
-      state.token = action.payload;
-      state.isAuthenticated = !!action.payload;
-    }
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(login.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(login.fulfilled, (state, action) => {
+        state.loading = false;
+        state.isAuthenticated = true;
+        state.accessToken = action.payload.access_token;
+        state.refreshToken = action.payload.refresh_token;
+        state.error = null;
+      })
+      .addCase(login.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
+      })
+      .addCase(restoreTokens.fulfilled, (state, action) => {
+        state.accessToken = action.payload.accessToken;
+        state.refreshToken = action.payload.refreshToken;
+        state.isAuthenticated = !!action.payload.accessToken;
+      });
   }
 });
 
-export const { 
-  loginStart, 
-  loginSuccess, 
-  loginFailure, 
-  logout,
-  restoreToken 
-} = authSlice.actions;
-
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;
