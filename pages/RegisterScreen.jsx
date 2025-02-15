@@ -16,7 +16,7 @@ const RegisterScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   // const { token } = route.params || {};
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJoYW5uYW5ob25leTUwMDBAZ21haWwuY29tIiwiZXhwIjoxNzM5MjM0NDYzfQ.l5ADAf4ejJ2_uM3Rtz9fV70KQ0k7jH5LOkpFBGvDL3s"
+  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJoYW5uYW5ob25leTUwMDBAZ21haWwuY29tIiwiZXhwIjoxNzM5MjM0NDYzfQ.l5ADAf4ejJ2_uM3Rtz9fV70KQ0k7jH5LOkpFBGvDL3"
 
   const [formData, setFormData] = useState({
     nome_usuario: '',
