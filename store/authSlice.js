@@ -43,6 +43,7 @@ export const login = createAsyncThunk(
       
       return data;
     } catch (error) {
+      return error.message;
       return rejectWithValue('Network error occurred');
     }
   }

@@ -1,9 +1,18 @@
 import React from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { logout } from '../store/authSlice';
+import { useDispatch } from 'react-redux';
 
 const FlyoutMenu = ({ visible, onClose }) => {
+  const dispatch = useDispatch();
+
   if (!visible) return null;
+
+  const handleLogout = () => {
+    dispatch(logout());
+    onClose();
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -26,6 +35,11 @@ const FlyoutMenu = ({ visible, onClose }) => {
         <TouchableOpacity style={styles.menuItem}>
           <Icon name="book" size={24} color="#1e3d59" />
           <Text style={styles.menuText}>Guia</Text>
+        </TouchableOpacity>
+        
+        <TouchableOpacity style={styles.menuItem} onPress={handleLogout}>
+          <Icon name="logout" size={24} color="#1e3d59" />
+          <Text style={styles.menuText}>Logout</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>

@@ -1,20 +1,18 @@
-import React from 'react';
-import {
-  StyleSheet,
-  View,
-  TouchableOpacity,
-  Text,
-  ImageBackground,
-  Image,
-  SafeAreaView,
-  StatusBar,
-} from 'react-native';
+import React, { useEffect } from 'react';
+import { StyleSheet, View, TouchableOpacity, Text, ImageBackground, Image, SafeAreaView, StatusBar } from 'react-native';
 
-const InitialScreen = () => {
+const InitialScreen = ({navigation}) => {
   const backgroundImage = require('../assets/background.png');
   const logo1 = require('../assets/logo1.png');
   const logo2 = require('../assets/logo2.png');
   const logo3 = require('../assets/logo3.png');
+
+  // useEffect(() => {
+  //   const navigateToLogin = () => {
+  //     navigation.navigate('Login');
+  //   };
+  //   navigateToLogin();
+  // }, [navigation]); 
 
   return (
     <SafeAreaView style={styles.container}>
@@ -32,11 +30,12 @@ const InitialScreen = () => {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity style={styles.startButton} onPress={() => {}}>
+            <TouchableOpacity style={styles.startButton}             onPress={() => navigation.navigate('Login')}
+>
               <Text style={styles.startButtonText}>Começar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity style={styles.registerButton} onPress={() => {}}>
+            <TouchableOpacity style={styles.registerButton}>
               <Text style={styles.registerButtonText}>Não possuo cadastro</Text>
             </TouchableOpacity>
           </View>

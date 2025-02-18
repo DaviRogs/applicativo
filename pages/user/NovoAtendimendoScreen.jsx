@@ -167,7 +167,7 @@ const NovoAtendimentoScreen = ({ navigation }) => {
             </View>
           </View>
 
-          <TouchableOpacity style={styles.submitButton}>
+          <TouchableOpacity style={styles.submitButton} onPress={() => {navigation.navigate('NovoPaciente')}}>
             <Text style={styles.submitButtonText}>Enviar atendimento</Text>
           </TouchableOpacity>
         </View>

@@ -16,7 +16,17 @@ const RegisterScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   // const { token } = route.params || {};
-  const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJoYW5uYW5ob25leTUwMDBAZ21haWwuY29tIiwiZXhwIjoxNzM5MjM0NDYzfQ.l5ADAf4ejJ2_uM3Rtz9fV70KQ0k7jH5LOkpFBGvDL3"
+  // const token = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJoYW5uYW5ob25leTUwMDBAZ21haWwuY29tIiwiZXhwIjoxNzM5MjM0NDYzfQ.l5ADAf4ejJ2_uM3Rtz9fV70KQ0k7jH5LOkpFBGvDL3"
+
+  const [token, setToken] = useState('');
+
+  useEffect(() => {
+    if (route.params?.token) {
+      setToken(route.params.token);
+      console.log("token gg",route.params.token)
+    }
+  }, [route.params]);
+
 
   const [formData, setFormData] = useState({
     nome_usuario: '',
@@ -36,11 +46,14 @@ const RegisterScreen = () => {
   const [error, setError] = useState('');
 
   useEffect(() => {
-    fetchUserData();
-  }, []);
+    if(token){
+    fetchUserData();}
+  }, [token]);
 
   const fetchUserData = async () => {
     try {
+      console.log("tokdadasdaen",token)
+
       const response = await fetch(
         `http://localhost:8004/dados-completar-cadastro?token=${token}`,
         {
@@ -49,6 +62,7 @@ const RegisterScreen = () => {
           },
         }
       );
+      console.log("tokdadasdaen",token)
       console.log("fasfas",response)
       if (response.ok) {
         const data = await response.json();
@@ -134,7 +148,7 @@ const RegisterScreen = () => {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.goBack('InitialScreen')}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -176,7 +190,10 @@ const RegisterScreen = () => {
             <TextInput
               style={[styles.input, styles.readOnlyInput]}
               value={formData.nome_usuario}
-              editable={false}
+              editable={true}
+              onChangeText={(text) => 
+                setFormData(prev => ({ ...prev, nome_usuario: text }))
+              } 
             />
           </View>
 

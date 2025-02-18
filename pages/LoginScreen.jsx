@@ -15,42 +15,62 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { login } from '../store/authSlice';
+import { fetchCurrentUser } from '../store/userSlice';
 
 const LoginScreen = ({ navigation }) => {
   const [cpf, setCpf] = useState('');
   const [password, setPassword] = useState('');
   const dispatch = useDispatch();
-  const { loading, error } = useSelector((state) => state.auth);
+  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
+  const { loading: userLoading, error: userError } = useSelector((state) => state.user);
   
   const logo1 = require('../assets/logo1.png');
   const logo2 = require('../assets/logo2.png');
   const logo3 = require('../assets/logo3.png');
 
+  const showError = (message) => {
+    if (Platform.OS === 'web') {
+      window.alert(message);
+    } else {
+      Alert.alert('Erro', message);
+    }
+  };
+
   const handleLogin = async () => {
     if (!cpf || !password) {
-      const message = 'Preencha todos os campos';
-      if (Platform.OS === 'web') {
-        window.alert(message);
-      } else {
-        Alert.alert('Erro', message);
-      }
+      showError('Preencha todos os campos');
       return;
     }
 
     try {
-      const resultAction = await dispatch(login({ username: cpf, password }));
-      if (login.fulfilled.match(resultAction)) {
-        navigation.navigate('Home');
+      // First attempt login
+      const loginResult = await dispatch(login({ username: cpf, password }));
+      
+      if (login.fulfilled.match(loginResult)) {
+        // If login successful, fetch user data
+        const userResult = await dispatch(fetchCurrentUser());
+        
+        if (fetchCurrentUser.fulfilled.match(userResult)) {
+          // Only navigate if both login and user fetch are successful
+          navigation.navigate('Home');
+        } else {
+          // If user fetch fails, show the error
+          showError(userResult.payload || 'Erro ao carregar dados do usuário');
+        }
+      } else {
+        // Show login error
+        showError(loginResult.payload || 'Credenciais inválidas');
       }
     } catch (err) {
-      const message = 'Erro ao fazer login. Tente novamente.';
-      if (Platform.OS === 'web') {
-        window.alert(message);
-      } else {
-        Alert.alert('Erro', message);
-      }
+      showError('Erro ao fazer login. Tente novamente.');
     }
   };
+
+  // Determine if loading state is active
+  const isLoading = authLoading || userLoading;
+
+  // Combine errors for display
+  const errorMessage = authError || userError;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -58,7 +78,7 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton} 
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate('InitialScreen')}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -72,8 +92,8 @@ const LoginScreen = ({ navigation }) => {
         <View style={styles.formContainer}>
           <Text style={styles.formTitle}>Acesse sua conta</Text>
 
-          {error && (
-            <Text style={styles.errorText}>{error}</Text>
+          {errorMessage && (
+            <Text style={styles.errorText}>{errorMessage}</Text>
           )}
 
           <View style={styles.inputGroup}>
@@ -86,6 +106,7 @@ const LoginScreen = ({ navigation }) => {
               onChangeText={setCpf}
               keyboardType="numeric"
               maxLength={11}
+              editable={!isLoading}
             />
           </View>
 
@@ -98,6 +119,7 @@ const LoginScreen = ({ navigation }) => {
               secureTextEntry
               value={password}
               onChangeText={setPassword}
+              editable={!isLoading}
             />
           </View>
 
@@ -105,12 +127,12 @@ const LoginScreen = ({ navigation }) => {
             <TouchableOpacity 
               style={[
                 styles.continueButton,
-                loading && styles.disabledButton
+                isLoading && styles.disabledButton
               ]} 
               onPress={handleLogin}
-              disabled={loading}
+              disabled={isLoading}
             >
-              {loading ? (
+              {isLoading ? (
                 <ActivityIndicator color="#fff" />
               ) : (
                 <Text style={styles.continueButtonText}>Entrar</Text>
@@ -120,6 +142,7 @@ const LoginScreen = ({ navigation }) => {
             <TouchableOpacity 
               style={styles.cancelButton} 
               onPress={() => navigation.navigate('FirstAccess')}
+              disabled={isLoading}
             >
               <Text style={styles.cancelButtonText}>Não possuo cadastro</Text>
             </TouchableOpacity>
@@ -129,7 +152,6 @@ const LoginScreen = ({ navigation }) => {
     </SafeAreaView>
   );
 };
-
 const styles = StyleSheet.create({
   container: {
     flex: 1,
@@ -226,6 +248,14 @@ const styles = StyleSheet.create({
     color: '#1e3d59',
     fontSize: 12,
     fontWeight: '500',
+  },
+  errorText: {
+    color: 'red',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  disabledButton: {
+    opacity: 0.7,
   },
 });
 

@@ -40,7 +40,7 @@ const NovoPacienteScreen = ({ navigation }) => {
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Anamnesis')}>
           <Text style={styles.menuItemText}>Anamnese</Text>
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>

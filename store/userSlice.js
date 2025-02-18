@@ -1,4 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { logout } from './authSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const initialState = {
   userData: null,
@@ -10,7 +12,7 @@ const initialState = {
 
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
-  async (_, { getState, rejectWithValue }) => {
+  async (_, { getState, dispatch, rejectWithValue }) => {
     try {
       const { accessToken } = getState().auth;
       
@@ -25,6 +27,13 @@ export const fetchCurrentUser = createAsyncThunk(
           'Authorization': `Bearer ${accessToken}`
         }
       });
+
+      if (response.status === 400) {
+        await AsyncStorage.removeItem('accessToken');
+        await AsyncStorage.removeItem('refreshToken');
+        dispatch(logout());
+        return rejectWithValue('Token invalid or expired');
+      }
 
       if (!response.ok) {
         return rejectWithValue('Failed to fetch user data');
@@ -67,17 +76,23 @@ const userSlice = createSlice({
         state.userData = null;
         state.userRole = null;
         state.unidadeSaude = null;
+      })
+      .addCase(logout, (state) => {
+        state.userData = null;
+        state.userRole = null;
+        state.unidadeSaude = null;
+        state.error = null;
       });
   },
 });
 
 export const { clearUserData } = userSlice.actions;
 
-export const selectIsAdmin = (state) => 
-  state.user.userRole?.name === "Admin" || state.user.userRole?.nivel_acesso === 3;
+export const selectIsAdmin = (state) => {
+  return (state.user.userRole?.name === "Admin" || state.user.userRole?.nivel_acesso === 3);}
 
-export const selectIsSupervisor = (state) => 
-  state.user.userRole?.name === "Supervisor" || state.user.userRole?.nivel_acesso === 2;
+export const selectIsSupervisor = (state) => {
+  return (state.user.userRole?.name === "Supervisor" || state.user.userRole?.nivel_acesso === 2);}
 
 export const selectHasAdminAccess = (state) => 
   selectIsAdmin(state) || selectIsSupervisor(state);
