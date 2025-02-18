@@ -89,12 +89,17 @@ const userSlice = createSlice({
 export const { clearUserData } = userSlice.actions;
 
 export const selectIsAdmin = (state) => {
-  return (state.user.userRole?.name === "Admin" || state.user.userRole?.nivel_acesso === 3);}
+  const userRole = state.user?.userRole;
+  return userRole?.name === "Admin" || userRole?.nivel_acesso === 3;
+};
 
 export const selectIsSupervisor = (state) => {
-  return (state.user.userRole?.name === "Supervisor" || state.user.userRole?.nivel_acesso === 2);}
+  const userRole = state.user?.userRole;
+  return userRole?.name === "Supervisor" || userRole?.nivel_acesso === 2;
+};
 
-export const selectHasAdminAccess = (state) => 
-  selectIsAdmin(state) || selectIsSupervisor(state);
+export const selectHasAdminAccess = (state) => {
+  return selectIsAdmin(state) || selectIsSupervisor(state);
+};
 
 export default userSlice.reducer;

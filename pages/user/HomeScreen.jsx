@@ -1,43 +1,31 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
+  TextInput,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlyoutMenu from '../../components/FlyoutMenu';
-import UnitSelectionModal from '../../components/UnitSelectionModal';
-import { useSelector } from 'react-redux';
-import { selectHasAdminAccess } from '../../store/userSlice';
 
 const HomeScreen = ({navigation}) => {
   const [menuVisible, setMenuVisible] = useState(false);
-  const [unitModalVisible, setUnitModalVisible] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState(null);
-  const hasAdminAccess = useSelector(selectHasAdminAccess);
 
-  useEffect(() => {
-    if (hasAdminAccess && !selectedUnit) {
-      setUnitModalVisible(true);
-    }
-  }, [hasAdminAccess, selectedUnit]);
-
-  const handleUnitSelection = (unit) => {
-    setSelectedUnit(unit);
-  };
+  const attendanceData = [
+    { name: 'Pedro alves', cpf: '152.125.125.22', date: '15/02' },
+    { name: 'Paulo silva', cpf: '152.125.125.22', date: '12/02' },
+    { name: 'Joana maria silva', cpf: '152.125.125.22', date: '09/02' },
+    { name: 'Joaninha', cpf: '152.125.125.22', date: '08/02' },
+    { name: 'Pedrinho', cpf: '152.125.125.22', date: '05/02' },
+  ];
 
   return (
     <View style={styles.container}>
       <FlyoutMenu 
         visible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
-      />
-      
-      <UnitSelectionModal
-        visible={unitModalVisible}
-        onClose={() => setUnitModalVisible(false)}
-        onSelectUnit={handleUnitSelection}
       />
 
       <View style={styles.header}>
@@ -47,36 +35,46 @@ const HomeScreen = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      <View style={styles.content}>
-        <Text style={styles.title}>Gerenciamento de Unidade{'\n'}de Saúde</Text>
+      <ScrollView style={styles.content}>
+        <Text style={styles.sectionTitle}>Atendimentos finalizados</Text>
+        <View style={styles.summaryContainer}>
+          <View style={styles.summaryCard}>
+            <Icon name="calendar-today" size={20} color="#1e3d59" />
+            <Text style={styles.summaryLabel}>Dia</Text>
+            <Text style={styles.summaryValue}>10</Text>
+          </View>
+          <View style={styles.summaryCard}>
+            <Icon name="date-range" size={20} color="#1e3d59" />
+            <Text style={styles.summaryLabel}>Mês</Text>
+            <Text style={styles.summaryValue}>12</Text>
+          </View>
+        </View>
 
-        {selectedUnit && (
-          <View style={styles.unitCard}>
-            <View style={styles.unitInfo}>
-              <Icon name="business" size={24} color="#1e3d59" />
-              <Text style={styles.unitName}>{selectedUnit.name}</Text>
-              <Text style={styles.unitAddress}>{selectedUnit.address}</Text>
+        <Text style={styles.sectionTitle}>Atendimentos em aberto</Text>
+        <TextInput
+          style={styles.searchInput}
+          placeholder="Pesquisar"
+          placeholderTextColor="#999"
+        />
+
+        {attendanceData.map((item, index) => (
+          <View key={index} style={styles.attendanceCard}>
+            <View>
+              <Text style={styles.attendanceName}>{item.name}</Text>
+              <Text style={styles.attendanceIp}>{item.cpf}</Text>
             </View>
-
-            <View style={styles.statsContainer}>
-              <TouchableOpacity 
-                style={styles.statItem}
-                onPress={() => navigation.navigate('ProfessionalsList')}
-              >
-                <Icon name="people" size={24} color="#1e3d59" />
-                <Text style={styles.statLabel}>Profissionais</Text>
-                <Text style={styles.statValue}>33</Text>
-              </TouchableOpacity>
-
-              <TouchableOpacity style={styles.statItem}>
-                <Icon name="person" size={24} color="#1e3d59" />
-                <Text style={styles.statLabel}>Pacientes</Text>
-                <Text style={styles.statValue}>440</Text>
-              </TouchableOpacity>
+            <View style={styles.dateContainer}>
+              <Icon name="calendar-today" size={16} color="#666" />
+              <Text style={styles.dateText}>{item.date}</Text>
             </View>
           </View>
-        )}
-      </View>
+        ))}
+
+        <TouchableOpacity style={styles.newAttendanceButton} onPress={() => { navigation.navigate('NovoAtendimento') }}>
+          <Text style={styles.newAttendanceText}>Novo Atendimento</Text>
+          <Icon name="add" size={24} color="#fff" />
+        </TouchableOpacity>
+      </ScrollView>
     </View>
   );
 };
@@ -84,16 +82,16 @@ const HomeScreen = ({navigation}) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#fff',
   },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 40,
-    paddingBottom: 16,
-    paddingHorizontal: 16,
+    paddingTop: 26,
+    height: 90,
+    paddingLeft: 16,
   },
   headerTitle: {
     color: '#fff',
@@ -101,65 +99,103 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
   content: {
+    flex: 1,
     padding: 16,
   },
-  title: {
-    fontSize: 24,
-    fontWeight: '600',
-    color: '#1e3d59',
-    marginBottom: 24,
-    lineHeight: 32,
+  sectionTitle: {
+    fontSize: 18,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 16,
   },
-  unitCard: {
+  summaryContainer: {
+    flexDirection: 'row',
+    gap: 16,
+    marginBottom: 24,
+  },
+  summaryCard: {
+    flex: 1,
+    padding: 16,
     backgroundColor: '#fff',
     borderRadius: 8,
-    padding: 16,
+    alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
     shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+    shadowRadius: 3.84,
+    elevation: 2,
   },
-  unitInfo: {
-    marginBottom: 24,
-  },
-  unitName: {
-    fontSize: 18,
-    fontWeight: '500',
-    color: '#1e3d59',
-    marginTop: 12,
-    marginBottom: 4,
-  },
-  unitAddress: {
-    fontSize: 14,
-    color: '#666',
-  },
-  statsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 16,
-  },
-  statItem: {
-    flex: 1,
-    alignItems: 'center',
-    padding: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    borderRadius: 8,
-  },
-  statLabel: {
+  summaryLabel: {
     fontSize: 14,
     color: '#666',
     marginTop: 8,
-    marginBottom: 4,
   },
-  statValue: {
+  summaryValue: {
     fontSize: 24,
     fontWeight: '600',
     color: '#1e3d59',
+  },
+  searchInput: {
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    padding: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  attendanceCard: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 16,
+    backgroundColor: '#fff',
+    borderRadius: 8,
+    marginBottom: 8,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  attendanceName: {
+    fontSize: 16,
+    fontWeight: '500',
+    color: '#333',
+  },
+  attendanceIp: {
+    fontSize: 14,
+    color: '#666',
+    marginTop: 4,
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  dateText: {
+    marginLeft: 4,
+    color: '#666',
+  },
+  newAttendanceButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#1e3d59',
+    padding: 12,
+    borderRadius: 8,
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  newAttendanceText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+    marginRight: 8,
   },
 });
 

@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,25 +8,42 @@ import {
   ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSelector } from 'react-redux';
+import { selectIsSupervisor } from '../store/userSlice';
 
 const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
-  const healthUnits = [
-    {
-      id: 1,
-      name: 'Unidade Lorem Ipsum',
-      address: 'Endereço da unidade Lorem Ipsum'
-    },
-    {
-      id: 2,
-      name: 'Unidade Lorem Ipsum',
-      address: 'Endereço da unidade Lorem Ipsum'
-    },
-    {
-      id: 3,
-      name: 'Unidade Lorem Ipsum',
-      address: 'Endereço da unidade Lorem Ipsum'
+  const isSupervisor = useSelector(selectIsSupervisor);
+  const [healthUnits, setHealthUnits] = useState([]);
+
+  useEffect(() => {
+    if (isSupervisor) {
+      setHealthUnits([
+        {
+          id: 1,
+          name: 'Unidade Lorem Ipsum',
+          address: 'Endereço da unidade Lorem Ipsum'
+        }
+      ]);
+    } else {
+      setHealthUnits([
+        {
+          id: 1,
+          name: 'Unidade Lorem Ipsum',
+          address: 'Endereço da unidade Lorem Ipsum'
+        },
+        {
+          id: 2,
+          name: 'Unidade Lorem Ipsum',
+          address: 'Endereço da unidade Lorem Ipsum'
+        },
+        {
+          id: 3,
+          name: 'Unidade Lorem Ipsum',
+          address: 'Endereço da unidade Lorem Ipsum'
+        }
+      ]);
     }
-  ];
+  }, [isSupervisor]);
 
   return (
     <Modal

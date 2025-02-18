@@ -22,8 +22,7 @@ import NovoAtendimentoScreen from './pages/user/NovoAtendimendoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
 import AnamnesisScreen from './pages/user/AnamnesisScreen';
 
-
-//admin imports
+// Admin imports
 import HomeAdminScreen from './pages/admin/HomeAdminScreen';
 import RegisterProfessionalScreen from './pages/admin/RegisterProfessionalScreen';
 import EditProfessionalScreen from './pages/admin/EditProfessionalScreen';
@@ -108,9 +107,7 @@ const AppContent = () => {
             </>
           )}
           <Stack.Screen name="Home" component={HomeScreen} />
-
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
-
           <Stack.Screen name="Anamnesis" component={AnamnesisScreen} />
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
         </>
