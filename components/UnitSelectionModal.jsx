@@ -20,26 +20,26 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       setHealthUnits([
         {
           id: 1,
-          name: 'Unidade Lorem Ipsum',
-          address: 'Endereço da unidade Lorem Ipsum'
+          name: 'Unidade de Saude 1',
+          address: 'Endereço da unidade de Saude Gama/Df'
         }
       ]);
     } else {
       setHealthUnits([
         {
           id: 1,
-          name: 'Unidade Lorem Ipsum',
-          address: 'Endereço da unidade Lorem Ipsum'
+          name: 'Unidade de Saude 2',
+          address: 'Endereço da unidade de Saude Gama/Df'
         },
         {
           id: 2,
-          name: 'Unidade Lorem Ipsum',
-          address: 'Endereço da unidade Lorem Ipsum'
+          name: 'Unidade de Saude 3',
+          address: 'Endereço da unidade de Saude Gama/Df'
         },
         {
           id: 3,
-          name: 'Unidade Lorem Ipsum',
-          address: 'Endereço da unidade Lorem Ipsum'
+          name: 'Unidade de Saude 4',
+          address: 'Endereço da unidade de Saude Gama/Df'
         }
       ]);
     }

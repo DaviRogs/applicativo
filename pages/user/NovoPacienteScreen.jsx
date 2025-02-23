@@ -45,10 +45,12 @@ const NovoPacienteScreen = ({ navigation }) => {
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem}>
-          <Text style={styles.menuItemText}>Registro de lesões</Text>
-          <Icon name="chevron-right" size={24} color="#666" />
-        </TouchableOpacity>
+        <TouchableOpacity 
+            style={styles.menuItem} 
+            onPress={() => navigation.navigate('InjuryRegistration')}>
+            <Text style={styles.menuItemText}>Registro de lesões</Text>
+            <Icon name="chevron-right" size={24} color="#666" />
+      </TouchableOpacity>
 
         <TouchableOpacity style={styles.saveButton}>
           <Text style={styles.saveButtonText}>Salvar alterações</Text>

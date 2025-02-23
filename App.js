@@ -22,6 +22,8 @@ import NovoAtendimentoScreen from './pages/user/NovoAtendimendoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
 import AnamnesisScreen from './pages/user/AnamnesisScreen';
 
+import { InjuryRegistrationScreen ,AddInjuryScreen } from './pages/user/RegistrarLesao';
+
 // Admin imports
 import HomeAdminScreen from './pages/admin/HomeAdminScreen';
 import RegisterProfessionalScreen from './pages/admin/RegisterProfessionalScreen';
@@ -110,6 +112,10 @@ const AppContent = () => {
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
           <Stack.Screen name="Anamnesis" component={AnamnesisScreen} />
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
+          <Stack.Screen name="InjuryRegistration" component={InjuryRegistrationScreen} />
+          <Stack.Screen name="AddInjury" component={AddInjuryScreen} />
+
+
         </>
       )}
     </Stack.Navigator>
