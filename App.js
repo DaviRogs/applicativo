@@ -22,13 +22,22 @@ import NovoAtendimentoScreen from './pages/user/NovoAtendimendoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
 import AnamnesisScreen from './pages/user/AnamnesisScreen';
 
-import { InjuryRegistrationScreen ,AddInjuryScreen } from './pages/user/RegistrarLesao';
+// import { InjuryRegistrationScreen ,AddInjuryScreen } from './pages/user/RegistrarLesao';
+
 
 // Admin imports
 import HomeAdminScreen from './pages/admin/HomeAdminScreen';
 import RegisterProfessionalScreen from './pages/admin/RegisterProfessionalScreen';
 import EditProfessionalScreen from './pages/admin/EditProfessionalScreen';
 import ProfessionalsListScreen from './pages/admin/ProfessionalsListScreen';
+
+
+//lesao imports
+import InjuryListScreen from './pages/user/lesoes/InjuryListScreen';
+import AddInjuryScreen from './pages/user/lesoes/AddInjuryScreen';
+import { InjuryLocationScreen } from './pages/user/lesoes/InjuryLocationScreen';
+import {CameraScreen} from './pages/user/lesoes/CameraScreen';
+import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 
 const Stack = createNativeStackNavigator();
 const navigationRef = React.createRef(); // Needed for deep linking navigation
@@ -112,8 +121,14 @@ const AppContent = () => {
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
           <Stack.Screen name="Anamnesis" component={AnamnesisScreen} />
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
-          <Stack.Screen name="InjuryRegistration" component={InjuryRegistrationScreen} />
+
+              <Stack.Screen name="InjuryList" component={InjuryListScreen} />
           <Stack.Screen name="AddInjury" component={AddInjuryScreen} />
+          <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
+          <Stack.Screen name="Camera" component={CameraScreen} />
+          <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
+          {/* <Stack.Screen name="InjuryRegistration" component={InjuryRegistrationScreen} />
+          <Stack.Screen name="AddInjury" component={AddInjuryScreen} /> */}
 
 
         </>
