@@ -47,6 +47,32 @@ export const fetchCurrentUser = createAsyncThunk(
   }
 );
 
+export const fetchHealthUnits = createAsyncThunk(
+  'user/fetchHealthUnits',
+  async (_, { getState, rejectWithValue }) => {
+    try {
+      const { accessToken } = getState().auth;
+      
+      const response = await fetch('http://localhost:8004/listar-unidades-saude', {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
+        },
+      });
+
+      if (!response.ok) {
+        return rejectWithValue('Failed to fetch health units');
+      }
+
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      return rejectWithValue(error.message);
+    }
+  }
+);
+
 const userSlice = createSlice({
   name: 'user',
   initialState,
@@ -56,6 +82,15 @@ const userSlice = createSlice({
       state.userRole = null;
       state.unidadeSaude = null;
       state.error = null;
+    },
+    updateUnidadeSaude: (state, action) => {
+      state.unidadeSaude = action.payload;
+      if (state.userData) {
+        state.userData = {
+          ...state.userData,
+          unidadeSaude: action.payload
+        };
+      }
     },
   },
   extraReducers: (builder) => {
@@ -72,7 +107,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = true;
+        state.error = action.payload;
         state.userData = null;
         state.userRole = null;
         state.unidadeSaude = null;
@@ -82,11 +117,22 @@ const userSlice = createSlice({
         state.userRole = null;
         state.unidadeSaude = null;
         state.error = null;
+      })
+      .addCase(fetchHealthUnits.pending, (state) => {
+        state.loading = true;
+        state.error = null;
+      })
+      .addCase(fetchHealthUnits.fulfilled, (state, action) => {
+        state.loading = false;
+      })
+      .addCase(fetchHealthUnits.rejected, (state, action) => {
+        state.loading = false;
+        state.error = action.payload;
       });
   },
 });
 
-export const { clearUserData } = userSlice.actions;
+export const { clearUserData, updateUnidadeSaude } = userSlice.actions;
 
 export const selectIsAdmin = (state) => {
   const userRole = state.user?.userRole;

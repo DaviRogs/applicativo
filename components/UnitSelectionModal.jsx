@@ -6,44 +6,141 @@ import {
   TouchableOpacity,
   Modal,
   ScrollView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useSelector } from 'react-redux';
-import { selectIsSupervisor } from '../store/userSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectHasAdminAccess, updateUnidadeSaude } from '../store/userSlice';
 
 const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
-  const isSupervisor = useSelector(selectIsSupervisor);
+  const dispatch = useDispatch();
+  const hasAdminAccess = useSelector(selectHasAdminAccess);
+  const accessToken = useSelector(state => state.auth.accessToken);
+  
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [healthUnits, setHealthUnits] = useState([]);
 
-  useEffect(() => {
-    if (isSupervisor) {
-      setHealthUnits([
-        {
-          id: 1,
-          name: 'Unidade de Saude 1',
-          address: 'Endereço da unidade de Saude Gama/Df'
-        }
-      ]);
-    } else {
-      setHealthUnits([
-        {
-          id: 1,
-          name: 'Unidade de Saude 2',
-          address: 'Endereço da unidade de Saude Gama/Df'
+  const fetchUnidadesSaude = async () => {
+    if (!hasAdminAccess) return;
+
+    try {
+      setLoading(true);
+      setError(null);
+
+      const response = await fetch('http://localhost:8004/listar-unidades-saude', {
+        method: 'GET',
+        headers: {
+          'Accept': 'application/json',
+          'Authorization': `Bearer ${accessToken}`,
         },
-        {
-          id: 2,
-          name: 'Unidade de Saude 3',
-          address: 'Endereço da unidade de Saude Gama/Df'
-        },
-        {
-          id: 3,
-          name: 'Unidade de Saude 4',
-          address: 'Endereço da unidade de Saude Gama/Df'
-        }
-      ]);
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch health units');
+      }
+
+      const data = await response.json();
+      setHealthUnits(data);
+    } catch (err) {
+      console.error('Error fetching health units:', err);
+      setError('Erro ao carregar unidades de saúde');
+      
+      Alert.alert(
+        'Erro',
+        'Não foi possível carregar as unidades de saúde. Por favor, tente novamente.',
+        [{ text: 'OK', onPress: onClose }]
+      );
+    } finally {
+      setLoading(false);
     }
-  }, [isSupervisor]);
+  };
+
+  useEffect(() => {
+    if (visible && hasAdminAccess) {
+      fetchUnidadesSaude();
+    }
+  }, [visible, hasAdminAccess, accessToken]);
+
+  const handleUnitSelection = (unit) => {
+    if (!unit.is_active) {
+      Alert.alert(
+        'Unidade Inativa',
+        'Esta unidade de saúde está inativa no momento.',
+        [{ text: 'OK' }]
+      );
+      return;
+    }
+
+    const formattedUnit = {
+      id: unit.id,
+      nome_unidade_saude: unit.nome_unidade_saude,
+      nome_localizacao: unit.nome_localizacao,
+      codigo_unidade_saude: unit.codigo_unidade_saude,
+      cidade_unidade_saude: unit.cidade_unidade_saude,
+      is_active: unit.is_active,
+      data_criacao: unit.data_criacao,
+      data_atualizacao: unit.data_atualizacao
+    };
+
+    // Dispatch the update action directly
+    dispatch(updateUnidadeSaude([formattedUnit]));
+    
+    // Call the original onSelectUnit function if provided
+    if (onSelectUnit) {
+      onSelectUnit(formattedUnit);
+    }
+    
+    onClose();
+  };
+
+  const handleRetry = () => {
+    fetchUnidadesSaude();
+  };
+
+  if (!hasAdminAccess) {
+    return null;
+  }
+
+  const renderUnitItem = (unit) => (
+    <TouchableOpacity
+      key={unit.id}
+      style={[
+        styles.unitItem,
+        !unit.is_active && styles.inactiveUnit
+      ]}
+      onPress={() => handleUnitSelection(unit)}
+    >
+      <Icon 
+        name="business" 
+        size={24} 
+        color={unit.is_active ? "#1e3d59" : "#999"} 
+      />
+      <View style={styles.unitItemContent}>
+        <Text style={[
+          styles.unitItemName,
+          !unit.is_active && styles.inactiveText
+        ]}>
+          {unit.nome_unidade_saude}
+        </Text>
+        <Text style={[
+          styles.unitItemAddress,
+          !unit.is_active && styles.inactiveText
+        ]}>
+          {unit.nome_localizacao}
+        </Text>
+        <View style={styles.unitItemFooter}>
+          <Text style={styles.unitItemCode}>
+            {unit.codigo_unidade_saude}
+          </Text>
+          {!unit.is_active && (
+            <Text style={styles.inactiveLabel}>Inativa</Text>
+          )}
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   return (
     <Modal
@@ -55,30 +152,50 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       <View style={styles.modalOverlay}>
         <View style={styles.modalContent}>
           <View style={styles.modalHeader}>
-            <Text style={styles.modalTitle}>Escolha a Unidade a ser gerenciada</Text>
-            <TouchableOpacity onPress={onClose}>
+            <Text style={styles.modalTitle}>
+              Escolha a Unidade a ser gerenciada
+            </Text>
+            <TouchableOpacity 
+              onPress={onClose}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Icon name="close" size={24} color="#666" />
             </TouchableOpacity>
           </View>
-          
-          <ScrollView style={styles.unitList}>
-            {healthUnits.map((unit) => (
+
+          {loading ? (
+            <View style={styles.centerContainer}>
+              <ActivityIndicator size="large" color="#1e3d59" />
+              <Text style={styles.loadingText}>
+                Carregando unidades...
+              </Text>
+            </View>
+          ) : error ? (
+            <View style={styles.centerContainer}>
+              <Icon name="error-outline" size={48} color="#ff6b6b" />
+              <Text style={styles.errorText}>{error}</Text>
               <TouchableOpacity
-                key={unit.id}
-                style={styles.unitItem}
-                onPress={() => {
-                  onSelectUnit(unit);
-                  onClose();
-                }}
+                style={styles.retryButton}
+                onPress={handleRetry}
               >
-                <Icon name="business" size={24} color="#1e3d59" />
-                <View style={styles.unitItemContent}>
-                  <Text style={styles.unitItemName}>{unit.name}</Text>
-                  <Text style={styles.unitItemAddress}>{unit.address}</Text>
-                </View>
+                <Text style={styles.retryButtonText}>Tentar Novamente</Text>
               </TouchableOpacity>
-            ))}
-          </ScrollView>
+            </View>
+          ) : healthUnits.length === 0 ? (
+            <View style={styles.centerContainer}>
+              <Icon name="info-outline" size={48} color="#666" />
+              <Text style={styles.emptyText}>
+                Nenhuma unidade de saúde encontrada
+              </Text>
+            </View>
+          ) : (
+            <ScrollView 
+              style={styles.unitList}
+              showsVerticalScrollIndicator={false}
+            >
+              {healthUnits.map(renderUnitItem)}
+            </ScrollView>
+          )}
         </View>
       </View>
     </Modal>
@@ -94,46 +211,124 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     width: '90%',
     maxHeight: '80%',
-    padding: 16,
+    padding: 20,
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   modalHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
+    paddingBottom: 10,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: '500',
+    fontSize: 20,
+    fontWeight: '600',
     color: '#1e3d59',
   },
+  centerContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+    minHeight: 200,
+  },
+  loadingText: {
+    marginTop: 16,
+    color: '#666',
+    fontSize: 16,
+  },
+  errorText: {
+    marginTop: 16,
+    color: '#ff6b6b',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  emptyText: {
+    marginTop: 16,
+    color: '#666',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  retryButton: {
+    marginTop: 20,
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    backgroundColor: '#1e3d59',
+    borderRadius: 6,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
   unitList: {
-    maxHeight: '80%',
+    maxHeight: '100%',
   },
   unitItem: {
     flexDirection: 'row',
     alignItems: 'center',
     padding: 16,
+    backgroundColor: '#fff',
     borderWidth: 1,
     borderColor: '#e0e0e0',
     borderRadius: 8,
-    marginBottom: 8,
+    marginBottom: 12,
+  },
+  inactiveUnit: {
+    backgroundColor: '#f5f5f5',
+    borderColor: '#ddd',
   },
   unitItemContent: {
     marginLeft: 12,
+    flex: 1,
   },
   unitItemName: {
     fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#1e3d59',
+    marginBottom: 4,
   },
   unitItemAddress: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4,
+    marginBottom: 8,
+  },
+  unitItemFooter: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  unitItemCode: {
+    fontSize: 12,
+    color: '#888',
+    backgroundColor: '#f0f0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
+  },
+  inactiveText: {
+    color: '#999',
+  },
+  inactiveLabel: {
+    fontSize: 12,
+    color: '#ff6b6b',
+    backgroundColor: '#fff0f0',
+    paddingHorizontal: 8,
+    paddingVertical: 2,
+    borderRadius: 4,
   },
 });
 
