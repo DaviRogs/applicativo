@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -6,20 +6,98 @@ import {
   TouchableOpacity,
   TextInput,
   ScrollView,
+  ActivityIndicator,
+  Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlyoutMenu from '../../components/FlyoutMenu';
+import { useSelector } from 'react-redux';
 
 const HomeScreen = ({navigation}) => {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [attendanceData, setAttendanceData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [error, setError] = useState(null);
+  const [currentDateTimeUTC] = useState('2025-02-25 03:05:05');
 
-  const attendanceData = [
-    { name: 'Pedro alves', cpf: '152.125.125.22', date: '15/02' },
-    { name: 'Paulo silva', cpf: '152.125.125.22', date: '12/02' },
-    { name: 'Joana maria silva', cpf: '152.125.125.22', date: '09/02' },
-    { name: 'Joaninha', cpf: '152.125.125.22', date: '08/02' },
-    { name: 'Pedrinho', cpf: '152.125.125.22', date: '05/02' },
-  ];
+  const user = useSelector(state => state.user.userData);
+  const authenticated = useSelector(state => state.auth.isAuthenticated);
+  const token = useSelector(state => state.auth.accessToken);
+
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}`;
+  };
+
+  const formatCPF = (cpf) => {
+    if (!cpf) return '';
+    const cleanCPF = cpf.replace(/\D/g, '');
+    return cleanCPF.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+  };
+
+  const fetchAtendimentos = async () => {
+    try {
+      const response = await fetch('http://localhost:8004/listar-atendimentos-usuario-logado', {
+        method: 'GET',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error('Erro na requisição');
+      }
+
+      const data = await response.json();
+      setAttendanceData(data);
+      setLoading(false);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      Alert.alert(
+        'Erro',
+        'Não foi possível carregar os atendimentos',
+        [{ text: 'OK' }]
+      );
+      setError('Erro ao carregar os atendimentos');
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (authenticated && token) {
+      fetchAtendimentos();
+    }
+  }, [authenticated, token]);
+
+  const filteredAttendances = attendanceData.filter(attendance => 
+    attendance.nome_paciente.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    attendance.cpf_paciente.includes(searchQuery)
+  );
+
+  const getDailySummary = () => {
+    const today = currentDateTimeUTC.split(' ')[0];
+    return attendanceData.filter(attendance => 
+      attendance.data_atendimento.startsWith(today)
+    ).length;
+  };
+
+  const getMonthlySummary = () => {
+    const [year, month] = currentDateTimeUTC.split('-');
+    return attendanceData.filter(attendance => {
+      const [attendanceYear, attendanceMonth] = attendance.data_atendimento.split('-');
+      return attendanceYear === year && attendanceMonth === month;
+    }).length;
+  };
+
+  if (loading) {
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#1e3d59" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -35,46 +113,55 @@ const HomeScreen = ({navigation}) => {
         </TouchableOpacity>
       </View>
 
-      <ScrollView style={styles.content}>
-        <Text style={styles.sectionTitle}>Atendimentos finalizados</Text>
-        <View style={styles.summaryContainer}>
-          <View style={styles.summaryCard}>
-            <Icon name="calendar-today" size={20} color="#1e3d59" />
-            <Text style={styles.summaryLabel}>Dia</Text>
-            <Text style={styles.summaryValue}>10</Text>
+      <View style={styles.mainContainer}>
+        <ScrollView style={styles.content}>
+          <Text style={styles.sectionTitle}>Atendimentos finalizados</Text>
+          <View style={styles.summaryContainer}>
+            <View style={styles.summaryCard}>
+              <Icon name="calendar-today" size={20} color="#1e3d59" />
+              <Text style={styles.summaryLabel}>Dia</Text>
+              <Text style={styles.summaryValue}>{getDailySummary()}</Text>
+            </View>
+            <View style={styles.summaryCard}>
+              <Icon name="date-range" size={20} color="#1e3d59" />
+              <Text style={styles.summaryLabel}>Mês</Text>
+              <Text style={styles.summaryValue}>{getMonthlySummary()}</Text>
+            </View>
           </View>
-          <View style={styles.summaryCard}>
-            <Icon name="date-range" size={20} color="#1e3d59" />
-            <Text style={styles.summaryLabel}>Mês</Text>
-            <Text style={styles.summaryValue}>12</Text>
-          </View>
+
+          <Text style={styles.sectionTitle}>Atendimentos em aberto</Text>
+          <TextInput
+            style={styles.searchInput}
+            placeholder="Pesquisar por nome ou CPF"
+            placeholderTextColor="#999"
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+
+          {filteredAttendances.map((item) => (
+            <View key={item.id} style={styles.attendanceCard}>
+              <View>
+                <Text style={styles.attendanceName}>{item.nome_paciente}</Text>
+                <Text style={styles.attendanceIp}>{formatCPF(item.cpf_paciente)}</Text>
+              </View>
+              <View style={styles.dateContainer}>
+                <Icon name="calendar-today" size={16} color="#666" />
+                <Text style={styles.dateText}>{formatDate(item.data_atendimento)}</Text>
+              </View>
+            </View>
+          ))}
+        </ScrollView>
+
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity 
+            style={styles.newAttendanceButton} 
+            onPress={() => { navigation.navigate('NovoAtendimento') }}
+          >
+            <Text style={styles.newAttendanceText}>Novo Atendimento</Text>
+            <Icon name="add" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
-
-        <Text style={styles.sectionTitle}>Atendimentos em aberto</Text>
-        <TextInput
-          style={styles.searchInput}
-          placeholder="Pesquisar"
-          placeholderTextColor="#999"
-        />
-
-        {attendanceData.map((item, index) => (
-          <View key={index} style={styles.attendanceCard}>
-            <View>
-              <Text style={styles.attendanceName}>{item.name}</Text>
-              <Text style={styles.attendanceIp}>{item.cpf}</Text>
-            </View>
-            <View style={styles.dateContainer}>
-              <Icon name="calendar-today" size={16} color="#666" />
-              <Text style={styles.dateText}>{item.date}</Text>
-            </View>
-          </View>
-        ))}
-
-        <TouchableOpacity style={styles.newAttendanceButton} onPress={() => { navigation.navigate('NovoAtendimento') }}>
-          <Text style={styles.newAttendanceText}>Novo Atendimento</Text>
-          <Icon name="add" size={24} color="#fff" />
-        </TouchableOpacity>
-      </ScrollView>
+      </View>
     </View>
   );
 };
@@ -84,6 +171,14 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  mainContainer: {
+    flex: 1,
+    position: 'relative',
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -91,7 +186,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e3d59',
     paddingTop: 26,
     height: 90,
-    paddingLeft: 16,
+    paddingHorizontal: 16,
   },
   headerTitle: {
     color: '#fff',
@@ -101,6 +196,7 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
+    paddingBottom: 80,
   },
   sectionTitle: {
     fontSize: 18,
@@ -181,6 +277,16 @@ const styles = StyleSheet.create({
     marginLeft: 4,
     color: '#666',
   },
+  buttonContainer: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
+  },
   newAttendanceButton: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -188,8 +294,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#1e3d59',
     padding: 12,
     borderRadius: 8,
-    marginTop: 16,
-    marginBottom: 24,
   },
   newAttendanceText: {
     color: '#fff',

@@ -15,7 +15,7 @@ export const fetchCurrentUser = createAsyncThunk(
   async (_, { getState, dispatch, rejectWithValue }) => {
     try {
       const { accessToken } = getState().auth;
-      
+
       if (!accessToken) {
         return rejectWithValue('No access token available');
       }
@@ -24,11 +24,11 @@ export const fetchCurrentUser = createAsyncThunk(
         method: 'GET',
         headers: {
           'accept': 'application/json',
-          'Authorization': `Bearer ${accessToken}`
-        }
+          'Authorization': `Bearer ${accessToken}`,
+        },
       });
 
-      if (response.status === 400) {
+      if (response.status === 401) {
         await AsyncStorage.removeItem('accessToken');
         await AsyncStorage.removeItem('refreshToken');
         dispatch(logout());
@@ -72,7 +72,7 @@ const userSlice = createSlice({
       })
       .addCase(fetchCurrentUser.rejected, (state, action) => {
         state.loading = false;
-        state.error = action.payload;
+        state.error = true;
         state.userData = null;
         state.userRole = null;
         state.unidadeSaude = null;
@@ -90,12 +90,12 @@ export const { clearUserData } = userSlice.actions;
 
 export const selectIsAdmin = (state) => {
   const userRole = state.user?.userRole;
-  return userRole?.name === "Admin" || userRole?.nivel_acesso === 3;
+  return userRole?.name === 'Admin' || userRole?.nivel_acesso === 3;
 };
 
 export const selectIsSupervisor = (state) => {
   const userRole = state.user?.userRole;
-  return userRole?.name === "Supervisor" || userRole?.nivel_acesso === 2;
+  return userRole?.name === 'Supervisor' || userRole?.nivel_acesso === 2;
 };
 
 export const selectHasAdminAccess = (state) => {

@@ -1,12 +1,13 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect } from 'react';
 import { SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Provider, useSelector, useDispatch } from 'react-redux';
+import store from './store/store';
 import { restoreTokens } from './store/authSlice';
 import { fetchCurrentUser, selectHasAdminAccess } from './store/userSlice';
-import store from './store/store';
 import { Linking } from 'react-native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { logout } from './store/authSlice';
 
 // Import screens
 import LoginScreen from './pages/LoginScreen';
@@ -18,7 +19,7 @@ import CreatePasswordScreen from './pages/CreatePasswordScreen';
 import SuccessScreen from './pages/SuccessScreen';
 import InitialScreen from './pages/InitialScreen';
 import HomeScreen from './pages/user/HomeScreen';
-import NovoAtendimentoScreen from './pages/user/NovoAtendimendoScreen';
+import NovoAtendimentoScreen from './pages/user/NovoAtendimentoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
 import AnamnesisScreen from './pages/user/AnamnesisScreen';
 
@@ -47,7 +48,6 @@ const AppContent = () => {
   const { isAuthenticated, loading: authLoading } = useSelector(state => state.auth);
   const { loading: userLoading } = useSelector(state => state.user);
   const hasAdminAccess = useSelector(selectHasAdminAccess);
-  console.log("hasAdminAccess", hasAdminAccess);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -55,9 +55,12 @@ const AppContent = () => {
         const tokenResult = await dispatch(restoreTokens());
         if (tokenResult.payload?.accessToken) {
           await dispatch(fetchCurrentUser());
+        } else {
+          navigationRef.current?.navigate('Login');
         }
       } catch (error) {
         console.error("Error initializing app:", error);
+        navigationRef.current?.navigate('Login');
       }
     };
 
@@ -121,23 +124,18 @@ const AppContent = () => {
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
           <Stack.Screen name="Anamnesis" component={AnamnesisScreen} />
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
-
-              <Stack.Screen name="InjuryList" component={InjuryListScreen} />
+          <Stack.Screen name="InjuryList" component={InjuryListScreen} />
           <Stack.Screen name="AddInjury" component={AddInjuryScreen} />
           <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
           <Stack.Screen name="Camera" component={CameraScreen} />
           <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
-          {/* <Stack.Screen name="InjuryRegistration" component={InjuryRegistrationScreen} />
-          <Stack.Screen name="AddInjury" component={AddInjuryScreen} /> */}
-
-
         </>
       )}
     </Stack.Navigator>
   );
 };
 
-const AppWrapper = () => {
+const App = () => {
   const linking = {
     prefixes: ['myapp://', 'https://myapp.com'],
     config: {
@@ -148,6 +146,31 @@ const AppWrapper = () => {
       },
     },
   };
+
+  useEffect(() => {
+    const handleDeepLink = (event) => {
+      const url = event.url;
+      if (url) {
+        const token = extractTokenFromURL(url);
+        if (token) {
+          console.log('Navigating to Register with token:', token);
+          navigationRef.current?.navigate('Register', { token });
+        }
+      }
+    };
+
+    const extractTokenFromURL = (url) => {
+      const match = url.match(/[?&]token=([^&]+)/);
+      return match ? decodeURIComponent(match[1]) : null;
+    };
+
+    Linking.getInitialURL().then((url) => {
+      if (url) handleDeepLink({ url });
+    });
+
+    const subscription = Linking.addEventListener('url', handleDeepLink);
+    return () => subscription.remove();
+  }, []);
 
   return (
     <Provider store={store}>
@@ -160,4 +183,4 @@ const AppWrapper = () => {
   );
 };
 
-export default AppWrapper;
+export default App;

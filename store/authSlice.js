@@ -7,7 +7,7 @@ const initialState = {
   isAuthenticated: false,
   loading: false,
   error: null,
-  user: null
+  user: null,
 };
 
 export const login = createAsyncThunk(
@@ -28,7 +28,7 @@ export const login = createAsyncThunk(
           'accept': 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
-        body: formData.toString()
+        body: formData.toString(),
       });
 
       if (!response.ok) {
@@ -37,13 +37,12 @@ export const login = createAsyncThunk(
       }
 
       const data = await response.json();
-      
+
       await AsyncStorage.setItem('accessToken', data.access_token);
       await AsyncStorage.setItem('refreshToken', data.refresh_token);
-      
+
       return data;
     } catch (error) {
-      return error.message;
       return rejectWithValue('Network error occurred');
     }
   }
@@ -93,7 +92,7 @@ const authSlice = createSlice({
         state.refreshToken = action.payload.refreshToken;
         state.isAuthenticated = !!action.payload.accessToken;
       });
-  }
+  },
 });
 
 export const { logout } = authSlice.actions;
