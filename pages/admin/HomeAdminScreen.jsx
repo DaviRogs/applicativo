@@ -71,7 +71,7 @@ const HomeScreen = ({navigation}) => {
                 onPress={() => navigation.navigate('ProfessionalsList')}
               >
                 <Icon name="people" size={24} color="#1e3d59" />
-                <Text style={styles.statLabel}>ProfissionaiFlyoutMenus</Text>
+                <Text style={styles.statLabel}>Usuário Cadastrados</Text>
                 <Text style={styles.statValue}>33</Text>
               </TouchableOpacity>
 
