@@ -11,11 +11,11 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectHasAdminAccess, updateUnidadeSaude } from '../store/userSlice';
+import { selectHasAdminAccess, updateUnidadeSaude ,selectIsAdmin } from '../store/userSlice';
 
 const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   const dispatch = useDispatch();
-  const hasAdminAccess = useSelector(selectHasAdminAccess);
+  const hasAdminAccess = useSelector(selectIsAdmin);
   const accessToken = useSelector(state => state.auth.accessToken);
   
   const [loading, setLoading] = useState(false);
@@ -89,6 +89,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
     
     // Call the original onSelectUnit function if provided
     if (onSelectUnit) {
+      console.log('formattedUnit',formattedUnit);
       onSelectUnit(formattedUnit);
     }
     

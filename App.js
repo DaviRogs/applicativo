@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useRef } from 'react';
 import { SafeAreaView } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { Provider, useSelector, useDispatch } from 'react-redux';
@@ -7,7 +7,6 @@ import { restoreTokens } from './store/authSlice';
 import { fetchCurrentUser, selectHasAdminAccess } from './store/userSlice';
 import { Linking } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { logout } from './store/authSlice';
 
 // Import screens
 import LoginScreen from './pages/LoginScreen';
@@ -23,17 +22,12 @@ import NovoAtendimentoScreen from './pages/user/NovoAtendimentoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
 import AnamnesisScreen from './pages/user/AnamnesisScreen';
 
-// import { InjuryRegistrationScreen ,AddInjuryScreen } from './pages/user/RegistrarLesao';
-
-
 // Admin imports
 import HomeAdminScreen from './pages/admin/HomeAdminScreen';
 import RegisterProfessionalScreen from './pages/admin/RegisterProfessionalScreen';
 import EditProfessionalScreen from './pages/admin/EditProfessionalScreen';
 import ProfessionalsListScreen from './pages/admin/ProfessionalsListScreen';
 
-
-//lesao imports
 import InjuryListScreen from './pages/user/lesoes/InjuryListScreen';
 import AddInjuryScreen from './pages/user/lesoes/AddInjuryScreen';
 import { InjuryLocationScreen } from './pages/user/lesoes/InjuryLocationScreen';
@@ -41,26 +35,31 @@ import {CameraScreen} from './pages/user/lesoes/CameraScreen';
 import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 
 const Stack = createNativeStackNavigator();
-const navigationRef = React.createRef(); // Needed for deep linking navigation
+const navigationRef = React.createRef(); 
+
+const extractTokenFromURL = (url) => {
+  const match = url.match(/[?&]token=([^&]+)/);
+  return match ? decodeURIComponent(match[1]) : null;
+};
 
 const AppContent = () => {
   const dispatch = useDispatch();
   const { isAuthenticated, loading: authLoading } = useSelector(state => state.auth);
   const { loading: userLoading } = useSelector(state => state.user);
   const hasAdminAccess = useSelector(selectHasAdminAccess);
+  const initialLinkProcessed = useRef(false);
 
   useEffect(() => {
     const initializeApp = async () => {
-      try {
-        const tokenResult = await dispatch(restoreTokens());
-        if (tokenResult.payload?.accessToken) {
-          await dispatch(fetchCurrentUser());
-        } else {
-          navigationRef.current?.navigate('Login');
+      if (!initialLinkProcessed.current) {
+        try {
+          const tokenResult = await dispatch(restoreTokens());
+          if (tokenResult.payload?.accessToken) {
+            await dispatch(fetchCurrentUser());
+          }
+        } catch (error) {
+          console.error("Error initializing app:", error);
         }
-      } catch (error) {
-        console.error("Error initializing app:", error);
-        navigationRef.current?.navigate('Login');
       }
     };
 
@@ -73,26 +72,22 @@ const AppContent = () => {
       if (url) {
         const token = extractTokenFromURL(url);
         if (token) {
-          console.log("Navigating to Register with token:", token);
+          console.log("Token found in deep link:", token);
+          initialLinkProcessed.current = true;
           navigationRef.current?.navigate('Register', { token });
         }
       }
     };
 
-    // Check initial deep link
     Linking.getInitialURL().then(url => {
-      if (url) handleDeepLink({ url });
+      if (url) {
+        handleDeepLink({ url });
+      }
     });
 
-    // Listen for deep links while the app is open
     const subscription = Linking.addEventListener('url', handleDeepLink);
     return () => subscription.remove();
   }, []);
-
-  const extractTokenFromURL = (url) => {
-    const match = url.match(/[?&]token=([^&]+)/);
-    return match ? decodeURIComponent(match[1]) : null;
-  };
 
   if (authLoading || userLoading) {
     return <LoadingScreen />;
@@ -146,31 +141,6 @@ const App = () => {
       },
     },
   };
-
-  useEffect(() => {
-    const handleDeepLink = (event) => {
-      const url = event.url;
-      if (url) {
-        const token = extractTokenFromURL(url);
-        if (token) {
-          console.log('Navigating to Register with token:', token);
-          navigationRef.current?.navigate('Register', { token });
-        }
-      }
-    };
-
-    const extractTokenFromURL = (url) => {
-      const match = url.match(/[?&]token=([^&]+)/);
-      return match ? decodeURIComponent(match[1]) : null;
-    };
-
-    Linking.getInitialURL().then((url) => {
-      if (url) handleDeepLink({ url });
-    });
-
-    const subscription = Linking.addEventListener('url', handleDeepLink);
-    return () => subscription.remove();
-  }, []);
 
   return (
     <Provider store={store}>

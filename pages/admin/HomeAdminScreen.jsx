@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, use } from 'react';
 import {
   View,
   Text,
@@ -9,22 +9,25 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlyoutMenu from '../../components/FlyoutMenu';
 import UnitSelectionModal from '../../components/UnitSelectionModal';
 import { useSelector } from 'react-redux';
-import { selectHasAdminAccess ,selectIsSupervisor} from '../../store/userSlice';
-
+import { selectHasAdminAccess ,selectIsAdmin} from '../../store/userSlice';
 const HomeScreen = ({navigation}) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [unitModalVisible, setUnitModalVisible] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
 
   console.log(selectedUnit);
-  const hasAdminAccess = useSelector(selectHasAdminAccess);
+  const hasAdminAccess = useSelector(selectIsAdmin);
+  const userUnit = useSelector(state => state.user.userData.unidadeSaude)|| [];
 
 
   useEffect(() => {
     if (hasAdminAccess && !selectedUnit) {
       setUnitModalVisible(true);
+    }else if (!selectedUnit ) { 
+      setSelectedUnit(userUnit[0]);
+
     }
-  }, [hasAdminAccess, selectedUnit]);
+  }, [hasAdminAccess, selectedUnit, userUnit]);
 
   const handleUnitSelection = (unit) => {
     setSelectedUnit(unit);
@@ -58,8 +61,8 @@ const HomeScreen = ({navigation}) => {
           <View style={styles.unitCard}>
             <View style={styles.unitInfo}>
               <Icon name="business" size={24} color="#1e3d59" />
-              <Text style={styles.unitName}>{selectedUnit.name}</Text>
-              <Text style={styles.unitAddress}>{selectedUnit.address}</Text>
+              <Text style={styles.unitName}>{selectedUnit.nome_unidade_saude + " - "+ selectedUnit.codigo_unidade_saude } </Text>
+              <Text style={styles.unitAddress}>{selectedUnit.nome_localizacao}</Text>
             </View>
 
             <View style={styles.statsContainer}>
