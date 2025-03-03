@@ -34,6 +34,10 @@ import { InjuryLocationScreen } from './pages/user/lesoes/InjuryLocationScreen';
 import {CameraScreen} from './pages/user/lesoes/CameraScreen';
 import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 
+
+// admin unidades import
+import HealthUnitListScreen from './pages/unidadeSaude/HealthUnitListScreen'; 
+
 const Stack = createNativeStackNavigator();
 const navigationRef = React.createRef(); 
 
@@ -124,6 +128,8 @@ const AppContent = () => {
           <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
           <Stack.Screen name="Camera" component={CameraScreen} />
           <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
+          <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen } />
+
         </>
       )}
     </Stack.Navigator>

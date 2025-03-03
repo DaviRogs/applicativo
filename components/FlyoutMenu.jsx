@@ -3,9 +3,13 @@ import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView } from 'react-na
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { logout } from '../store/authSlice';
 import { useDispatch } from 'react-redux';
+import { selectIsAdmin } from '../store/userSlice';
+import { useSelector } from 'react-redux';
 
 const FlyoutMenu = ({ visible, onClose }) => {
   const dispatch = useDispatch();
+
+  const isAdmin = useSelector(selectIsAdmin);
 
   if (!visible) return null;
 
@@ -41,6 +45,13 @@ const FlyoutMenu = ({ visible, onClose }) => {
           <Icon name="logout" size={24} color="#1e3d59" />
           <Text style={styles.menuText}>Logout</Text>
         </TouchableOpacity>
+        {isAdmin && (
+          <TouchableOpacity style={styles.menuItem}   onPress={() => navigation.navigate('HealthUnitList')}>
+            <Icon name="book" size={24} color="#1e3d59" />
+            <Text style={styles.menuText}>Unidades</Text>
+          </TouchableOpacity>
+        )
+        }
       </View>
     </SafeAreaView>
   );
