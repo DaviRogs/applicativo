@@ -15,7 +15,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 
-const HealthUnitListScreen = ({ navigation }) => {
+export const HealthUnitListScreen = ({ navigation }) => {
   const [units, setUnits] = useState([]);
   const [filteredUnits, setFilteredUnits] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,6 +26,8 @@ const HealthUnitListScreen = ({ navigation }) => {
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [currentDate, setCurrentDate] = useState('2025-03-02 22:37:09');
   const [currentUser, setCurrentUser] = useState('hannanhunny01');
+    const userData = useSelector(state => state.user.userData);
+
 
   // Get user role from Redux
   const HealthUnitList = useSelector(selectIsAdmin);
@@ -44,7 +46,7 @@ const HealthUnitListScreen = ({ navigation }) => {
     //   navigation.goBack();
     //   return;
     // }
-    
+    console.log('fetchHealthUnits');
     setIsLoading(true);
     setError(null);
 
@@ -196,8 +198,8 @@ const HealthUnitListScreen = ({ navigation }) => {
   // Header with date and user
   const renderHeader = () => (
     <View style={styles.headerInfo}>
-      <Text style={styles.dateText}>Data: {currentDate} (UTC)</Text>
-      <Text style={styles.userText}>Usuário: {currentUser}</Text>
+     <Text style={styles.userText}>Usuário: {userData?.nome_usuario}</Text>
+             <Text style={styles.userText}>Email: {userData?.email}</Text>
     </View>
   );
 

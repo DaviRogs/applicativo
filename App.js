@@ -37,6 +37,8 @@ import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 
 // admin unidades import
 import HealthUnitListScreen from './pages/unidadeSaude/HealthUnitListScreen'; 
+import RegisterHealthUnitScreen from './pages/unidadeSaude/RegisterHealthUnitScreen';
+import {EditHealthUnitScreen}  from './pages/unidadeSaude/EditHealthUnitScreen';
 
 const Stack = createNativeStackNavigator();
 const navigationRef = React.createRef(); 
@@ -117,6 +119,11 @@ const AppContent = () => {
               <Stack.Screen name="RegisterProfessional" component={RegisterProfessionalScreen} />
               <Stack.Screen name="EditProfessional" component={EditProfessionalScreen} />
               <Stack.Screen name="ProfessionalsList" component={ProfessionalsListScreen} />
+              <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen } />
+              <Stack.Screen name="RegisterHealthUnit" component={RegisterHealthUnitScreen} />
+              <Stack.Screen name="EditHealthUnit" component={EditHealthUnitScreen} />
+               
+
             </>
           )}
           <Stack.Screen name="Home" component={HomeScreen} />
@@ -128,7 +135,6 @@ const AppContent = () => {
           <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
           <Stack.Screen name="Camera" component={CameraScreen} />
           <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
-          <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen } />
 
         </>
       )}

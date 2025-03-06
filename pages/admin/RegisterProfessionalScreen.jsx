@@ -30,9 +30,9 @@ const RegisterProfessionalScreen = ({ navigation }) => {
   const token = useSelector(state => state.auth.accessToken);
 
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 1 },
+    { id: 1, name: "Pesquisador", nivel_acesso: 3 },
     { id: 2, name: "Supervisor", nivel_acesso: 2 },
-    { id: 3, name: "Admin", nivel_acesso: 3 }
+    { id: 3, name: "Admin", nivel_acesso: 1 }
   ];
 
   const availableRoles = isAdmin 
@@ -76,12 +76,12 @@ const RegisterProfessionalScreen = ({ navigation }) => {
             cpf: cpf.replace(/\D/g, ''), 
             email,
             unidade_saude_id: userUnit.id,
-            role_id: selectedRole.id
+            role_id: selectedRole.nivel_acesso
           }
         : {
             cpf: cpf.replace(/\D/g, ''), 
             email,
-            role_id: selectedRole.id
+            role_id: selectedRole.nivel_acesso
           };
 
       const response = await fetch(endpoint, {

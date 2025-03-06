@@ -23,7 +23,7 @@ const ProfessionalsListScreen = ({ navigation }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
-  const [currentDate, setCurrentDate] = useState('2025-03-02 21:32:33');
+  const [currentDate, setCurrentDate] = useState('2025-03-06 15:49:13');
   const [currentUser, setCurrentUser] = useState('hannanhunny01');
 
   // Get user role and unit from Redux
@@ -31,6 +31,11 @@ const ProfessionalsListScreen = ({ navigation }) => {
   const userUnit = useSelector(state => state.user.userData.unidadeSaude[0]);
   const userData = useSelector(state => state.user.userData);
   const token = useSelector(state => state.auth.accessToken);
+  const roles = [
+    { id: 1, name: "Pesquisador", nivel_acesso: 3 },
+    { id: 2, name: "Supervisor", nivel_acesso: 2 },
+    { id: 3, name: "Admin", nivel_acesso: 1 }
+  ];
 
   // Fetch professionals
   const fetchProfessionals = async () => {
@@ -38,7 +43,7 @@ const ProfessionalsListScreen = ({ navigation }) => {
     setError(null);
 
     try {
-      const endpoint =  `http://localhost:8004/listar-usuarios-unidade-saude/${userUnit.id}`
+      const endpoint = `http://localhost:8004/listar-usuarios-unidade-saude/${userUnit.id}`
 
       const response = await fetch(endpoint, {
         method: 'GET',
@@ -98,20 +103,30 @@ const ProfessionalsListScreen = ({ navigation }) => {
     try {
       setIsLoading(true);
       
+      // Use the endpoints from curl examples
       const endpoint = isAdmin
-        ? `http://localhost:8004/admin/atualizar-status-usuario/${selectedProfessional.id}`
-        : `http://localhost:8004/supervisor/atualizar-status-usuario/${selectedProfessional.id}`;
+        ? 'http://localhost:8004/admin/editar-usuario'
+        : 'http://localhost:8004/supervisor/editar-usuario';
+      
+      const requestBody = {
+        cpf: selectedProfessional.cpf,
+        role_id: selectedProfessional.nivel_acesso,
+        is_active: status
+      };
+      
+      // Add unidade_saude for admin users as per API requirements
+      if (isAdmin) {
+        requestBody.unidade_saude = selectedProfessional.unidade_saude || userUnit.id;
+      }
       
       const response = await fetch(endpoint, {
-        method: 'PATCH',
+        method: 'POST', // Using POST as shown in curl examples
         headers: {
           'accept': 'application/json',
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          is_active: status
-        })
+        body: JSON.stringify(requestBody)
       });
       
       if (!response.ok) {
@@ -180,9 +195,9 @@ const ProfessionalsListScreen = ({ navigation }) => {
 
   const renderHeader = () => (
     <View style={styles.headerInfo}>
-          <Text style={styles.userText}>Usuário: {userData?.nome_usuario}</Text>
-          <Text style={styles.userText}>Email: {userData?.email}</Text>
-          <Text style={styles.dateText}>{currentDate} (UTC)</Text>
+      <Text style={styles.userText}>Usuário: {userData?.nome_usuario}</Text>
+      <Text style={styles.userText}>Email: {userData?.email}</Text>
+      <Text style={styles.dateText}>{currentDate} (UTC)</Text>
     </View>
   );
 
