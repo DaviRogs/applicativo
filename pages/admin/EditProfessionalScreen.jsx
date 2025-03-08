@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
+import {API_URL} from '@env';
 
 const EditProfessionalScreen = ({ navigation, route }) => {
   const { professional } = route.params || {};
@@ -52,8 +53,8 @@ const EditProfessionalScreen = ({ navigation, route }) => {
       setError(null);
       
       const endpoint = isAdmin
-        ? 'http://localhost:8004/admin/editar-usuario'
-        : 'http://localhost:8004/supervisor/editar-usuario';
+        ? `${API_URL}/admin/editar-usuario`
+        : `${API_URL}/supervisor/editar-usuario`;
       
       const requestBody = {
         cpf: professional.cpf,

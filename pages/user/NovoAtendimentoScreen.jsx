@@ -14,7 +14,9 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
-import DateTimePicker from 'expo-date-time-picker';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import {API_URL} from '@env';
+
 
 const NovoAtendimentoScreen = ({ navigation, route }) => {
   const user = useSelector(state => state.user.userData);
@@ -148,7 +150,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     try {
       setCheckingCpf(true);
       
-      const response = await fetch(`http://localhost:8004/cadastrar-atendimento?cpf_paciente=${cpf}`, {
+      const response = await fetch(`${API_URL}/cadastrar-atendimento?cpf_paciente=${cpf}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -311,7 +313,10 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   };
 
   const handleDateChange = (event, selectedDate) => {
-    setShowDatePicker(false);
+    // On Android, when the user cancels, selectedDate will be undefined
+    if (Platform.OS === 'android') {
+      setShowDatePicker(false);
+    }
     
     if (selectedDate) {
       const year = selectedDate.getFullYear();
@@ -320,6 +325,11 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       const formattedDate = `${year}-${month}-${day}`;
       
       handleInputChange('data_nascimento', formattedDate);
+      
+      // For Android, we need to hide the picker after selection
+      if (Platform.OS === 'android') {
+        setShowDatePicker(false);
+      }
     }
   };
 
@@ -342,7 +352,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       const phoneDigits = formData.telefone_paciente.replace(/\D/g, '');
       const susDigits = formData.num_cartao_sus.replace(/\D/g, '');
 
-      const response = await fetch('http://localhost:8004/cadastrar-atendimento', {
+      const response = await fetch(`${API_URL}/cadastrar-atendimento`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',
@@ -370,6 +380,18 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       Alert.alert('Erro', error.message || 'Erro ao enviar formulário');
     } finally {
       setLoading(false);
+    }
+  };
+
+  // Function to parse date string to Date object safely
+  const parseDate = (dateString) => {
+    try {
+      const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
+      // Month is 0-indexed in JavaScript Date
+      const date = new Date(year, month - 1, day);
+      return isNaN(date.getTime()) ? new Date() : date;
+    } catch (error) {
+      return new Date();
     }
   };
 
@@ -437,7 +459,8 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
             </View>
             {showDatePicker && (
               <DateTimePicker
-                value={formData.data_nascimento ? new Date(formData.data_nascimento) : new Date()}
+                testID="dateTimePicker"
+                value={parseDate(formData.data_nascimento)}
                 mode="date"
                 display={Platform.OS === 'ios' ? 'spinner' : 'default'}
                 onChange={handleDateChange}

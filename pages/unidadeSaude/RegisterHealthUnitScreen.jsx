@@ -14,6 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
+import {API_URL} from '@env';
 
 const RegisterHealthUnitScreen = ({ navigation, route }) => {
   const [unitName, setUnitName] = useState('');
@@ -69,7 +70,7 @@ const RegisterHealthUnitScreen = ({ navigation, route }) => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8004/cadastrar-unidade-saude', {
+      const response = await fetch(`${API_URL}/cadastrar-unidade-saude`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',

@@ -67,7 +67,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
   const fetchUnitDetails = async (unitId) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`http://localhost:8004/listar-unidade-saude/${unitId}`, {
+      const response = await fetch(`${API_URL}/listar-unidade-saude/${unitId}`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -123,7 +123,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
     setError(null);
 
     try {
-      const response = await fetch(`http://localhost:8004/editar-unidade-saude/${unit.id}`, {
+      const response = await fetch(`${API_URL}/editar-unidade-saude/${unit.id}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',

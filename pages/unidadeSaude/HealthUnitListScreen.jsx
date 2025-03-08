@@ -14,6 +14,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
+import {API_URL} from '@env';
 
 export const HealthUnitListScreen = ({ navigation }) => {
   const [units, setUnits] = useState([]);
@@ -51,7 +52,7 @@ export const HealthUnitListScreen = ({ navigation }) => {
     setError(null);
 
     try {
-      const response = await fetch('http://localhost:8004/listar-unidades-saude', {
+      const response = await fetch(`${API_URL}/listar-unidades-saude`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -107,7 +108,7 @@ export const HealthUnitListScreen = ({ navigation }) => {
     try {
       setIsLoading(true);
       
-      const response = await fetch(`http://localhost:8004/editar-unidade-saude/${selectedUnit.id}`, {
+      const response = await fetch(`${API_URL}/editar-unidade-saude/${selectedUnit.id}`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',

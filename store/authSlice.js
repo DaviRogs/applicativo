@@ -1,6 +1,8 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import {API_URL} from '@env';
+
 const initialState = {
   accessToken: null,
   refreshToken: null,
@@ -22,7 +24,7 @@ export const login = createAsyncThunk(
       formData.append('client_id', 'string');
       formData.append('client_secret', 'string');
 
-      const response = await fetch('http://localhost:8004/token', {
+      const response = await fetch(`${API_URL}/token`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',

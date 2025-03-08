@@ -15,6 +15,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
+import {API_URL} from '@env';
 
 const RegisterProfessionalScreen = ({ navigation }) => {
   const [cpf, setCpf] = useState('');
@@ -68,8 +69,8 @@ const RegisterProfessionalScreen = ({ navigation }) => {
     try {
       
       const endpoint = isAdmin 
-        ? 'http://localhost:8004/admin/convidar-usuario' 
-        : 'http://localhost:8004/supervisor/convidar-usuario';
+        ? `${API_URL}/admin/convidar-usuario` 
+        : `${API_URL}/supervisor/convidar-usuario`;
 
       const requestBody = isAdmin 
         ? {

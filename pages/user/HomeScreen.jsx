@@ -12,6 +12,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlyoutMenu from '../../components/FlyoutMenu';
 import { useSelector } from 'react-redux';
+import {API_URL} from '@env';
 
 const HomeScreen = ({navigation}) => {
   const [menuVisible, setMenuVisible] = useState(false);
@@ -38,7 +39,7 @@ const HomeScreen = ({navigation}) => {
 
   const fetchAtendimentos = async () => {
     try {
-      const response = await fetch('http://localhost:8004/listar-atendimentos-usuario-logado', {
+      const response = await fetch(`${API_URL}/listar-atendimentos-usuario-logado`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',

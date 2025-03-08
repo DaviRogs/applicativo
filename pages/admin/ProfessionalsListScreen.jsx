@@ -13,6 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
+import {API_URL} from '@env';
 
 const ProfessionalsListScreen = ({ navigation }) => {
   const [professionals, setProfessionals] = useState([]);
@@ -43,7 +44,7 @@ const ProfessionalsListScreen = ({ navigation }) => {
     setError(null);
 
     try {
-      const endpoint = `http://localhost:8004/listar-usuarios-unidade-saude/${userUnit.id}`
+      const endpoint = `${API_URL}/listar-usuarios-unidade-saude/${userUnit.id}`
 
       const response = await fetch(endpoint, {
         method: 'GET',
@@ -105,8 +106,8 @@ const ProfessionalsListScreen = ({ navigation }) => {
       
       // Use the endpoints from curl examples
       const endpoint = isAdmin
-        ? 'http://localhost:8004/admin/editar-usuario'
-        : 'http://localhost:8004/supervisor/editar-usuario';
+        ? `${API_URL}/admin/editar-usuario`
+        : `${API_URL}/supervisor/editar-usuario`;
       
       const requestBody = {
         cpf: selectedProfessional.cpf,

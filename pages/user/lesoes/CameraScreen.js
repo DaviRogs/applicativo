@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View,
   Text,
@@ -7,59 +7,34 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
-  Image,
   ActivityIndicator,
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
-import { Camera } from 'expo-camera';
+import { CameraView, useCameraPermissions } from 'expo-camera';
 
-export const CameraScreen = ({ navigation }) => {
-  const [hasPermission, setHasPermission] = useState(null);
-  const [cameraReady, setCameraReady] = useState(false);
+const CameraScreen = ({ navigation }) => {
+  const [cameraPermission, requestPermission] = useCameraPermissions();
+  const [facing, setFacing] = useState('back');
   const [loading, setLoading] = useState(false);
   const cameraRef = useRef(null);
 
-  // Get camera permissions
-  useEffect(() => {
-    (async () => {
-      // Different approach for web vs native
-      if (Platform.OS === 'web') {
-        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-        setHasPermission(status === 'granted');
-      } else {
-        const { status } = await Camera.requestCameraPermissionsAsync();
-        setHasPermission(status === 'granted');
-      }
-    })();
-  }, []);
-
-  // Take picture using camera
-  const takePicture = async () => {
-    if (!cameraReady || !cameraRef.current) return;
-    
-    try {
-      setLoading(true);
-      const photo = await cameraRef.current.takePictureAsync({
-        quality: 0.8,
-        base64: false,
-        exif: false,
-      });
-      
-      setLoading(false);
-      navigation.navigate('PhotoPreview', { photo });
-    } catch (error) {
-      setLoading(false);
-      console.error('Error taking picture:', error);
-      Alert.alert('Erro', 'Não foi possível capturar a foto. Tente novamente.');
-    }
+  const toggleCameraFacing = () => {
+    setFacing(current => (current === 'back' ? 'front' : 'back'));
   };
 
-  // Select image from library (for web)
   const selectImage = async () => {
     try {
       setLoading(true);
+      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      
+      if (status !== 'granted') {
+        Alert.alert('Permissão negada para acessar a galeria');
+        setLoading(false);
+        return;
+      }
+      
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
@@ -75,12 +50,32 @@ export const CameraScreen = ({ navigation }) => {
     } catch (error) {
       setLoading(false);
       console.error('Error selecting image:', error);
-      Alert.alert('Erro', 'Não foi possível selecionar a imagem. Tente novamente.');
+      Alert.alert('Erro', 'Não foi possível selecionar a imagem.');
     }
   };
 
-  // Handle permissions not granted
-  if (hasPermission === null) {
+  const takePicture = async () => {
+    if (!cameraRef.current) {
+      Alert.alert('Erro', 'Câmera não inicializada');
+      return;
+    }
+    
+    try {
+      setLoading(true);
+      const photo = await cameraRef.current.takePictureAsync({
+        quality: 0.8,
+      });
+      
+      setLoading(false);
+      navigation.navigate('PhotoPreview', { photo });
+    } catch (error) {
+      setLoading(false);
+      console.error('Error taking picture:', error);
+      Alert.alert('Erro', 'Não foi possível tirar a foto.');
+    }
+  };
+
+  if (!cameraPermission) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
@@ -93,16 +88,16 @@ export const CameraScreen = ({ navigation }) => {
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Câmera</Text>
           </View>
-          <View style={styles.loadingContainer}>
+          <View style={styles.centerContainer}>
             <ActivityIndicator size="large" color="#1e3d59" />
-            <Text style={styles.permissionText}>Verificando permissões de câmera...</Text>
+            <Text style={styles.messageText}>Verificando permissões da câmera...</Text>
           </View>
         </View>
       </SafeAreaView>
     );
   }
-  
-  if (hasPermission === false) {
+
+  if (!cameraPermission.granted) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <View style={styles.container}>
@@ -113,20 +108,39 @@ export const CameraScreen = ({ navigation }) => {
             >
               <Icon name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>Câmera</Text>
+            <Text style={styles.headerTitle}>Permissão Necessária</Text>
           </View>
-          <View style={styles.permissionContainer}>
+          <View style={styles.centerContainer}>
             <Icon name="no-photography" size={64} color="#e74c3c" />
-            <Text style={styles.permissionTitle}>Acesso negado</Text>
-            <Text style={styles.permissionText}>
+            <Text style={styles.titleText}>Acesso negado</Text>
+            <Text style={styles.messageText}>
               Para tirar fotos, permita o acesso à câmera nas configurações do dispositivo.
             </Text>
+            
             <TouchableOpacity 
-              style={styles.alternativeButton}
-              onPress={Platform.OS === 'web' ? selectImage : () => navigation.goBack()}
+              style={styles.button}
+              onPress={requestPermission}
             >
-              <Text style={styles.alternativeButtonText}>
-                {Platform.OS === 'web' ? 'Selecionar da galeria' : 'Voltar'}
+              <Text style={styles.buttonText}>
+                Permitir acesso à câmera
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.button, {backgroundColor: '#3d8577', marginTop: 12}]}
+              onPress={selectImage}
+            >
+              <Text style={styles.buttonText}>
+                Selecionar da galeria
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.button, {backgroundColor: '#e74c3c', marginTop: 12}]}
+              onPress={() => navigation.goBack()}
+            >
+              <Text style={styles.buttonText}>
+                Voltar
               </Text>
             </TouchableOpacity>
           </View>
@@ -135,52 +149,13 @@ export const CameraScreen = ({ navigation }) => {
     );
   }
 
-  // Web alternative - file picker instead of camera
-  if (Platform.OS === 'web') {
-    return (
-      <SafeAreaView style={styles.safeArea}>
-        <View style={styles.container}>
-          <View style={styles.header}>
-            <TouchableOpacity 
-              style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
-              <Icon name="arrow-back" size={24} color="#fff" />
-            </TouchableOpacity>
-            <Text style={styles.headerTitle}>Adicionar Imagem</Text>
-          </View>
-          
-          <View style={styles.webUploadContainer}>
-            <Icon name="cloud-upload" size={64} color="#1e3d59" />
-            <Text style={styles.webUploadTitle}>Selecione uma imagem</Text>
-            <Text style={styles.webUploadText}>
-              Escolha uma imagem do seu computador para registrar a lesão
-            </Text>
-            
-            <TouchableOpacity 
-              style={styles.webSelectButton}
-              onPress={selectImage}
-              disabled={loading}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" size="small" />
-              ) : (
-                <>
-                  <Icon name="photo-library" size={20} color="#fff" />
-                  <Text style={styles.webSelectButtonText}>Selecionar imagem</Text>
-                </>
-              )}
-            </TouchableOpacity>
-          </View>
-        </View>
-      </SafeAreaView>
-    );
-  }
-
-  // Native camera implementation
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <View style={styles.container}>
+      <CameraView
+        style={styles.camera}
+        facing={facing}
+        ref={cameraRef}
+      >
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
@@ -188,61 +163,60 @@ export const CameraScreen = ({ navigation }) => {
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Registro de lesões</Text>
+          <Text style={styles.headerTitle}>Capturar foto</Text>
         </View>
-
-        <View style={styles.cameraContainer}>
-          <Camera
-            ref={cameraRef}
-            style={styles.camera}
-            type={Camera.Constants.Type.back}
-            onCameraReady={() => setCameraReady(true)}
-            ratio="4:3"
+        
+        <View style={styles.controlsContainer}>
+          <TouchableOpacity 
+            style={styles.galleryButton}
+            onPress={selectImage}
           >
-            <View style={styles.overlay}>
-              <Text style={styles.overlayText}>
-                Certifique-se de que a foto está nítida
-              </Text>
-            </View>
-          </Camera>
-
-          <View style={styles.captureContainer}>
-            <TouchableOpacity 
-              style={styles.captureButton} 
-              onPress={takePicture}
-              disabled={loading || !cameraReady}
-            >
-              {loading ? (
-                <ActivityIndicator color="#fff" size="large" />
-              ) : (
-                <Icon name="camera" size={32} color="#fff" />
-              )}
-            </TouchableOpacity>
-          </View>
+            <Icon name="photo-library" size={24} color="#fff" />
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.captureButton}
+            onPress={takePicture}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator color="#fff" size="large" />
+            ) : (
+              <View style={styles.captureButtonInner} />
+            )}
+          </TouchableOpacity>
+          
+          <TouchableOpacity 
+            style={styles.flipButton}
+            onPress={toggleCameraFacing}
+          >
+            <Icon name="flip-camera-android" size={24} color="#fff" />
+          </TouchableOpacity>
         </View>
-      </View>
-    </SafeAreaView>
+      </CameraView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#1e3d59',
-    paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0,
+    backgroundColor: '#000',
   },
   container: {
     flex: 1,
     backgroundColor: '#000',
   },
+  camera: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#1e3d59',
-    paddingTop: Platform.OS === 'ios' ? 0 : 16,
+    backgroundColor: 'rgba(0,0,0,0.4)',
+    paddingTop: Platform.OS === 'ios' ? 44 : StatusBar.currentHeight + 16,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    height: Platform.OS === 'ios' ? 90 : 80,
   },
   backButton: {
     marginRight: 16,
@@ -253,115 +227,80 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
   },
-  cameraContainer: {
+  centerContainer: {
     flex: 1,
-    position: 'relative',
-  },
-  camera: {
-    flex: 1,
-  },
-  overlay: {
-    ...StyleSheet.absoluteFillObject,
-    justifyContent: 'flex-start',
+    justifyContent: 'center',
     alignItems: 'center',
-    paddingTop: 20,
-    backgroundColor: 'rgba(0,0,0,0.3)',
+    backgroundColor: '#fff',
+    padding: 20,
   },
-  overlayText: {
+  titleText: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    marginTop: 16,
+    color: '#333',
+  },
+  messageText: {
+    fontSize: 16,
+    color: '#666',
+    textAlign: 'center',
+    marginTop: 12,
+    marginBottom: 24,
+    paddingHorizontal: 20,
+  },
+  button: {
+    width: '80%',
+    padding: 16,
+    borderRadius: 8,
+    backgroundColor: '#1e3d59',
+    alignItems: 'center',
+  },
+  buttonText: {
     color: '#fff',
     fontSize: 16,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    padding: 8,
-    borderRadius: 4,
+    fontWeight: '500',
   },
-  captureContainer: {
+  controlsContainer: {
     position: 'absolute',
-    bottom: 30,
+    bottom: 40,
     left: 0,
     right: 0,
+    flexDirection: 'row',
+    justifyContent: 'space-around',
     alignItems: 'center',
   },
   captureButton: {
     width: 70,
     height: 70,
     borderRadius: 35,
-    backgroundColor: '#1e3d59',
+    borderWidth: 3,
+    borderColor: '#fff',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 4,
-    borderColor: 'white',
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  captureButtonInner: {
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: '#fff',
   },
-  permissionContainer: {
-    flex: 1,
+  galleryButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
   },
-  permissionTitle: {
-    fontSize: 20,
-    fontWeight: 'bold',
-    marginTop: 16,
-    marginBottom: 8,
-    color: '#333',
-  },
-  permissionText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginTop: 8,
-    marginHorizontal: 20,
-  },
-  alternativeButton: {
-    marginTop: 20,
-    padding: 12,
-    backgroundColor: '#1e3d59',
-    borderRadius: 8,
-  },
-  alternativeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-  },
-  webUploadContainer: {
-    flex: 1,
+  flipButton: {
+    width: 44,
+    height: 44,
+    borderRadius: 22,
+    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#fff',
-    padding: 20,
-  },
-  webUploadTitle: {
-    fontSize: 22,
-    fontWeight: 'bold',
-    marginTop: 16,
-    color: '#333',
-  },
-  webUploadText: {
-    fontSize: 16,
-    color: '#666',
-    textAlign: 'center',
-    marginVertical: 16,
-    maxWidth: 400,
-  },
-  webSelectButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#1e3d59',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    marginTop: 16,
-  },
-  webSelectButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
-    marginLeft: 8,
   },
 });
+
+export default CameraScreen;

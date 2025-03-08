@@ -12,6 +12,8 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
 import { selectHasAdminAccess, updateUnidadeSaude ,selectIsAdmin } from '../store/userSlice';
+import {API_URL} from '@env';
+
 
 const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   const dispatch = useDispatch();
@@ -29,7 +31,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       setLoading(true);
       setError(null);
 
-      const response = await fetch('http://localhost:8004/listar-unidades-saude', {
+      const response = await fetch(`${API_URL}/listar-unidades-saude`, {
         method: 'GET',
         headers: {
           'Accept': 'application/json',

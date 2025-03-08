@@ -9,6 +9,7 @@ const initialState = {
   loading: false,
   error: null,
 };
+import {API_URL} from '@env';
 
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
@@ -20,7 +21,7 @@ export const fetchCurrentUser = createAsyncThunk(
         return rejectWithValue('No access token available');
       }
 
-      const response = await fetch('http://localhost:8004/token/get-current-user', {
+      const response = await fetch(`${API_URL}/token/get-current-user`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',
@@ -53,7 +54,7 @@ export const fetchHealthUnits = createAsyncThunk(
     try {
       const { accessToken } = getState().auth;
       
-      const response = await fetch('http://localhost:8004/listar-unidades-saude', {
+      const response = await fetch(`${API_URL}/listar-unidades-saude`, {
         method: 'GET',
         headers: {
           'accept': 'application/json',

@@ -38,7 +38,7 @@ import ProfessionalsListScreen from './pages/admin/ProfessionalsListScreen';
 import InjuryListScreen from './pages/user/lesoes/InjuryListScreen';
 import AddInjuryScreen from './pages/user/lesoes/AddInjuryScreen';
 import { InjuryLocationScreen } from './pages/user/lesoes/InjuryLocationScreen';
-import {CameraScreen} from './pages/user/lesoes/CameraScreen';
+import CameraScreen from './pages/user/lesoes/CameraScreen';
 import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 
 

@@ -11,6 +11,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useRoute, useNavigation } from '@react-navigation/native';
+import {API_URL} from '@env';
 
 const RegisterScreen = () => {
   const route = useRoute();
@@ -55,7 +56,7 @@ const RegisterScreen = () => {
       console.log("tokdadasdaen",token)
 
       const response = await fetch(
-        `http://localhost:8004/dados-completar-cadastro?token=${token}`,
+        `${API_URL}/dados-completar-cadastro?token=${token}`,
         {
           headers: {
             accept: 'application/json',
@@ -109,7 +110,7 @@ const RegisterScreen = () => {
     }
 
     try {
-      const response = await fetch('http://localhost:8004/completar-cadastro', {
+      const response = await fetch(`${API_URL}/completar-cadastro`, {
         method: 'POST',
         headers: {
           'accept': 'application/json',
