@@ -119,7 +119,7 @@ export const HealthUnitListScreen = ({ navigation }) => {
           nome_localizacao: selectedUnit.nome_localizacao,
           codigo_unidade_saude: selectedUnit.codigo_unidade_saude,
           cidade_unidade_saude: selectedUnit.cidade_unidade_saude,
-          is_active: status
+          fl_ativo: status
         })
       });
       
@@ -130,7 +130,7 @@ export const HealthUnitListScreen = ({ navigation }) => {
       // Update local state
       const updatedUnits = units.map(unit => {
         if (unit.id === selectedUnit.id) {
-          return { ...unit, is_active: status };
+          return { ...unit, fl_ativo: status };
         }
         return unit;
       });
@@ -139,7 +139,7 @@ export const HealthUnitListScreen = ({ navigation }) => {
       setFilteredUnits(
         filteredUnits.map(unit => {
           if (unit.id === selectedUnit.id) {
-            return { ...unit, is_active: status };
+            return { ...unit, fl_ativo: status };
           }
           return unit;
         })
@@ -168,10 +168,10 @@ export const HealthUnitListScreen = ({ navigation }) => {
       <View style={styles.cardActions}>
         <View style={[
           styles.statusBadge,
-          item.is_active ? styles.activeBadge : styles.inactiveBadge
+          item.fl_ativo ? styles.activeBadge : styles.inactiveBadge
         ]}>
-          <Text style={item.is_active ? styles.activeText : styles.inactiveText}>
-            {item.is_active ? 'Ativo' : 'Inativo'}
+          <Text style={item.fl_ativo ? styles.activeText : styles.inactiveText}>
+            {item.fl_ativo ? 'Ativo' : 'Inativo'}
           </Text>
         </View>
         <View style={styles.actionButtons}>

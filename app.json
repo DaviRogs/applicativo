@@ -12,10 +12,10 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "ios": {
-      "supportsTablet": true,
+ "ios": {
       "infoPlist": {
-        "NSCameraUsageDescription": "We need access to your camera to take photos."
+        "NSCameraUsageDescription": "This app uses the camera to capture photos of injuries",
+        "NSPhotoLibraryUsageDescription": "This app uses the photo library to select injury images"
       }
     },
     "android": {
@@ -23,7 +23,7 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": ["android.permission.CAMERA"]
+      "permissions": ["CAMERA", "READ_EXTERNAL_STORAGE", "WRITE_EXTERNAL_STORAGE"]
     },
     "web": {
       "favicon": "./assets/favicon.png"

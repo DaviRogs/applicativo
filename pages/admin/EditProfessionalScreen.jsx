@@ -21,7 +21,7 @@ const EditProfessionalScreen = ({ navigation, route }) => {
   const userData = useSelector(state => state.user.userData);
   const token = useSelector(state => state.auth.accessToken);
   
-  const [isActive, setIsActive] = useState(professional?.is_active || false);
+  const [isActive, setIsActive] = useState(professional?.fl_ativo || false);
   const [selectedRole, setSelectedRole] = useState(professional?.nivel_acesso || 3);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -29,9 +29,9 @@ const EditProfessionalScreen = ({ navigation, route }) => {
   const [currentDate, setCurrentDate] = useState('2025-03-06 16:07:22');
 
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 3 },
+    { id: 1, name: "Pesquisador", nivel_acesso: 1 },
     { id: 2, name: "Supervisor", nivel_acesso: 2 },
-    { id: 3, name: "Admin", nivel_acesso: 1 }
+    { id: 3, name: "Admin", nivel_acesso: 3 }
   ];
 
   const formatCPF = (cpf) => {
@@ -58,7 +58,7 @@ const EditProfessionalScreen = ({ navigation, route }) => {
       const requestBody = {
         cpf: professional.cpf,
         role_id: selectedRole,
-        is_active: isActive
+        fl_ativo: isActive
       };
       
       if (isAdmin) {

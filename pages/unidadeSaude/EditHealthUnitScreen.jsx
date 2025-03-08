@@ -43,7 +43,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
         setLocation(unit.nome_localizacao || '');
         setUnitCode(unit.codigo_unidade_saude || '');
         setCity(unit.cidade_unidade_saude || '');
-        setIsActive(unit.is_active || false);
+        setIsActive(unit.fl_ativo || false);
       } else {
         // Fetch the complete data
         fetchUnitDetails(unit.id);
@@ -86,7 +86,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
       setLocation(data.nome_localizacao || '');
       setUnitCode(data.codigo_unidade_saude || '');
       setCity(data.cidade_unidade_saude || '');
-      setIsActive(data.is_active || false);
+      setIsActive(data.fl_ativo || false);
       
     } catch (err) {
       setError(err.message || 'Ocorreu um erro ao buscar detalhes da unidade.');
@@ -135,7 +135,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
           nome_localizacao: location,
           codigo_unidade_saude: unitCode,
           cidade_unidade_saude: city,
-          is_active: isActive
+          fl_ativo: isActive
         })
       });
 

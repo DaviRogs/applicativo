@@ -1,14 +1,45 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
   SafeAreaView,
+  Alert,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const NovoPacienteScreen = ({ navigation }) => {
+const NovoPacienteScreen = ({ navigation, route }) => {
+  const [patientData, setPatientData] = useState(null);
+  
+  useEffect(() => {
+    if (route.params && route.params.atendimentoData) {
+      setPatientData(route.params.atendimentoData);
+    }
+  }, [route.params]);
+
+  // Format CPF for display
+  const formatDisplayCpf = (cpf) => {
+    if (!cpf) return '';
+    cpf = cpf.replace(/\D/g, '');
+    if (cpf.length === 11) {
+      return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
+    }
+    return cpf;
+  };
+
+  const handleEditPatient = () => {
+    // Navigate back to NovoAtendimentoScreen with the current patient data for editing
+    navigation.navigate('NovoAtendimento', { patientData });
+  };
+
+  const handleSaveChanges = () => {
+    Alert.alert('Sucesso', 'Alterações salvas com sucesso!', [
+      { text: 'OK', onPress: () => navigation.navigate('Home') }
+    ]);
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
@@ -22,37 +53,55 @@ const NovoPacienteScreen = ({ navigation }) => {
       </View>
 
       <View style={styles.content}>
-        <View style={styles.patientCard}>
-          <View style={styles.patientInfo}>
-            <Icon name="person" size={24} color="#1e3d59" />
-            <View style={styles.patientDetails}>
-              <Text style={styles.patientName}>João Pereira</Text>
-              <Text style={styles.patientId}>123.456.789-55</Text>
+        {patientData ? (
+          <View style={styles.patientCard}>
+            <View style={styles.patientInfo}>
+              <Icon name="person" size={24} color="#1e3d59" />
+              <View style={styles.patientDetails}>
+                <Text style={styles.patientName}>{patientData.nome_paciente}</Text>
+                <Text style={styles.patientId}>
+                  {formatDisplayCpf(patientData.cpf_paciente)}
+                </Text>
+              </View>
             </View>
+            <TouchableOpacity onPress={handleEditPatient}>
+              <Icon name="edit" size={20} color="#666" />
+            </TouchableOpacity>
           </View>
-          <TouchableOpacity>
-            <Icon name="edit" size={20} color="#666" />
-          </TouchableOpacity>
-        </View>
+        ) : (
+          <View style={styles.patientCard}>
+            <Text style={styles.loadingText}>Carregando dados do paciente...</Text>
+          </View>
+        )}
 
-        <TouchableOpacity style={styles.menuItem}>
+        <TouchableOpacity 
+          style={styles.menuItem}
+          onPress={() => navigation.navigate('ConsentTerm', { patientData })}
+        >
           <Text style={styles.menuItemText}>Termo de consentimento</Text>
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.menuItem} onPress={() => navigation.navigate('Anamnesis')}>
+        <TouchableOpacity 
+          style={styles.menuItem} 
+          onPress={() => navigation.navigate('Anamnesis', { patientData })}
+        >
           <Text style={styles.menuItemText}>Anamnese</Text>
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
 
         <TouchableOpacity 
-            style={styles.menuItem} 
-            onPress={() => navigation.navigate('InjuryList')}>
-            <Text style={styles.menuItemText}>Registro de lesões</Text>
-            <Icon name="chevron-right" size={24} color="#666" />
-      </TouchableOpacity>
+          style={styles.menuItem} 
+          onPress={() => navigation.navigate('InjuryList', { patientData })}
+        >
+          <Text style={styles.menuItemText}>Registro de lesões</Text>
+          <Icon name="chevron-right" size={24} color="#666" />
+        </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveButton}>
+        <TouchableOpacity 
+          style={styles.saveButton}
+          onPress={handleSaveChanges}
+        >
           <Text style={styles.saveButtonText}>Salvar alterações</Text>
         </TouchableOpacity>
       </View>
@@ -69,12 +118,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 26,
-    height: 90,
+    paddingTop: Platform.OS === 'ios' ? 44 : 26,
+    height: Platform.OS === 'ios' ? 90 : 90,
     paddingHorizontal: 16,
   },
   backButton: {
     marginRight: 16,
+    padding: 4,
   },
   headerTitle: {
     color: '#fff',
@@ -105,9 +155,11 @@ const styles = StyleSheet.create({
   patientInfo: {
     flexDirection: 'row',
     alignItems: 'center',
+    flex: 1,
   },
   patientDetails: {
     marginLeft: 12,
+    flex: 1,
   },
   patientName: {
     fontSize: 16,
@@ -118,6 +170,11 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  loadingText: {
+    fontSize: 14,
+    color: '#666',
+    fontStyle: 'italic',
   },
   menuItem: {
     flexDirection: 'row',

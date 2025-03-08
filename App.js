@@ -7,6 +7,13 @@ import { restoreTokens } from './store/authSlice';
 import { fetchCurrentUser, selectHasAdminAccess } from './store/userSlice';
 import { Linking } from 'react-native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { LogBox } from 'react-native';
+
+LogBox.ignoreLogs([
+  'ViewPropTypes will be removed',
+  'ColorPropType will be removed',
+]);
+
 
 // Import screens
 import LoginScreen from './pages/LoginScreen';

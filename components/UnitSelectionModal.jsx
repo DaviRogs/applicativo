@@ -64,7 +64,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   }, [visible, hasAdminAccess, accessToken]);
 
   const handleUnitSelection = (unit) => {
-    if (!unit.is_active) {
+    if (!unit.fl_ativo) {
       Alert.alert(
         'Unidade Inativa',
         'Esta unidade de saúde está inativa no momento.',
@@ -79,7 +79,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       nome_localizacao: unit.nome_localizacao,
       codigo_unidade_saude: unit.codigo_unidade_saude,
       cidade_unidade_saude: unit.cidade_unidade_saude,
-      is_active: unit.is_active,
+      is_active: unit.fl_ativo,
       data_criacao: unit.data_criacao,
       data_atualizacao: unit.data_atualizacao
     };
@@ -109,25 +109,25 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       key={unit.id}
       style={[
         styles.unitItem,
-        !unit.is_active && styles.inactiveUnit
+        !unit.fl_ativo && styles.inactiveUnit
       ]}
       onPress={() => handleUnitSelection(unit)}
     >
       <Icon 
         name="business" 
         size={24} 
-        color={unit.is_active ? "#1e3d59" : "#999"} 
+        color={unit.fl_ativo ? "#1e3d59" : "#999"} 
       />
       <View style={styles.unitItemContent}>
         <Text style={[
           styles.unitItemName,
-          !unit.is_active && styles.inactiveText
+          !unit.fl_ativo && styles.inactiveText
         ]}>
           {unit.nome_unidade_saude}
         </Text>
         <Text style={[
           styles.unitItemAddress,
-          !unit.is_active && styles.inactiveText
+          !unit.fl_ativo && styles.inactiveText
         ]}>
           {unit.nome_localizacao}
         </Text>
@@ -135,7 +135,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
           <Text style={styles.unitItemCode}>
             {unit.codigo_unidade_saude}
           </Text>
-          {!unit.is_active && (
+          {!unit.fl_ativo && (
             <Text style={styles.inactiveLabel}>Inativa</Text>
           )}
         </View>

@@ -81,7 +81,7 @@ const RegisterHealthUnitScreen = ({ navigation, route }) => {
           nome_localizacao: location,
           codigo_unidade_saude: unitCode,
           cidade_unidade_saude: city,
-          is_active: isActive
+          fl_ativo: isActive
         })
       });
 

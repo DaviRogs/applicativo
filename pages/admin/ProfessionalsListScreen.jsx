@@ -32,9 +32,9 @@ const ProfessionalsListScreen = ({ navigation }) => {
   const userData = useSelector(state => state.user.userData);
   const token = useSelector(state => state.auth.accessToken);
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 3 },
+    { id: 1, name: "Pesquisador", nivel_acesso: 1 },
     { id: 2, name: "Supervisor", nivel_acesso: 2 },
-    { id: 3, name: "Admin", nivel_acesso: 1 }
+    { id: 3, name: "Admin", nivel_acesso: 3 }
   ];
 
   // Fetch professionals
@@ -111,7 +111,7 @@ const ProfessionalsListScreen = ({ navigation }) => {
       const requestBody = {
         cpf: selectedProfessional.cpf,
         role_id: selectedProfessional.nivel_acesso,
-        is_active: status
+        fl_ativo: status
       };
       
       // Add unidade_saude for admin users as per API requirements
@@ -135,7 +135,7 @@ const ProfessionalsListScreen = ({ navigation }) => {
       
       const updatedProfessionals = professionals.map(prof => {
         if (prof.id === selectedProfessional.id) {
-          return { ...prof, is_active: status };
+          return { ...prof, fl_ativo: status };
         }
         return prof;
       });
@@ -144,7 +144,7 @@ const ProfessionalsListScreen = ({ navigation }) => {
       setFilteredProfessionals(
         filteredProfessionals.map(prof => {
           if (prof.id === selectedProfessional.id) {
-            return { ...prof, is_active: status };
+            return { ...prof, fl_ativo: status };
           }
           return prof;
         })
@@ -174,10 +174,10 @@ const ProfessionalsListScreen = ({ navigation }) => {
       <View style={styles.cardActions}>
         <View style={[
           styles.statusBadge,
-          item.is_active ? styles.activeBadge : styles.inactiveBadge
+          item.fl_ativo ? styles.activeBadge : styles.inactiveBadge
         ]}>
-          <Text style={item.is_active ? styles.activeText : styles.inactiveText}>
-            {item.is_active ? 'Ativo' : 'Inativo'}
+          <Text style={item.fl_ativo ? styles.activeText : styles.inactiveText}>
+            {item.fl_ativo ? 'Ativo' : 'Inativo'}
           </Text>
         </View>
         <TouchableOpacity 
