@@ -11,9 +11,12 @@ import {
   Alert,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useDispatch } from 'react-redux';
+import { addPhoto } from '../../../store/injurySlice';
 
 export const PhotoPreviewScreen = ({ route, navigation }) => {
-  const { photo } = route.params || {};
+  const dispatch = useDispatch();
+  const { photo, viewOnly, index, onDelete } = route.params || {};
 
   if (!photo || !photo.uri) {
     Alert.alert('Erro', 'Imagem inválida', [
@@ -23,7 +26,34 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
   }
 
   const handleSavePhoto = () => {
-    navigation.navigate('AddInjury', { photo });
+    // Add photo to Redux store
+    dispatch(addPhoto(photo));
+    
+    // Navigate back to form
+    navigation.navigate('AddInjury');
+  };
+  
+  const handleDeletePhoto = () => {
+    if (onDelete) {
+      Alert.alert(
+        "Excluir foto",
+        "Tem certeza que deseja excluir esta foto?",
+        [
+          {
+            text: "Cancelar",
+            style: "cancel"
+          },
+          {
+            text: "Excluir",
+            onPress: () => {
+              onDelete();
+              navigation.goBack();
+            },
+            style: "destructive"
+          }
+        ]
+      );
+    }
   };
 
   return (
@@ -36,7 +66,17 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>Pré-visualização</Text>
+          <Text style={styles.headerTitle}>
+            {viewOnly ? `Foto ${index + 1}` : 'Pré-visualização'}
+          </Text>
+          {viewOnly && (
+            <TouchableOpacity 
+              style={styles.deleteHeaderButton}
+              onPress={handleDeletePhoto}
+            >
+              <Icon name="delete" size={24} color="#fff" />
+            </TouchableOpacity>
+          )}
         </View>
 
         <View style={styles.previewContainer}>
@@ -47,23 +87,37 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
           />
         </View>
 
-        <View style={styles.buttonContainer}>
-          <TouchableOpacity 
-            style={styles.discardButton}
-            onPress={() => navigation.goBack()}
-          >
-            <Icon name="close" size={20} color="#1e3d59" />
-            <Text style={styles.discardButtonText}>Descartar</Text>
-          </TouchableOpacity>
+        {!viewOnly && (
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.discardButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Icon name="close" size={20} color="#1e3d59" />
+              <Text style={styles.discardButtonText}>Descartar</Text>
+            </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.saveButton}
-            onPress={handleSavePhoto}
-          >
-            <Icon name="check" size={20} color="#fff" />
-            <Text style={styles.saveButtonText}>Usar esta foto</Text>
-          </TouchableOpacity>
-        </View>
+            <TouchableOpacity 
+              style={styles.saveButton}
+              onPress={handleSavePhoto}
+            >
+              <Icon name="check" size={20} color="#fff" />
+              <Text style={styles.saveButtonText}>Usar esta foto</Text>
+            </TouchableOpacity>
+          </View>
+        )}
+        
+        {viewOnly && (
+          <View style={styles.buttonContainer}>
+            <TouchableOpacity 
+              style={styles.backFullButton}
+              onPress={() => navigation.goBack()}
+            >
+              <Icon name="arrow-back" size={20} color="#fff" />
+              <Text style={styles.backButtonText}>Voltar</Text>
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -96,6 +150,10 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     fontWeight: '500',
+    flex: 1,
+  },
+  deleteHeaderButton: {
+    padding: 4,
   },
   previewContainer: {
     flex: 1,
@@ -143,4 +201,20 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#fff',
   },
+  backFullButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    backgroundColor: '#1e3d59',
+  },
+  backButtonText: {
+    marginLeft: 8,
+    fontSize: 16,
+    color: '#fff',
+  },
 });
+
+export default PhotoPreviewScreen;

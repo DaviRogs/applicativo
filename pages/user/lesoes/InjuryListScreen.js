@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,31 +8,143 @@ import {
   ScrollView,
   Platform,
   StatusBar,
+  Alert,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSelector, useDispatch } from 'react-redux';
+import {
+  resetForm,
+  deleteInjury,
+  setInjuries,
+  setLoading,
+  setSaving,
+} from '../../../store/injurySlice';
+import { injuryService } from './injuryService';
+
+const generateUniqueId = () => {
+  return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+};
 
 const InjuryListScreen = ({ navigation, route }) => {
-  const [injuries, setInjuries] = useState([
-    { id: 1, title: 'Braço direito', description: 'Lesão na região do cotovelo', location: 'Braço', photos: [] },
-    { id: 2, title: 'Perna esquerda', description: 'Ferimento superficial na coxa', location: 'Coxa', photos: [] },
-    { id: 3, title: 'Tórax', description: 'Escoriação na região peitoral', location: 'Tórax', photos: [] },
-  ]);
+  const dispatch = useDispatch();
   
-  // Update injuries list if new injury was added
+  const injuries = useSelector(state => state.injury.injuries);
+  const isLoading = useSelector(state => state.injury.isLoading);
+  const isSaving = useSelector(state => state.injury.isSaving);
+  
+  const patientData = route.params?.patientData;
+  
   useEffect(() => {
     if (route.params?.newInjury) {
       const newInjury = route.params.newInjury;
-      setInjuries(currentInjuries => [
-        ...currentInjuries,
-        { 
-          id: currentInjuries.length + 1, 
-          ...newInjury 
-        }
-      ]);
-      // Clear params after using them
+      const injuryWithUniqueId = {
+        ...newInjury,
+        id: newInjury.id || generateUniqueId()
+      };
+      
+      const isDuplicate = injuries.some(injury => injury.id === injuryWithUniqueId.id);
+      if (isDuplicate) {
+        injuryWithUniqueId.id = generateUniqueId();
+      }
+      
+      dispatch(setInjuries([...injuries, injuryWithUniqueId]));
       navigation.setParams({ newInjury: undefined });
     }
-  }, [route.params?.newInjury]);
+  }, [route.params?.newInjury, dispatch, injuries]);
+  
+  useEffect(() => {
+    if (route.params?.updatedInjury) {
+      const updatedInjury = route.params.updatedInjury;
+      if (!updatedInjury.id) {
+        updatedInjury.id = generateUniqueId();
+      }
+      
+      const updatedInjuries = injuries.map(injury => 
+        injury.id === updatedInjury.id ? updatedInjury : injury
+      );
+      dispatch(setInjuries(updatedInjuries));
+      navigation.setParams({ updatedInjury: undefined });
+    }
+  }, [route.params?.updatedInjury, dispatch, injuries]);
+
+  const handleDeleteInjury = (injury) => {
+    Alert.alert(
+      "Excluir lesão",
+      `Tem certeza que deseja excluir "${injury.location}"?`,
+      [
+        {
+          text: "Cancelar",
+          style: "cancel"
+        },
+        {
+          text: "Excluir",
+          onPress: async () => {
+            try {
+              dispatch(setLoading(true));
+              
+              dispatch(deleteInjury(injury.id));
+              
+              dispatch(setLoading(false));
+            } catch (error) {
+              console.error('Error deleting injury:', error);
+              Alert.alert('Erro', 'Não foi possível excluir a lesão.');
+              dispatch(setLoading(false));
+            }
+          },
+          style: "destructive"
+        }
+      ]
+    );
+  };
+
+  const handleEditInjury = (injury) => {
+    dispatch(resetForm()); 
+    navigation.navigate('AddInjury', { injury });
+  };
+
+  const handleAddNewInjury = () => {
+    // Reset form state before navigating
+    dispatch(resetForm());
+    navigation.navigate('AddInjury');
+  };
+
+  const handleSaveAll = async () => {
+    if (injuries.length === 0) {
+      Alert.alert('Aviso', 'Não há lesões para salvar.');
+      return;
+    }
+    
+    dispatch(setSaving(true));
+    
+    try {
+
+      
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      dispatch(setSaving(false));
+      Alert.alert(
+        'Sucesso', 
+        'Todas as lesões foram salvas com sucesso!',
+        [
+          { 
+            text: 'OK', 
+            onPress: () => {
+              // Pass the injuries back to NovoPaciente screen
+              navigation.navigate('NovoPaciente', { 
+                patientData,
+                injuries
+              });
+            }
+          }
+        ]
+      );
+    } catch (error) {
+      console.error('Error saving injuries:', error);
+      dispatch(setSaving(false));
+      Alert.alert('Erro', 'Ocorreu um erro ao salvar as lesões. Tente novamente.');
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -41,53 +153,104 @@ const InjuryListScreen = ({ navigation, route }) => {
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.navigate('NovoPaciente')}
+            disabled={isSaving}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Registro de lesões</Text>
         </View>
 
-        <ScrollView style={styles.content}>
-          {injuries.length === 0 ? (
-            <View style={styles.emptyState}>
-              <Icon name="healing" size={48} color="#cccccc" />
-              <Text style={styles.emptyStateText}>Nenhuma lesão registrada</Text>
-            </View>
-          ) : (
-            injuries.map((injury) => (
-              <TouchableOpacity
-                key={injury.id}
-                style={styles.injuryCard}
-                onPress={() => navigation.navigate('AddInjury', { injury })}
-              >
-                <View style={styles.injuryContent}>
-                  <Text style={styles.injuryLocation}>Local: {injury.location}</Text>
-                  <Text style={styles.injuryDescription}>{injury.description}</Text>
-                  {injury.photos && injury.photos.length > 0 && (
-                    <Text style={styles.photosInfo}>
-                      <Icon name="photo" size={14} color="#666" /> {injury.photos.length} {injury.photos.length === 1 ? 'foto' : 'fotos'}
+        {isLoading ? (
+          <View style={styles.loadingContainer}>
+            <ActivityIndicator size="large" color="#1e3d59" />
+            <Text style={styles.loadingText}>Carregando...</Text>
+          </View>
+        ) : (
+          <ScrollView style={styles.content}>
+            {injuries.length === 0 ? (
+              <View style={styles.emptyState}>
+                <Icon name="healing" size={48} color="#cccccc" />
+                <Text style={styles.emptyStateText}>Nenhuma lesão registrada</Text>
+              </View>
+            ) : (
+              injuries.map((injury, index) => (
+                <View 
+                  // Use a combination of ID and index to ensure uniqueness
+                  key={injury.id ? `injury-${injury.id}` : `injury-index-${index}`} 
+                  style={styles.injuryCard}
+                >
+                  <TouchableOpacity
+                    style={styles.injuryContent}
+                    onPress={() => handleEditInjury(injury)}
+                  >
+                    <Text style={styles.injuryLocation}>Local: {injury.location}</Text>
+                    <Text style={styles.injuryDescription}>{injury.description}</Text>
+                    {injury.photos && injury.photos.length > 0 && (
+                      <Text style={styles.photosInfo}>
+                        <Icon name="photo" size={14} color="#666" /> {injury.photos.length} {injury.photos.length === 1 ? 'foto' : 'fotos'}
+                      </Text>
+                    )}
+                    <Text style={styles.dateInfo}>
+                      {new Date(injury.date).toLocaleDateString('pt-BR')}
                     </Text>
-                  )}
+                  </TouchableOpacity>
+                  
+                  <View style={styles.injuryActions}>
+                    <TouchableOpacity
+                      style={styles.editButton}
+                      onPress={() => handleEditInjury(injury)}
+                    >
+                      <Icon name="edit" size={20} color="#1e3d59" />
+                    </TouchableOpacity>
+                    
+                    <TouchableOpacity
+                      style={styles.deleteButton}
+                      onPress={() => handleDeleteInjury(injury)}
+                    >
+                      <Icon name="delete" size={20} color="#e74c3c" />
+                    </TouchableOpacity>
+                  </View>
                 </View>
-                <Icon name="chevron-right" size={20} color="#1e3d59" />
-              </TouchableOpacity>
-            ))
-          )}
-        </ScrollView>
+              ))
+            )}
+          </ScrollView>
+        )}
 
-        <TouchableOpacity
-          style={styles.floatingButton}
-          onPress={() => navigation.navigate('AddInjury')}
-        >
-          <Icon name="add" size={24} color="#fff" />
-          <Text style={styles.floatingButtonText}>Registrar lesão</Text>
-        </TouchableOpacity>
+        <View style={styles.buttonContainer}>
+          <TouchableOpacity
+            style={styles.floatingButton}
+            onPress={handleAddNewInjury}
+            disabled={isSaving}
+          >
+            <Icon name="add" size={24} color="#fff" />
+            <Text style={styles.floatingButtonText}>Registrar lesão</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.saveAllButton, isSaving && styles.savingButton]}
+            onPress={handleSaveAll}
+            disabled={isSaving}
+          >
+            {isSaving ? (
+              <>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.saveButtonText}>Salvando...</Text>
+              </>
+            ) : (
+              <>
+                <Icon name="save" size={20} color="#fff" />
+                <Text style={styles.saveButtonText}>Finalizar registro</Text>
+              </>
+            )}
+          </TouchableOpacity>
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
+  // Your existing styles...
   safeArea: {
     flex: 1,
     backgroundColor: '#1e3d59',
@@ -119,6 +282,16 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
   emptyState: {
     flex: 1,
     alignItems: 'center',
@@ -132,7 +305,6 @@ const styles = StyleSheet.create({
   },
   injuryCard: {
     flexDirection: 'row',
-    alignItems: 'center',
     backgroundColor: '#fff',
     padding: 16,
     borderRadius: 8,
@@ -148,6 +320,10 @@ const styles = StyleSheet.create({
   },
   injuryContent: {
     flex: 1,
+  },
+  injuryActions: {
+    justifyContent: 'space-around',
+    padding: 4,
   },
   injuryLocation: {
     fontSize: 16,
@@ -165,29 +341,50 @@ const styles = StyleSheet.create({
     color: '#888',
     marginTop: 4,
   },
+  dateInfo: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 4,
+  },
+  editButton: {
+    padding: 6,
+  },
+  deleteButton: {
+    padding: 6,
+  },
+  buttonContainer: {
+    padding: 16,
+  },
   floatingButton: {
-    position: 'absolute',
-    right: 16,
-    bottom: 16,
     backgroundColor: '#1e3d59',
     flexDirection: 'row',
     alignItems: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 24,
-    elevation: 4,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 8,
   },
   floatingButtonText: {
     color: '#fff',
     marginLeft: 8,
-    fontSize: 14,
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  saveAllButton: {
+    backgroundColor: '#3d8577',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    padding: 12,
+    borderRadius: 8,
+  },
+  savingButton: {
+    backgroundColor: '#888',
+  },
+  saveButtonText: {
+    color: '#fff',
+    marginLeft: 8,
+    fontSize: 16,
     fontWeight: '500',
   },
 });

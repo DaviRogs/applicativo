@@ -6,25 +6,28 @@ import {
   TouchableOpacity,
   SafeAreaView,
   TextInput,
-  ScrollView,
   Platform,
   StatusBar,
   FlatList,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSelector, useDispatch } from 'react-redux';
+import { updateFormField } from  '../../../store/injurySlice';
 
-export const InjuryLocationScreen = ({ navigation, route }) => {
+
+export const InjuryLocationScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLocation, setSelectedLocation] = useState('');
+  const dispatch = useDispatch();
   
-  // Load current location if editing
+  const currentLocation = useSelector(state => state.injury.formState.location);
+  const [selectedLocation, setSelectedLocation] = useState(currentLocation || '');
+  
   useEffect(() => {
-    if (route.params?.currentLocation) {
-      setSelectedLocation(route.params.currentLocation);
+    if (currentLocation) {
+      setSelectedLocation(currentLocation);
     }
-  }, [route.params?.currentLocation]);
+  }, [currentLocation]);
 
-  // Comprehensive list of body locations
   const allLocations = [
     { id: 1, name: 'Cabeça' },
     { id: 2, name: 'Face' },
@@ -59,21 +62,23 @@ export const InjuryLocationScreen = ({ navigation, route }) => {
     { id: 31, name: 'Pé esquerdo' },
   ];
 
-  // Filter locations based on search query
   const filteredLocations = searchQuery
     ? allLocations.filter(location =>
         location.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : allLocations;
 
-  // Save selected location and navigate back
   const handleSaveLocation = () => {
     if (selectedLocation) {
-      navigation.navigate('AddInjury', { selectedLocation });
+      dispatch(updateFormField({
+        field: 'location',
+        value: selectedLocation,
+      }));
+      
+      navigation.navigate('AddInjury');
     }
   };
 
-  // Render each location item
   const renderLocationItem = ({ item }) => (
     <TouchableOpacity
       style={[
@@ -168,6 +173,7 @@ export const InjuryLocationScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
+  // Keeping your existing styles
   safeArea: {
     flex: 1,
     backgroundColor: '#1e3d59',
@@ -278,3 +284,5 @@ const styles = StyleSheet.create({
     fontWeight: '500',
   },
 });
+
+export default InjuryLocationScreen;

@@ -13,12 +13,15 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useSelector } from 'react-redux';
 
 const CameraScreen = ({ navigation }) => {
   const [cameraPermission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState('back');
   const [loading, setLoading] = useState(false);
   const cameraRef = useRef(null);
+  
+
 
   const toggleCameraFacing = () => {
     setFacing(current => (current === 'back' ? 'front' : 'back'));

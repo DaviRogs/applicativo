@@ -7,19 +7,28 @@ import {
   SafeAreaView,
   Alert,
   Platform,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { injuryService } from './lesoes/injuryService';
 
 const NovoPacienteScreen = ({ navigation, route }) => {
   const [patientData, setPatientData] = useState(null);
+  const [injuries, setInjuries] = useState([]);
+  const [isSaving, setIsSaving] = useState(false);
   
   useEffect(() => {
     if (route.params && route.params.atendimentoData) {
       setPatientData(route.params.atendimentoData);
     }
   }, [route.params]);
+  
+  useEffect(() => {
+    if (route.params && route.params.injuries) {
+      setInjuries(route.params.injuries);
+    }
+  }, [route.params?.injuries]);
 
-  // Format CPF for display
   const formatDisplayCpf = (cpf) => {
     if (!cpf) return '';
     cpf = cpf.replace(/\D/g, '');
@@ -30,14 +39,37 @@ const NovoPacienteScreen = ({ navigation, route }) => {
   };
 
   const handleEditPatient = () => {
-    // Navigate back to NovoAtendimentoScreen with the current patient data for editing
     navigation.navigate('NovoAtendimento', { patientData });
   };
 
-  const handleSaveChanges = () => {
-    Alert.alert('Sucesso', 'Alterações salvas com sucesso!', [
-      { text: 'OK', onPress: () => navigation.navigate('Home') }
-    ]);
+  const handleSaveChanges = async () => {
+    try {
+      setIsSaving(true);
+      
+ 
+      const finalData = {
+        patient: patientData,
+        // Other data from other screens would be added here
+      };
+      
+  
+      if (injuries && injuries.length > 0) {
+        // Call API to save injuries
+        await injuryService.saveInjuries(injuries, patientData);
+      }
+      
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      setIsSaving(false);
+      Alert.alert('Sucesso', 'Atendimento registrado com sucesso!', [
+        { text: 'OK', onPress: () => navigation.navigate('Home') }
+      ]);
+    } catch (error) {
+      setIsSaving(false);
+      console.error('Error saving patient data:', error);
+      Alert.alert('Erro', 'Ocorreu um erro ao salvar os dados. Por favor, tente novamente.');
+    }
   };
 
   return (
@@ -46,6 +78,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
         <TouchableOpacity 
           style={styles.backButton}
           onPress={() => navigation.goBack()}
+          disabled={isSaving}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
@@ -64,7 +97,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity onPress={handleEditPatient}>
+            <TouchableOpacity onPress={handleEditPatient} disabled={isSaving}>
               <Icon name="edit" size={20} color="#666" />
             </TouchableOpacity>
           </View>
@@ -77,6 +110,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
         <TouchableOpacity 
           style={styles.menuItem}
           onPress={() => navigation.navigate('ConsentTerm', { patientData })}
+          disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Termo de consentimento</Text>
           <Icon name="chevron-right" size={24} color="#666" />
@@ -85,6 +119,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
         <TouchableOpacity 
           style={styles.menuItem} 
           onPress={() => navigation.navigate('Anamnesis', { patientData })}
+          disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Anamnese</Text>
           <Icon name="chevron-right" size={24} color="#666" />
@@ -93,16 +128,30 @@ const NovoPacienteScreen = ({ navigation, route }) => {
         <TouchableOpacity 
           style={styles.menuItem} 
           onPress={() => navigation.navigate('InjuryList', { patientData })}
+          disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Registro de lesões</Text>
+          {injuries && injuries.length > 0 && (
+            <View style={styles.badge}>
+              <Text style={styles.badgeText}>{injuries.length}</Text>
+            </View>
+          )}
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.saveButton}
+          style={[styles.saveButton, isSaving && styles.savingButton]}
           onPress={handleSaveChanges}
+          disabled={isSaving}
         >
-          <Text style={styles.saveButtonText}>Salvar alterações</Text>
+          {isSaving ? (
+            <>
+              <ActivityIndicator size="small" color="#fff" style={styles.activityIndicator} />
+              <Text style={styles.saveButtonText}>Salvando...</Text>
+            </>
+          ) : (
+            <Text style={styles.saveButtonText}>Salvar alterações</Text>
+          )}
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -196,6 +245,22 @@ const styles = StyleSheet.create({
   menuItemText: {
     fontSize: 16,
     color: '#333',
+    flex: 1,
+  },
+  badge: {
+    backgroundColor: '#e74c3c',
+    borderRadius: 12,
+    minWidth: 24,
+    height: 24,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 8,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: 'bold',
+    paddingHorizontal: 6,
   },
   saveButton: {
     backgroundColor: '#1e3d59',
@@ -204,11 +269,19 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 'auto',
     marginBottom: 16,
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  savingButton: {
+    backgroundColor: '#888',
   },
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
     fontWeight: '500',
+  },
+  activityIndicator: {
+    marginRight: 8,
   },
 });
 
