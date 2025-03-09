@@ -94,6 +94,37 @@ const AddInjuryScreen = ({ navigation, route }) => {
     );
   };
 
+  const handleSave = () => {
+    if (!validateForm()) return;
+    
+    dispatch(setSaving(true));
+    
+    const injuryData = {
+      id: isEditing ? injuryId : generateUniqueId(),
+      location,
+      description,
+      photos,
+      title: location, // Using location as title
+      date: new Date().toISOString(),
+    };
+  
+    setTimeout(() => {
+      dispatch(setSaving(false));
+      
+      if (isEditing) {
+        dispatch(updateInjury(injuryData));
+      } else {
+        dispatch(addInjury(injuryData));
+      }
+      
+      // Navigate without passing injury data - we'll use Redux state instead
+      navigation.navigate('InjuryList');
+      
+      // Reset form after saving
+      dispatch(resetForm());
+    }, 500);
+  };
+
   const validateForm = () => {
     if (!location) {
       Alert.alert('Erro', 'Por favor, selecione o local da lesão');
@@ -108,35 +139,6 @@ const AddInjuryScreen = ({ navigation, route }) => {
     return true;
   };
 
-  const handleSave = () => {
-    if (!validateForm()) return;
-    
-    dispatch(setSaving(true));
-    
-    const injuryData = {
-      id: isEditing ? injuryId : generateUniqueId(),
-      location,
-      description,
-      photos,
-      title: location,
-      date: new Date().toISOString(),
-    };
-
-    setTimeout(() => {
-      dispatch(setSaving(false));
-      
-      if (isEditing) {
-        dispatch(updateInjury(injuryData));
-        navigation.navigate('InjuryList', { updatedInjury: injuryData });
-      } else {
-        dispatch(addInjury(injuryData));
-        navigation.navigate('InjuryList', { newInjury: injuryData });
-      }
-      
-      // Reset form after saving
-      dispatch(resetForm());
-    }, 500);
-  };
 
   const viewPhoto = (photo, index) => {
     navigation.navigate('PhotoPreview', { 

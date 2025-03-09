@@ -35,38 +35,38 @@ const InjuryListScreen = ({ navigation, route }) => {
   
   const patientData = route.params?.patientData;
   
-  useEffect(() => {
-    if (route.params?.newInjury) {
-      const newInjury = route.params.newInjury;
-      const injuryWithUniqueId = {
-        ...newInjury,
-        id: newInjury.id || generateUniqueId()
-      };
+  // useEffect(() => {
+  //   if (route.params?.newInjury) {
+  //     const newInjury = route.params.newInjury;
+  //     const injuryWithUniqueId = {
+  //       ...newInjury,
+  //       id: newInjury.id || generateUniqueId()
+  //     };
       
-      const isDuplicate = injuries.some(injury => injury.id === injuryWithUniqueId.id);
-      if (isDuplicate) {
-        injuryWithUniqueId.id = generateUniqueId();
-      }
+  //     const isDuplicate = injuries.some(injury => injury.id === injuryWithUniqueId.id);
+  //     if (isDuplicate) {
+  //       injuryWithUniqueId.id = generateUniqueId();
+  //     }
       
-      dispatch(setInjuries([...injuries, injuryWithUniqueId]));
-      navigation.setParams({ newInjury: undefined });
-    }
-  }, [route.params?.newInjury, dispatch, injuries]);
+  //     dispatch(setInjuries([...injuries, injuryWithUniqueId]));
+  //     navigation.setParams({ newInjury: undefined });
+  //   }
+  // }, [route.params?.newInjury, dispatch, injuries]);
   
-  useEffect(() => {
-    if (route.params?.updatedInjury) {
-      const updatedInjury = route.params.updatedInjury;
-      if (!updatedInjury.id) {
-        updatedInjury.id = generateUniqueId();
-      }
+  // useEffect(() => {
+  //   if (route.params?.updatedInjury) {
+  //     const updatedInjury = route.params.updatedInjury;
+  //     if (!updatedInjury.id) {
+  //       updatedInjury.id = generateUniqueId();
+  //     }
       
-      const updatedInjuries = injuries.map(injury => 
-        injury.id === updatedInjury.id ? updatedInjury : injury
-      );
-      dispatch(setInjuries(updatedInjuries));
-      navigation.setParams({ updatedInjury: undefined });
-    }
-  }, [route.params?.updatedInjury, dispatch, injuries]);
+  //     const updatedInjuries = injuries.map(injury => 
+  //       injury.id === updatedInjury.id ? updatedInjury : injury
+  //     );
+  //     dispatch(setInjuries(updatedInjuries));
+  //     navigation.setParams({ updatedInjury: undefined });
+  //   }
+  // }, [route.params?.updatedInjury, dispatch, injuries]);
 
   const handleDeleteInjury = (injury) => {
     Alert.alert(

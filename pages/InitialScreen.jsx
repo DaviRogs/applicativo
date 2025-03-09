@@ -57,12 +57,13 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '100%',
   },
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'flex-end',
-    paddingVertical: 50,
-  },
+      overlay: {
+        flex: 1,
+        backgroundColor: 'rgba(26, 69, 104, 0.5)',
+        justifyContent: 'flex-end',
+        paddingVertical: 50,
+      },
+
   logoContainer: {
     flexDirection: 'row',
     justifyContent: 'center',
