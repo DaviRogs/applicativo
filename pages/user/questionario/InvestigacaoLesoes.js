@@ -204,12 +204,13 @@ const InvestigacaoLesoes = () => {
         </View>
 
         <View style={styles.infoBox}>
-          <Icon name="info-outline" size={20} color="#1e3d59" style={styles.infoIcon} />
-          <Text style={styles.infoText}>
-            Lembre-se: é importante procurar um dermatologista regularmente para exames de pele,
-            especialmente se você notar qualquer alteração em pintas ou manchas existentes.
-          </Text>
+        <Icon name="info-outline" size={20} color="#1e3d59" style={styles.infoIcon} />
+        <Text style={styles.infoText}>
+            Atenção: Oriente os pacientes a procurarem um dermatologista regularmente para exames de pele, 
+            especialmente se houver qualquer alteração em pintas ou manchas existentes.
+        </Text>
         </View>
+
 
         <View style={styles.navigationButtons}>
           <TouchableOpacity 

@@ -4,6 +4,7 @@ import authSlice from './authSlice';
 import userSlice from './userSlice';
 import injuryReducer from './injurySlice';
 import anamnesisReducer from './anamnesisSlice';
+import consentTermReducer from './consentTermSlice';
 
 
 
@@ -13,6 +14,8 @@ const store = configureStore({
     user: userSlice,
     injury: injuryReducer,
     anamnesis: anamnesisReducer,
+    consentTerm: consentTermReducer,
+
 
   },
   middleware: (getDefaultMiddleware) =>

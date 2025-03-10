@@ -16,57 +16,62 @@ const ResultadoAnamnese = () => {
   const anamnesisData = useSelector(state => state.anamnesis);
   
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={() => navigation.navigate('Home')}
-        >
-          <Icon name="arrow-back" size={24} color="#fff" />
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>Anamnese Concluída</Text>
+<SafeAreaView style={styles.container}>
+  <View style={styles.header}>
+    <TouchableOpacity 
+      style={styles.backButton}
+      onPress={() => navigation.navigate('Home')}
+    >
+      <Icon name="arrow-back" size={24} color="#fff" />
+    </TouchableOpacity>
+    <Text style={styles.headerTitle}>Anamnese Concluída</Text>
+  </View>
+
+  <ScrollView style={styles.content}>
+    <View style={styles.successCard}>
+      <Icon name="check-circle" size={60} color="#1e8e3e" />
+      <Text style={styles.successTitle}>Coleta de Dados Concluída</Text>
+      <Text style={styles.successText}>
+        As informações foram registradas com sucesso e serão analisadas para aprimorar o atendimento e 
+        auxiliar em futuras avaliações médicas.
+      </Text>
+    </View>
+
+    <View style={styles.infoCard}>
+      <Text style={styles.infoTitle}>Próximos Passos</Text>
+      <View style={styles.infoItem}>
+        <Icon name="event" size={24} color="#1e3d59" />
+        <Text style={styles.infoText}>
+          Os dados coletados serão avaliados e utilizados para melhorar a qualidade do atendimento e 
+          acompanhamento dos pacientes.
+        </Text>
       </View>
+      <View style={styles.infoItem}>
+        <Icon name="description" size={24} color="#1e3d59" />
+        <Text style={styles.infoText}>
+          As informações preenchidas poderão auxiliar profissionais de saúde na tomada de decisões 
+          futuras.
+        </Text>
+      </View>
+      <View style={styles.infoItem}>
+        <Icon name="photo-camera" size={24} color="#1e3d59" />
+        <Text style={styles.infoText}>
+          Se possível, registre imagens de lesões ou manchas para contribuir com a avaliação médica e 
+          acompanhamento adequado.
+        </Text>
+      </View>
+    </View>
 
-      <ScrollView style={styles.content}>
-        <View style={styles.successCard}>
-          <Icon name="check-circle" size={60} color="#1e8e3e" />
-          <Text style={styles.successTitle}>Questionário Concluído</Text>
-          <Text style={styles.successText}>
-            Obrigado por completar o questionário de anamnese. Suas respostas foram salvas com sucesso e 
-            serão analisadas pelo nosso time médico.
-          </Text>
-        </View>
+    <TouchableOpacity 
+      style={styles.homeButton}
+      onPress={() => navigation.navigate('Home')}
+    >
+      <Text style={styles.homeButtonText}>Voltar para o início</Text>
+    </TouchableOpacity>
+  </ScrollView>
+</SafeAreaView>
 
-        <View style={styles.infoCard}>
-          <Text style={styles.infoTitle}>Próximos Passos</Text>
-          <View style={styles.infoItem}>
-            <Icon name="event" size={24} color="#1e3d59" />
-            <Text style={styles.infoText}>
-              Aguarde o contato da nossa equipe para o agendamento da sua consulta dermatológica.
-            </Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Icon name="description" size={24} color="#1e3d59" />
-            <Text style={styles.infoText}>
-              As informações fornecidas serão utilizadas pelo médico durante sua consulta.
-            </Text>
-          </View>
-          <View style={styles.infoItem}>
-            <Icon name="photo-camera" size={24} color="#1e3d59" />
-            <Text style={styles.infoText}>
-              Se possível, tire fotos de lesões ou manchas suspeitas para mostrar ao médico.
-            </Text>
-          </View>
-        </View>
 
-        <TouchableOpacity 
-          style={styles.homeButton}
-          onPress={() => navigation.navigate('Home')}
-        >
-          <Text style={styles.homeButtonText}>Voltar para o início</Text>
-        </TouchableOpacity>
-      </ScrollView>
-    </SafeAreaView>
   );
 };
 

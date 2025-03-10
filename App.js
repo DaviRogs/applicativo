@@ -55,6 +55,14 @@ import FatoresRisco from './pages/user/questionario/FatoresRisco';
 import InvestigacaoLesoes from './pages/user/questionario/InvestigacaoLesoes';
 import ResultadoAnamnese from './pages/user/questionario/ResultadoAnamnese';
 
+
+//consent
+
+import ConsentTermScreen from './pages/user/consent/ConsentTermScreen';
+import SignatureCameraScreen from './pages/user/consent/SignatureCameraScreen';
+import SignaturePreviewScreen from './pages/user/consent/SignaturePreviewScreen';
+
+
 const Stack = createNativeStackNavigator();
 const navigationRef = React.createRef(); 
 
@@ -157,6 +165,12 @@ const AppContent = () => {
         <Stack.Screen name="FatoresRisco" component={FatoresRisco} />
         <Stack.Screen name="InvestigacaoLesoes" component={InvestigacaoLesoes} />
         <Stack.Screen name="ResultadoAnamnese" component={ResultadoAnamnese} />
+
+        {/* consent */}
+        <Stack.Screen name="ConsentTerm" component={ConsentTermScreen} />
+        <Stack.Screen name="SignatureCamera" component={SignatureCameraScreen} />
+        <Stack.Screen name="SignaturePreview" component={SignaturePreviewScreen} />
+
 
         </>
       )}

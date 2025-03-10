@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useSelector } from 'react-redux';
 import { injuryService } from './lesoes/injuryService';
 
 const NovoPacienteScreen = ({ navigation, route }) => {
@@ -17,17 +18,33 @@ const NovoPacienteScreen = ({ navigation, route }) => {
   const [injuries, setInjuries] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   
+  const { signaturePhoto, hasConsented, signatureDate } = useSelector(state => state.consentTerm);
+  
+  const reduxInjuries = useSelector(state => state.injury.injuries);
+
   useEffect(() => {
     if (route.params && route.params.atendimentoData) {
       setPatientData(route.params.atendimentoData);
     }
-  }, [route.params]);
+  }, [route.params?.atendimentoData]);
   
   useEffect(() => {
     if (route.params && route.params.injuries) {
       setInjuries(route.params.injuries);
     }
   }, [route.params?.injuries]);
+
+  useEffect(() => {
+    if (route.params?.consentSigned) {
+      navigation.setParams({ consentSigned: undefined });
+    }
+  }, [route.params?.consentSigned]);
+
+  useEffect(() => {
+    if (injuries.length === 0 && reduxInjuries.length > 0) {
+      setInjuries(reduxInjuries);
+    }
+  }, [injuries, reduxInjuries]);
 
   const formatDisplayCpf = (cpf) => {
     if (!cpf) return '';
@@ -42,23 +59,42 @@ const NovoPacienteScreen = ({ navigation, route }) => {
     navigation.navigate('NovoAtendimento', { patientData });
   };
 
+  const validateRequiredFields = () => {
+    if (!hasConsented || !signaturePhoto) {
+      Alert.alert('Aviso', 'É necessário assinar o termo de consentimento antes de continuar.');
+      return false;
+    }
+    
+    
+    return true;
+  };
+
   const handleSaveChanges = async () => {
+    if (!validateRequiredFields()) {
+      return;
+    }
+    
     try {
       setIsSaving(true);
       
- 
       const finalData = {
         patient: patientData,
-        // Other data from other screens would be added here
+        consent: {
+          signatureDate,
+          hasConsented,
+          signaturePhotoUri: signaturePhoto?.uri
+        },
+        injuries: injuries,
       };
       
-  
+      console.log('Saving complete patient data:', finalData);
+      
+      // Call API services to save data
       if (injuries && injuries.length > 0) {
-        // Call API to save injuries
         await injuryService.saveInjuries(injuries, patientData);
       }
       
-      // Simulate API delay
+
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       setIsSaving(false);
@@ -113,6 +149,15 @@ const NovoPacienteScreen = ({ navigation, route }) => {
           disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Termo de consentimento</Text>
+          {hasConsented && signaturePhoto ? (
+            <View style={styles.completedBadge}>
+              <Icon name="check-circle" size={20} color="#27ae60" />
+            </View>
+          ) : (
+            <View style={styles.requiredBadge}>
+              <Text style={styles.requiredText}>Obrigatório</Text>
+            </View>
+          )}
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
 
@@ -140,9 +185,13 @@ const NovoPacienteScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={[styles.saveButton, isSaving && styles.savingButton]}
+          style={[
+            styles.saveButton, 
+            isSaving ? styles.savingButton : 
+              (!hasConsented || !signaturePhoto) ? styles.disabledButton : null
+          ]}
           onPress={handleSaveChanges}
-          disabled={isSaving}
+          disabled={isSaving || !hasConsented || !signaturePhoto}
         >
           {isSaving ? (
             <>
@@ -262,6 +311,21 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     paddingHorizontal: 6,
   },
+  completedBadge: {
+    marginRight: 8,
+  },
+  requiredBadge: {
+    backgroundColor: '#f39c12',
+    borderRadius: 4,
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    marginRight: 8,
+  },
+  requiredText: {
+    color: '#fff',
+    fontSize: 10,
+    fontWeight: 'bold',
+  },
   saveButton: {
     backgroundColor: '#1e3d59',
     padding: 16,
@@ -274,6 +338,9 @@ const styles = StyleSheet.create({
   },
   savingButton: {
     backgroundColor: '#888',
+  },
+  disabledButton: {
+    backgroundColor: '#cccccc',
   },
   saveButtonText: {
     color: '#fff',
