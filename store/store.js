@@ -3,6 +3,7 @@ import { configureStore } from '@reduxjs/toolkit';
 import authSlice from './authSlice';
 import userSlice from './userSlice';
 import injuryReducer from './injurySlice';
+import anamnesisReducer from './anamnesisSlice';
 
 
 
@@ -11,6 +12,8 @@ const store = configureStore({
     auth: authSlice,
     user: userSlice,
     injury: injuryReducer,
+    anamnesis: anamnesisReducer,
+
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({

@@ -118,7 +118,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
 
         <TouchableOpacity 
           style={styles.menuItem} 
-          onPress={() => navigation.navigate('Anamnesis', { patientData })}
+          onPress={() => navigation.navigate('QuestoesGeraisSaude', { patientData })}
           disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Anamnese</Text>

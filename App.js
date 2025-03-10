@@ -27,7 +27,6 @@ import InitialScreen from './pages/InitialScreen';
 import HomeScreen from './pages/user/HomeScreen';
 import NovoAtendimentoScreen from './pages/user/NovoAtendimentoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
-import AnamnesisScreen from './pages/user/AnamnesisScreen';
 
 // Admin imports
 import HomeAdminScreen from './pages/admin/HomeAdminScreen';
@@ -46,6 +45,15 @@ import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 import HealthUnitListScreen from './pages/unidadeSaude/HealthUnitListScreen'; 
 import RegisterHealthUnitScreen from './pages/unidadeSaude/RegisterHealthUnitScreen';
 import {EditHealthUnitScreen}  from './pages/unidadeSaude/EditHealthUnitScreen';
+
+
+//questionario
+import QuestoesGeraisSaude from './pages/user/questionario/QuestoesGeraisSaude';
+import AvaliacaoFototipo from './pages/user/questionario/AvaliacaoFototipo';
+import HistoricoCancer from './pages/user/questionario/HistoricoCancer';
+import FatoresRisco from './pages/user/questionario/FatoresRisco';
+import InvestigacaoLesoes from './pages/user/questionario/InvestigacaoLesoes';
+import ResultadoAnamnese from './pages/user/questionario/ResultadoAnamnese';
 
 const Stack = createNativeStackNavigator();
 const navigationRef = React.createRef(); 
@@ -135,13 +143,20 @@ const AppContent = () => {
           )}
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
-          <Stack.Screen name="Anamnesis" component={AnamnesisScreen} />
+          {/* <Stack.Screen name="Anamnesis" component={AnamnesisScreen} /> */}
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
           <Stack.Screen name="InjuryList" component={InjuryListScreen} />
           <Stack.Screen name="AddInjury" component={AddInjuryScreen} />
           <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
           <Stack.Screen name="Camera" component={CameraScreen} />
           <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
+          {/* questionario */}
+        <Stack.Screen name="QuestoesGeraisSaude" component={QuestoesGeraisSaude} />
+        <Stack.Screen name="AvaliacaoFototipo" component={AvaliacaoFototipo} />
+        <Stack.Screen name="HistoricoCancer" component={HistoricoCancer} />
+        <Stack.Screen name="FatoresRisco" component={FatoresRisco} />
+        <Stack.Screen name="InvestigacaoLesoes" component={InvestigacaoLesoes} />
+        <Stack.Screen name="ResultadoAnamnese" component={ResultadoAnamnese} />
 
         </>
       )}

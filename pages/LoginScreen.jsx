@@ -26,7 +26,7 @@ const LoginScreen = ({ navigation }) => {
   
   const logo1 = require('../assets/logo1.png');
   const logo2 = require('../assets/logo2.png');
-  const logo3 = require('../assets/logo3.png');
+  const dermaAlert = require('../assets/dermaalert.png');
 
   const showError = (message) => {
     if (Platform.OS === 'web') {
@@ -86,7 +86,7 @@ const LoginScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.logoContainer}>
-          <Image source={logo3} style={styles.logo} />
+          <Image source={dermaAlert} style={styles.logo} />
         </View>
 
         <View style={styles.formContainer}>
@@ -155,7 +155,8 @@ const LoginScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor:'#FCFCFC'
+
   },
   scrollContainer: {
     flexGrow: 1,
@@ -181,17 +182,16 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: 20,
-    marginTop: 20,
-    marginBottom: 40,
+    // gap: 20,
+    // marginTop: 20,
+    // marginBottom: 40,
   },
   logo: {
     width: "100%",
     height: 280,
     resizeMode: 'contain',
-    backgroundColor: '#f0f0f0', 
-    borderWidth: 1, 
-    borderColor: '#ccc', 
+    backgroundColor:'FCFCFC',
+    borderWidth: 0, 
   },
   formContainer: {
     padding: 16,
