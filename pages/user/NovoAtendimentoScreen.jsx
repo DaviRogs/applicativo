@@ -419,6 +419,27 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
           )}
 
           <View style={styles.inputGroup}>
+            <Text style={styles.label}>CPF <Text style={styles.required}>*</Text></Text>
+            <View style={styles.cpfContainer}>
+            <TextInput
+              style={[styles.input, styles.cpfInput, errors.cpf_paciente && styles.inputError]}
+              placeholder="ex.: 987.654.321-00"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              value={formData.cpf_paciente}
+              onChangeText={(text) => handleInputChange('cpf_paciente', text)}
+              maxLength={14} 
+            />
+            {checkingCpf && (
+              <ActivityIndicator size="small" color="#1e3d59" style={styles.cpfIndicator} />
+            )}
+          </View>
+            {errors.cpf_paciente && (
+              <Text style={styles.errorText}>{errors.cpf_paciente}</Text>
+            )}
+          </View>
+
+          <View style={styles.inputGroup}>
             <Text style={styles.label}>Nome do paciente <Text style={styles.required}>*</Text></Text>
             <TextInput
               style={[styles.input, errors.nome_paciente && styles.inputError]}
@@ -496,7 +517,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
                   formData.sexo === 'Masculino' && styles.radioSelected
                 ]} />
                 <Text style={styles.radioText}>Masculino</Text>
-              </TouchableOpacity>
+              </TouchableOpacity>cpfC
 
               <TouchableOpacity 
                 style={styles.radioOption}
@@ -527,26 +548,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
             )}
           </View>
 
-          <View style={styles.inputGroup}>
-            <Text style={styles.label}>CPF <Text style={styles.required}>*</Text></Text>
-            <View style={styles.cpfContainer}>
-              <TextInput
-                style={[styles.input, errors.cpf_paciente && styles.inputError]}
-                placeholder="ex.: 987.654.321-00"
-                placeholderTextColor="#999"
-                keyboardType="numeric"
-                value={formData.cpf_paciente}
-                onChangeText={(text) => handleInputChange('cpf_paciente', text)}
-                maxLength={14} // 123.456.789-00 (14 characters with formatting)
-              />
-              {checkingCpf && (
-                <ActivityIndicator size="small" color="#1e3d59" style={styles.cpfIndicator} />
-              )}
-            </View>
-            {errors.cpf_paciente && (
-              <Text style={styles.errorText}>{errors.cpf_paciente}</Text>
-            )}
-          </View>
+
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Número do Cartão SUS <Text style={styles.required}>*</Text></Text>
@@ -771,14 +773,17 @@ const styles = StyleSheet.create({
   cpfContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    width: '100%',
+  },
+  cpfInput: {
+    flex: 1, 
   },
   cpfIndicator: {
-    position: 'absolute',
-    right: 8,
+    marginLeft: 8, 
   },
   submitButton: {
     backgroundColor: '#1e3d59',
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 16,

@@ -64,7 +64,7 @@ const ResultadoAnamnese = () => {
 
     <TouchableOpacity 
       style={styles.homeButton}
-      onPress={() => navigation.navigate('Home')}
+      onPress={() => navigation.navigate('NovoPaciente')}
     >
       <Text style={styles.homeButtonText}>Voltar para o início</Text>
     </TouchableOpacity>

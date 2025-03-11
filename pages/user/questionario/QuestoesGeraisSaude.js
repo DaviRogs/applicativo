@@ -437,7 +437,7 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   radioGroup: {
-    flexDirection: 'row',
+    flexDirection: 'column',
     marginBottom: 8,
   },
   radioOption: {

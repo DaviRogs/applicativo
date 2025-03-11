@@ -284,7 +284,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    padding: 16,
+    padding: 12,
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
@@ -293,7 +293,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: '#1e3d59',
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
   },
   newAttendanceText: {

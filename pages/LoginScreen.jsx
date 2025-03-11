@@ -227,7 +227,7 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: '#1A4568',
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12,
@@ -240,7 +240,7 @@ const styles = StyleSheet.create({
   cancelButton: {
     borderWidth: 1,
     borderColor: '#1e3d59',
-    padding: 12,
+    padding: 10,
     borderRadius: 8,
     alignItems: 'center',
   },
