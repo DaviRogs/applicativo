@@ -5,8 +5,9 @@ import userSlice from './userSlice';
 import injuryReducer from './injurySlice';
 import anamnesisReducer from './anamnesisSlice';
 import consentTermReducer from './consentTermSlice';
-
-
+import formSubmissionReducer from './formSubmissionSlice';
+import formValidationMiddleware from './formValidationMiddleware';
+import patientSlice from './patientSlice';
 
 const store = configureStore({
   reducer: {
@@ -15,13 +16,13 @@ const store = configureStore({
     injury: injuryReducer,
     anamnesis: anamnesisReducer,
     consentTerm: consentTermReducer,
-
-
+    formSubmission: formSubmissionReducer,
+    patient: patientSlice
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
       serializableCheck: false, 
-    }),
+    }).concat(formValidationMiddleware)  
 });
 
 export default store;

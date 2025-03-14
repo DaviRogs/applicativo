@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -28,10 +28,8 @@ const ConsentTermScreen = ({ navigation, route }) => {
     signatureDate, 
     patientName, 
     patientId,
-    isConsentAgreed, 
     loading 
   } = useSelector(state => state.consentTerm);
-  const [readTerms, setReadTerms] = useState(false);
   
   // Extract patient data from route params
   useEffect(() => {
@@ -73,7 +71,10 @@ const ConsentTermScreen = ({ navigation, route }) => {
         { 
           text: "Remover", 
           style: "destructive",
-          onPress: () => dispatch(removeSignaturePhoto())
+          onPress: () => {
+            dispatch(removeSignaturePhoto());
+            dispatch(setConsentAgreed(false));
+          }
         }
       ]
     );
@@ -85,12 +86,8 @@ const ConsentTermScreen = ({ navigation, route }) => {
       return;
     }
     
-    if (!readTerms) {
-      Alert.alert("Aviso", "É necessário ler o termo de consentimento antes de prosseguir.");
-      return;
-    }
-
     dispatch(setLoading(true));
+    dispatch(setConsentAgreed(true));
     
     // Simulating API call to save consent
     setTimeout(() => {
@@ -100,10 +97,47 @@ const ConsentTermScreen = ({ navigation, route }) => {
         "Termo de consentimento salvo com sucesso!",
         [{ 
           text: "OK", 
-          onPress: () => navigation.navigate('NovoPaciente', { consentSigned: true }) 
+          onPress: () => {
+            if (navigation.canGoBack()) {
+              navigation.navigate('NovoPaciente', { consentSigned: true });
+            } else {
+              navigation.replace('NovoPaciente', { consentSigned: true });
+            }
+          }
         }]
       );
     }, 1000);
+  };
+
+  const handleBackPress = () => {
+    if (loading) return;
+    
+    if (signaturePhoto) {
+      Alert.alert(
+        "Sair sem salvar?",
+        "Você fez alterações que não foram salvas. Deseja sair sem salvar?",
+        [
+          { text: "Continuar editando", style: "cancel" },
+          { 
+            text: "Sair sem salvar", 
+            style: "destructive",
+            onPress: () => {
+              if (navigation.canGoBack()) {
+                navigation.goBack();
+              } else {
+                navigation.navigate('NovoPaciente');
+              }
+            }
+          }
+        ]
+      );
+    } else {
+      if (navigation.canGoBack()) {
+        navigation.goBack();
+      } else {
+        navigation.navigate('NovoPaciente');
+      }
+    }
   };
 
   const formatDate = (dateString) => {
@@ -123,7 +157,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={handleBackPress}
           disabled={loading}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
@@ -134,15 +168,6 @@ const ConsentTermScreen = ({ navigation, route }) => {
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
-        onScroll={({ nativeEvent }) => {
-          const { layoutMeasurement, contentOffset, contentSize } = nativeEvent;
-          const paddingToBottom = 20;
-          if (layoutMeasurement.height + contentOffset.y >= 
-              contentSize.height - paddingToBottom) {
-            setReadTerms(true);
-          }
-        }}
-        scrollEventThrottle={400}
       >
         <View style={styles.termContainer}>
           <Text style={styles.termTitle}>
@@ -224,22 +249,16 @@ const ConsentTermScreen = ({ navigation, route }) => {
             </TouchableOpacity>
           )}
         </View>
-        
-        {!readTerms && (
-          <Text style={styles.scrollPrompt}>
-            Role até o final para ler todo o termo
-          </Text>
-        )}
       </ScrollView>
 
       <View style={styles.footer}>
         <TouchableOpacity
           style={[
             styles.saveButton, 
-            (!signaturePhoto || !readTerms || loading) && styles.disabledButton
+            (!signaturePhoto || loading) && styles.disabledButton
           ]}
           onPress={handleSaveConsent}
-          disabled={!signaturePhoto || !readTerms || loading}
+          disabled={!signaturePhoto || loading}
         >
           {loading ? (
             <>
@@ -264,13 +283,14 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: Platform.OS === 'ios' ? 44 : 26,
-    height: Platform.OS === 'ios' ? 90 : 90,
+    paddingTop: Platform.OS === 'ios' ? 44 : 20,
+    paddingBottom: 16,
+    height: Platform.OS === 'ios' ? 90 : 80,
     paddingHorizontal: 16,
   },
   backButton: {
     marginRight: 16,
-    padding: 4,
+    padding: 8,
   },
   headerTitle: {
     color: '#fff',
@@ -285,7 +305,7 @@ const styles = StyleSheet.create({
     paddingBottom: 32,
   },
   termContainer: {
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#f8f9fa',
     padding: 16,
     borderRadius: 8,
     borderWidth: 1,
@@ -373,13 +393,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     marginTop: 8,
   },
-  scrollPrompt: {
-    textAlign: 'center',
-    color: '#888',
-    fontSize: 14,
-    fontStyle: 'italic',
-    marginTop: 16,
-  },
   footer: {
     padding: 16,
     borderTopWidth: 1,
@@ -395,7 +408,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
   },
   disabledButton: {
-    backgroundColor: '#cccccc',
+    backgroundColor: '#b3c1cc',
   },
   saveButtonText: {
     color: '#fff',

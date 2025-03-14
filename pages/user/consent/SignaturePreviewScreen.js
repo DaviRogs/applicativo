@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,35 +8,92 @@ import {
   SafeAreaView,
   Platform,
   StatusBar,
+  BackHandler,
+  Alert
 } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { setSignaturePhoto } from '../../../store/consentTermSlice';
+import { setSignaturePhoto, setConsentAgreed } from '../../../store/consentTermSlice';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useFocusEffect } from '@react-navigation/native';
 
 const SignaturePreviewScreen = ({ route, navigation }) => {
   const dispatch = useDispatch();
   const { photo, readOnly } = route.params || {};
   
-  if (!photo || !photo.uri) {
-    navigation.goBack();
-    return null;
-  }
+  // Check if we have a valid photo, if not, safely navigate back
+  useEffect(() => {
+    if (!photo || !photo.uri) {
+      handleSafeGoBack();
+    }
+  }, [photo]);
+  
+  // Handle hardware back button
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        handleSafeGoBack();
+        return true;
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [])
+  );
+  
+  const handleSafeGoBack = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      if (readOnly) {
+        navigation.navigate('ConsentTerm');
+      } else {
+        navigation.navigate('SignatureCamera');
+      }
+    }
+  };
   
   const handleUseSignature = () => {
     dispatch(setSignaturePhoto(photo));
-    navigation.navigate('ConsentTerm', { signaturePhoto: photo });
+    dispatch(setConsentAgreed(true));
+    
+    // Navigate back to consent term screen with the new photo
+    try {
+      if (navigation.canGoBack()) {
+        navigation.navigate('ConsentTerm', { signaturePhoto: photo });
+      } else {
+        navigation.replace('ConsentTerm', { signaturePhoto: photo });
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      Alert.alert(
+        "Erro de Navegação",
+        "Ocorreu um erro ao retornar para a tela anterior.",
+        [
+          { text: "OK", onPress: () => navigation.navigate('ConsentTerm') }
+        ]
+      );
+    }
   };
   
   const handleRetake = () => {
-    navigation.navigate('SignatureCamera');
+    if (navigation.canGoBack()) {
+      navigation.goBack(); // Go back to camera
+    } else {
+      navigation.navigate('SignatureCamera');
+    }
   };
+
+  if (!photo || !photo.uri) {
+    return null;
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={handleSafeGoBack}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
@@ -77,7 +134,7 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
         <View style={styles.singleButtonContainer}>
           <TouchableOpacity 
             style={styles.backToFormButton}
-            onPress={() => navigation.goBack()}
+            onPress={handleSafeGoBack}
           >
             <Text style={styles.backToFormText}>Voltar ao formulário</Text>
           </TouchableOpacity>
@@ -96,9 +153,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: Platform.OS === 'ios' ? 44 : StatusBar.currentHeight + 16,
+    paddingTop: Platform.OS === 'ios' ? 0 : StatusBar.currentHeight,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    height: Platform.OS === 'ios' ? 60 : 70,
   },
   backButton: {
     padding: 8,

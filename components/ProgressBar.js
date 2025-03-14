@@ -1,20 +1,68 @@
 import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Dimensions, useWindowDimensions } from 'react-native';
+import Icon from 'react-native-vector-icons/Feather';
 
-const ProgressBar = ({ currentStep, totalSteps }) => {
+const ProgressSteps = ({ currentStep = 1, totalSteps = 5 }) => {
+  // Use window dimensions to make the component responsive
+  const { width } = useWindowDimensions();
+  
+  // Calculate sizes based on screen width
+  const isSmallScreen = width < 360;
+  
+  // Calculate circle size and connector width based on available space
+  const circleSize = isSmallScreen ? 36 : Math.min(48, width / (totalSteps * 2));
+  const fontSize = isSmallScreen ? 14 : 18;
+  
+  // Calculate connector width to fill available space
+  const totalCirclesWidth = circleSize * totalSteps;
+  const availableWidth = width - 32; // Subtract container padding
+  const connectorWidth = (availableWidth - totalCirclesWidth) / (totalSteps - 1);
+  
+  // Generate an array of steps from 1 to totalSteps
+  const steps = Array.from({ length: totalSteps }, (_, i) => i + 1);
+
   return (
-    <View style={styles.progressBar}>
-      {Array.from({ length: totalSteps }, (_, index) => index + 1).map((step) => (
+    <View style={styles.container}>
+      {steps.map((step, index) => (
         <React.Fragment key={step}>
-          <View style={[styles.progressStep, step === currentStep && styles.activeStep]}>
-            <Text style={[styles.stepText, step === currentStep && styles.activeStepText]}>
-              {step}
-            </Text>
+          {/* Step Circle */}
+          <View
+            style={[
+              styles.stepCircle,
+              { width: circleSize, height: circleSize },
+              step === currentStep
+                ? styles.currentStep
+                : step < currentStep
+                  ? styles.completedStep
+                  : styles.futureStep,
+            ]}
+          >
+            {step < currentStep ? (
+              <Icon name="check" size={isSmallScreen ? 16 : 20} color="#fff" />
+            ) : (
+              <Text
+                style={[
+                  styles.stepText,
+                  { fontSize },
+                  step === currentStep ? styles.currentStepText : styles.futureStepText,
+                ]}
+                numberOfLines={1}
+              >
+                {step}
+              </Text>
+            )}
           </View>
-          {step < totalSteps && <View style={[
-            styles.progressLine,
-            step < currentStep && styles.completedLine
-          ]} />}
+          
+          {/* Connecting Line (if not the last step) */}
+          {index < totalSteps - 1 && (
+            <View
+              style={[
+                styles.connector,
+                { width: Math.max(8, connectorWidth) },
+                step < currentStep ? styles.activeConnector : styles.inactiveConnector,
+              ]}
+            />
+          )}
         </React.Fragment>
       ))}
     </View>
@@ -22,43 +70,50 @@ const ProgressBar = ({ currentStep, totalSteps }) => {
 };
 
 const styles = StyleSheet.create({
-  progressBar: {
+  container: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
+    width: '100%',
     padding: 16,
-    backgroundColor: '#fff',
+    backgroundColor: '#f3f4f6',
+    flexWrap: 'nowrap',
   },
-  progressStep: {
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#1e3d59',
+  stepCircle: {
+    borderRadius: 8,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  activeStep: {
-    backgroundColor: '#1e3d59',
+  currentStep: {
+    backgroundColor: '#5F84A1', 
+  },
+  completedStep: {
+    backgroundColor: ' #5F84A1', 
+  },
+  futureStep: {
+    backgroundColor: '#ffffff',
+    borderWidth: 1,
+    borderColor: '#d1d5db', 
   },
   stepText: {
-    fontSize: 12,
-    color: '#1e3d59',
     fontWeight: '500',
   },
-  activeStepText: {
-    color: '#fff',
+  currentStepText: {
+    color: '#ffffff',
   },
-  progressLine: {
-    height: 2,
-    width: 40,
-    backgroundColor: '#1e3d59',
-    opacity: 0.3,
+  futureStepText: {
+    color: '#1f2937', 
   },
-  completedLine: {
-    opacity: 1,
+  connector: {
+    height: 4,
+    marginHorizontal: 2,
+  },
+  activeConnector: {
+    backgroundColor: '#2563eb', 
+  },
+  inactiveConnector: {
+    backgroundColor: '#d1d5db', 
   },
 });
 
-export default ProgressBar;
+export default ProgressSteps;

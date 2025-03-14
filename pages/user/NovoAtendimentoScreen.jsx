@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   View,
   Text,
@@ -13,21 +13,35 @@ import {
   Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import {API_URL} from '@env';
-
+import { API_URL } from '@env';
+import { 
+  checkPatientByCpf, 
+  registerNewPatient, 
+  registerAttendance, 
+  clearPatientFound 
+} from '../../store/patientSlice';
 
 const NovoAtendimentoScreen = ({ navigation, route }) => {
+  const dispatch = useDispatch();
   const user = useSelector(state => state.user.userData);
   const authenticated = useSelector(state => state.auth.isAuthenticated);
   const token = useSelector(state => state.auth.accessToken);
   
-  const [loading, setLoading] = useState(false);
-  const [checkingCpf, setCheckingCpf] = useState(false);
+  // Get patient data from Redux store
+  const { 
+    patientData, 
+    checkingCpf, 
+    patientFound, 
+    loading 
+  } = useSelector(state => state.patient);
+  
   const [showDatePicker, setShowDatePicker] = useState(false);
-  const [patientFound, setPatientFound] = useState(false);
-  const [existingPatientData, setExistingPatientData] = useState(null);
+  const [lastCheckedCpf, setLastCheckedCpf] = useState('');
+  
+  // Debounce timer for CPF checking
+  const cpfCheckTimerRef = useRef(null);
 
   const initialFormData = {
     nome_paciente: '',
@@ -45,33 +59,44 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
 
-  // Pre-fill form if editing existing patient
   useEffect(() => {
     if (route.params?.patientData) {
-      const data = route.params.patientData;
-      
-      setFormData({
-        nome_paciente: data.nome_paciente || '',
-        data_nascimento: data.data_nascimento || '',
-        sexo: data.sexo === 'M' ? 'Masculino' : 
-              data.sexo === 'F' ? 'Feminino' : 
-              data.sexo === 'O' || data.sexo === 'NR' ? 'other' : '',
-        sexo_outro: data.sexo_outro || '',
-        cpf_paciente: formatCPF(data.cpf_paciente) || '',
-        num_cartao_sus: data.num_cartao_sus || '',
-        endereco_paciente: data.endereco_paciente || '',
-        telefone_paciente: data.telefone_paciente || '',
-        email_paciente: data.email_paciente || '',
-        autoriza_pesquisa: data.autoriza_pesquisa !== undefined ? data.autoriza_pesquisa : null
-      });
-      
-      // Mark as existing patient
-      setPatientFound(true);
-      setExistingPatientData(data);
+      populateFormWithPatientData(route.params.patientData);
     }
   }, [route.params]);
 
-  // CPF formatting and validation
+  // Update form when patientData changes in Redux
+  useEffect(() => {
+    if (patientData && patientFound) {
+      populateFormWithPatientData(patientData);
+      
+      if (lastCheckedCpf !== formData.cpf_paciente.replace(/\D/g, '')) {
+        Alert.alert(
+          'Paciente Encontrado', 
+          'Este paciente já está cadastrado no sistema. Os dados foram preenchidos automaticamente.'
+        );
+      }
+    }
+  }, [patientData, patientFound]);
+
+  const populateFormWithPatientData = (data) => {
+    setFormData({
+      nome_paciente: data.nome_paciente || '',
+      data_nascimento: data.data_nascimento || '',
+      sexo: data.sexo === 'M' ? 'Masculino' : 
+            data.sexo === 'F' ? 'Feminino' : 
+            data.sexo === 'O' || data.sexo === 'NR' ? 'other' : '',
+      sexo_outro: data.sexo_outro || '',
+      cpf_paciente: formatCPF(data.cpf_paciente) || '',
+      num_cartao_sus: data.num_cartao_sus || '',
+      endereco_paciente: data.endereco_paciente || '',
+      telefone_paciente: data.telefone_paciente || '',
+      email_paciente: data.email_paciente || '',
+      autoriza_pesquisa: data.autoriza_pesquisa !== undefined ? data.autoriza_pesquisa : null
+    });
+  };
+
+  // CPF formatting and validation with debouncing
   useEffect(() => {
     const unformattedCpf = formData.cpf_paciente.replace(/\D/g, '');
     
@@ -86,13 +111,24 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       }
     }
 
-    // Check if we need to validate CPF against API
-    if (unformattedCpf.length === 11 && !checkingCpf && !patientFound) {
-      checkPatientByCPF(unformattedCpf);
+    // Handle CPF checking with debounce
+    if (cpfCheckTimerRef.current) {
+      clearTimeout(cpfCheckTimerRef.current);
+    }
+
+    if (unformattedCpf.length === 11 && unformattedCpf !== lastCheckedCpf) {
+      cpfCheckTimerRef.current = setTimeout(() => {
+        checkPatientByCPF(unformattedCpf);
+        setLastCheckedCpf(unformattedCpf);
+      }, 500); 
+    }
+    
+    if (unformattedCpf.length >= 4 && lastCheckedCpf && 
+        !unformattedCpf.startsWith(lastCheckedCpf.substring(0, 4))) {
+      dispatch(clearPatientFound());
     }
   }, [formData.cpf_paciente]);
 
-  // Format CPF with dots and dash (e.g., 123.456.789-00)
   const formatCPF = (cpf) => {
     cpf = cpf.replace(/\D/g, ''); // Remove non-digits
     if (cpf.length > 11) cpf = cpf.slice(0, 11);
@@ -103,7 +139,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     return `${cpf.slice(0, 3)}.${cpf.slice(3, 6)}.${cpf.slice(6, 9)}-${cpf.slice(9)}`;
   };
 
-  // Format phone number (e.g., (11) 98765-4321)
   const formatPhone = (phone) => {
     phone = phone.replace(/\D/g, '');
     if (phone.length > 11) phone = phone.slice(0, 11);
@@ -121,17 +156,13 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     return number;
   };
 
-  // Format and validate date
   const formatDate = (text) => {
-    // Remove non-digits and non-hyphens
     let cleaned = text.replace(/[^\d-]/g, '');
     
-    // Handle when user manually types hyphens
     if (text.length < formData.data_nascimento.length && text.includes('-')) {
       return cleaned;
     }
     
-    // Auto-add hyphens as user types
     if (cleaned.length > 4 && cleaned.charAt(4) !== '-') {
       cleaned = cleaned.slice(0, 4) + '-' + cleaned.slice(4);
     }
@@ -145,66 +176,25 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     return cleaned;
   };
 
-  // Check if the patient already exists by CPF
   const checkPatientByCPF = async (cpf) => {
-    try {
-      setCheckingCpf(true);
-      
-      const response = await fetch(`${API_URL}/cadastrar-atendimento?cpf_paciente=${cpf}`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        
-        // Patient found, auto-fill the form
-        setFormData({
-          nome_paciente: data.nome_paciente || '',
-          data_nascimento: data.data_nascimento || '',
-          sexo: data.sexo === 'M' ? 'Masculino' : 
-                data.sexo === 'F' ? 'Feminino' : 
-                data.sexo === 'O' || data.sexo === 'NR' ? 'other' : '',
-          sexo_outro: data.sexo_outro || '',
-          cpf_paciente: formatCPF(data.cpf_paciente) || '',
-          num_cartao_sus: data.num_cartao_sus || '',
-          endereco_paciente: data.endereco_paciente || '',
-          telefone_paciente: data.telefone_paciente || '',
-          email_paciente: data.email_paciente || '',
-          autoriza_pesquisa: data.autoriza_pesquisa !== undefined ? data.autoriza_pesquisa : null
-        });
-        
-        setPatientFound(true);
-        setExistingPatientData(data);
-        Alert.alert(
-          'Paciente Encontrado', 
-          'Este paciente já está cadastrado no sistema. Os dados foram preenchidos automaticamente.',
-          [{ text: 'OK' }]
-        );
-      }
-    } catch (error) {
-      console.error('Error checking CPF:', error);
-    } finally {
-      setCheckingCpf(false);
+    if (!token) {
+      Alert.alert('Erro', 'Você precisa estar autenticado para verificar o paciente.');
+      return;
     }
+    
+    dispatch(checkPatientByCpf({ cpf, token }));
   };
 
   const validateForm = () => {
     const newErrors = {};
     
-    // Nome validation
     if (!formData.nome_paciente.trim()) {
       newErrors.nome_paciente = 'Nome é obrigatório';
     }
     
-    // Data de nascimento validation
     if (!formData.data_nascimento) {
       newErrors.data_nascimento = 'Data de nascimento é obrigatória';
     } else {
-      // Check if date is valid
       const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
       if (!dateRegex.test(formData.data_nascimento)) {
         newErrors.data_nascimento = 'Data deve estar no formato YYYY-MM-DD';
@@ -212,13 +202,10 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
         const date = new Date(formData.data_nascimento);
         if (isNaN(date.getTime())) {
           newErrors.data_nascimento = 'Data inválida';
-        } else if (date > new Date()) {
-          newErrors.data_nascimento = 'A data não pode ser no futuro';
         }
       }
     }
     
-    // Sexo validation
     if (!formData.sexo) {
       newErrors.sexo = 'Gênero é obrigatório';
     }
@@ -227,7 +214,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       newErrors.sexo_outro = 'Especifique o gênero';
     }
     
-    // CPF validation
     const cpfDigits = formData.cpf_paciente.replace(/\D/g, '');
     if (!cpfDigits) {
       newErrors.cpf_paciente = 'CPF é obrigatório';
@@ -235,7 +221,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       newErrors.cpf_paciente = 'CPF deve ter 11 dígitos';
     }
     
-    // SUS validation
     const susDigits = formData.num_cartao_sus.replace(/\D/g, '');
     if (!susDigits) {
       newErrors.num_cartao_sus = 'Número do cartão SUS é obrigatório';
@@ -281,16 +266,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     // Apply special formatting based on field type
     if (field === 'cpf_paciente') {
       // CPF formatting handled in useEffect
-      
-      // If changing CPF and we had found a patient before, reset the found state
-      // but only if the new CPF is substantially different
-      const newCpfDigits = value.replace(/\D/g, '');
-      const oldCpfDigits = formData.cpf_paciente.replace(/\D/g, '');
-      
-      if (patientFound && newCpfDigits.length >= 6 && !newCpfDigits.startsWith(oldCpfDigits.substring(0, 6))) {
-        setPatientFound(false);
-        setExistingPatientData(null);
-      }
     } else if (field === 'telefone_paciente') {
       processedValue = formatPhone(value);
     } else if (field === 'num_cartao_sus') {
@@ -340,50 +315,41 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     }
 
     // If patient already exists, just navigate to the NovoPaciente screen with the existing data
-    if (patientFound && existingPatientData) {
-      navigation.navigate('NovoPaciente', { atendimentoData: existingPatientData });
+    if (patientFound && patientData) {
+      navigation.navigate('NovoPaciente', { atendimentoData: patientData });
       return;
     }
-
-    setLoading(true);
 
     try {
       const cpfDigits = formData.cpf_paciente.replace(/\D/g, '');
       const phoneDigits = formData.telefone_paciente.replace(/\D/g, '');
       const susDigits = formData.num_cartao_sus.replace(/\D/g, '');
 
-      const response = await fetch(`${API_URL}/cadastrar-atendimento`, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          ...formData,
-          cpf_paciente: cpfDigits,
-          telefone_paciente: phoneDigits,
-          num_cartao_sus: susDigits,
-          sexo: formData.sexo === 'Feminino' ? 'F' : formData.sexo === 'Masculino' ? 'M' : 'O'
-        })
-      });
+      const patientFormData = {
+        ...formData,
+        cpf_paciente: cpfDigits,
+        telefone_paciente: phoneDigits,
+        num_cartao_sus: susDigits,
+        sexo: formData.sexo === 'Feminino' ? 'F' : formData.sexo === 'Masculino' ? 'M' : 'O'
+      };
+
+      // Register the new patient
+      const resultAction = await dispatch(registerNewPatient({ 
+        formData: patientFormData, 
+        token 
+      }));
       
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Erro ao cadastrar atendimento');
+      if (registerNewPatient.fulfilled.match(resultAction)) {
+        const newPatientData = resultAction.payload;
+        navigation.navigate('NovoPaciente', { atendimentoData: newPatientData });
+      } else {
+        throw new Error(resultAction.payload || 'Failed to register patient');
       }
-
-      navigation.navigate('NovoPaciente', { atendimentoData: data });
-
     } catch (error) {
       Alert.alert('Erro', error.message || 'Erro ao enviar formulário');
-    } finally {
-      setLoading(false);
     }
   };
 
-  // Function to parse date string to Date object safely
   const parseDate = (dateString) => {
     try {
       const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
@@ -402,6 +368,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
           <TouchableOpacity 
             style={styles.closeButton}
             onPress={() => navigation.goBack()}
+            disabled={loading}
           >
             <Icon name="close" size={24} color="#fff" />
           </TouchableOpacity>
@@ -421,19 +388,20 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
           <View style={styles.inputGroup}>
             <Text style={styles.label}>CPF <Text style={styles.required}>*</Text></Text>
             <View style={styles.cpfContainer}>
-            <TextInput
-              style={[styles.input, styles.cpfInput, errors.cpf_paciente && styles.inputError]}
-              placeholder="ex.: 987.654.321-00"
-              placeholderTextColor="#999"
-              keyboardType="numeric"
-              value={formData.cpf_paciente}
-              onChangeText={(text) => handleInputChange('cpf_paciente', text)}
-              maxLength={14} 
-            />
-            {checkingCpf && (
-              <ActivityIndicator size="small" color="#1e3d59" style={styles.cpfIndicator} />
-            )}
-          </View>
+              <TextInput
+                style={[styles.input, styles.cpfInput, errors.cpf_paciente && styles.inputError]}
+                placeholder="ex.: 987.654.321-00"
+                placeholderTextColor="#999"
+                keyboardType="numeric"
+                value={formData.cpf_paciente}
+                onChangeText={(text) => handleInputChange('cpf_paciente', text)}
+                maxLength={14} 
+                editable={!loading}
+              />
+              {checkingCpf && (
+                <ActivityIndicator size="small" color="#1e3d59" style={styles.cpfIndicator} />
+              )}
+            </View>
             {errors.cpf_paciente && (
               <Text style={styles.errorText}>{errors.cpf_paciente}</Text>
             )}
@@ -447,6 +415,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               placeholderTextColor="#999"
               value={formData.nome_paciente}
               onChangeText={(text) => handleInputChange('nome_paciente', text)}
+              editable={!loading}
             />
             {errors.nome_paciente && (
               <Text style={styles.errorText}>{errors.nome_paciente}</Text>
@@ -467,6 +436,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
                 onChangeText={(text) => handleInputChange('data_nascimento', text)}
                 keyboardType="numeric"
                 maxLength={10}
+                editable={!loading}
               />
               <TouchableOpacity 
                 style={styles.calendarIcon}
@@ -474,6 +444,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
                   Keyboard.dismiss();
                   setShowDatePicker(true);
                 }}
+                disabled={loading}
               >
                 <Icon name="calendar-today" size={20} color="#666" />
               </TouchableOpacity>
@@ -500,6 +471,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               <TouchableOpacity 
                 style={styles.radioOption}
                 onPress={() => handleInputChange('sexo', 'Feminino')}
+                disabled={loading}
               >
                 <View style={[
                   styles.radioCircle,
@@ -511,17 +483,19 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               <TouchableOpacity 
                 style={styles.radioOption}
                 onPress={() => handleInputChange('sexo', 'Masculino')}
+                disabled={loading}
               >
                 <View style={[
                   styles.radioCircle,
                   formData.sexo === 'Masculino' && styles.radioSelected
                 ]} />
                 <Text style={styles.radioText}>Masculino</Text>
-              </TouchableOpacity>cpfC
+              </TouchableOpacity>
 
               <TouchableOpacity 
                 style={styles.radioOption}
                 onPress={() => handleInputChange('sexo', 'other')}
+                disabled={loading}
               >
                 <View style={[
                   styles.radioCircle,
@@ -537,6 +511,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
                   placeholderTextColor="#999"
                   value={formData.sexo_outro}
                   onChangeText={(text) => handleInputChange('sexo_outro', text)}
+                  editable={!loading}
                 />
               )}
             </View>
@@ -548,8 +523,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
             )}
           </View>
 
-
-
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Número do Cartão SUS <Text style={styles.required}>*</Text></Text>
             <TextInput
@@ -560,6 +533,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               value={formData.num_cartao_sus}
               onChangeText={(text) => handleInputChange('num_cartao_sus', text)}
               maxLength={15}
+              editable={!loading}
             />
             {errors.num_cartao_sus && (
               <Text style={styles.errorText}>{errors.num_cartao_sus}</Text>
@@ -574,6 +548,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               placeholderTextColor="#999"
               value={formData.endereco_paciente}
               onChangeText={(text) => handleInputChange('endereco_paciente', text)}
+              editable={!loading}
             />
             {errors.endereco_paciente && (
               <Text style={styles.errorText}>{errors.endereco_paciente}</Text>
@@ -589,7 +564,8 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               keyboardType="phone-pad"
               value={formData.telefone_paciente}
               onChangeText={(text) => handleInputChange('telefone_paciente', text)}
-              maxLength={15} // (11) 98765-4321 (15 characters with formatting)
+              maxLength={15}
+              editable={!loading}
             />
             {errors.telefone_paciente && (
               <Text style={styles.errorText}>{errors.telefone_paciente}</Text>
@@ -606,6 +582,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               value={formData.email_paciente}
               onChangeText={(text) => handleInputChange('email_paciente', text)}
               autoCapitalize="none"
+              editable={!loading}
             />
             {errors.email_paciente && (
               <Text style={styles.errorText}>{errors.email_paciente}</Text>
@@ -613,11 +590,15 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
           </View>
 
           <View style={styles.inputGroup}>
-            <Text style={styles.label}>Autoriza o uso dos seus dados anonimizados para fins de pesquisa? <Text style={styles.required}>*</Text></Text>
+            <Text style={styles.label}>
+              Autoriza o uso dos seus dados anonimizados para fins de pesquisa? 
+              <Text style={styles.required}>*</Text>
+            </Text>
             <View style={styles.radioGroup}>
               <TouchableOpacity 
                 style={styles.radioOption}
                 onPress={() => handleInputChange('autoriza_pesquisa', true)}
+                disabled={loading}
               >
                 <View style={[
                   styles.radioCircle,
@@ -628,6 +609,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
               <TouchableOpacity 
                 style={styles.radioOption}
                 onPress={() => handleInputChange('autoriza_pesquisa', false)}
+                disabled={loading}
               >
                 <View style={[
                   styles.radioCircle,
@@ -770,6 +752,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginLeft: 28,
   },
+
   cpfContainer: {
     flexDirection: 'row',
     alignItems: 'center',

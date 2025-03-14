@@ -8,12 +8,12 @@ import {
   ScrollView,
   ActivityIndicator,
   Alert,
+  TextInput,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectHasAdminAccess, updateUnidadeSaude ,selectIsAdmin } from '../store/userSlice';
+import { selectHasAdminAccess, updateUnidadeSaude, selectIsAdmin } from '../store/userSlice';
 import {API_URL} from '@env';
-
 
 const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   const dispatch = useDispatch();
@@ -23,6 +23,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [healthUnits, setHealthUnits] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const fetchUnidadesSaude = async () => {
     if (!hasAdminAccess) return;
@@ -105,6 +106,17 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   if (!hasAdminAccess) {
     return null;
   }
+
+  // Filter health units based on search query
+  const filteredUnits = healthUnits.filter(unit => {
+    const query = searchQuery.toLowerCase();
+    return (
+      unit.nome_unidade_saude.toLowerCase().includes(query) ||
+      unit.nome_localizacao.toLowerCase().includes(query) ||
+      unit.codigo_unidade_saude.toLowerCase().includes(query) ||
+      (unit.cidade_unidade_saude && unit.cidade_unidade_saude.toLowerCase().includes(query))
+    );
+  });
 
   const renderUnitItem = (unit) => (
     <TouchableOpacity
@@ -192,12 +204,40 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
               </Text>
             </View>
           ) : (
-            <ScrollView 
-              style={styles.unitList}
-              showsVerticalScrollIndicator={false}
-            >
-              {healthUnits.map(renderUnitItem)}
-            </ScrollView>
+            <>
+              <View style={styles.searchContainer}>
+                <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+                <TextInput
+                  style={styles.searchInput}
+                  placeholder="Pesquisar unidades..."
+                  placeholderTextColor="#999"
+                  value={searchQuery}
+                  onChangeText={setSearchQuery}
+                  autoCapitalize="none"
+                />
+                {searchQuery.length > 0 && (
+                  <TouchableOpacity onPress={() => setSearchQuery('')}>
+                    <Icon name="cancel" size={20} color="#999" style={styles.clearIcon} />
+                  </TouchableOpacity>
+                )}
+              </View>
+              
+              {filteredUnits.length === 0 ? (
+                <View style={styles.centerContainer}>
+                  <Icon name="search-off" size={48} color="#666" />
+                  <Text style={styles.emptyText}>
+                    Nenhuma unidade encontrada para "{searchQuery}"
+                  </Text>
+                </View>
+              ) : (
+                <ScrollView 
+                  style={styles.unitList}
+                  showsVerticalScrollIndicator={false}
+                >
+                  {filteredUnits.map(renderUnitItem)}
+                </ScrollView>
+              )}
+            </>
           )}
         </View>
       </View>
@@ -240,6 +280,28 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '600',
     color: '#1e3d59',
+  },
+  searchContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  searchIcon: {
+    marginRight: 8,
+  },
+  clearIcon: {
+    marginLeft: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 16,
+    color: '#333',
   },
   centerContainer: {
     flex: 1,

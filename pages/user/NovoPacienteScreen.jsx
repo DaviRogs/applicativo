@@ -10,24 +10,33 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { injuryService } from './lesoes/injuryService';
+import { 
+  submitPatientData, 
+  selectIsReadyForSubmission,
+  selectValidationErrors,
+  selectSubmissionStatus
+} from '../../store/formSubmissionSlice';
 
 const NovoPacienteScreen = ({ navigation, route }) => {
-  const [patientData, setPatientData] = useState(null);
   const [injuries, setInjuries] = useState([]);
-  const [isSaving, setIsSaving] = useState(false);
   
-  const { signaturePhoto, hasConsented, signatureDate } = useSelector(state => state.consentTerm);
-  
-  const reduxInjuries = useSelector(state => state.injury.injuries);
+  const dispatch = useDispatch();
 
-  useEffect(() => {
-    if (route.params && route.params.atendimentoData) {
-      setPatientData(route.params.atendimentoData);
-    }
-  }, [route.params?.atendimentoData]);
+  // paciente Data
+  const patientData = useSelector(state => state.patient.patientData);
   
+  // Get values from redux state
+  const { signaturePhoto, isConsentAgreed, signatureDate } = useSelector(state => state.consentTerm);
+  const reduxInjuries = useSelector(state => state.injury?.injuries || []);
+  const anamnesisProgress = useSelector(state => state.anamnesis?.progressoQuestionario);
+  const isReadyForSubmission = useSelector(selectIsReadyForSubmission);
+  const validationErrors = useSelector(selectValidationErrors);
+  const submissionStatus = useSelector(selectSubmissionStatus);
+  const isSaving = submissionStatus === 'pending';
+  const accessToken = useSelector(state => state.auth?.accessToken);
+
   useEffect(() => {
     if (route.params && route.params.injuries) {
       setInjuries(route.params.injuries);
@@ -44,7 +53,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
     if (injuries.length === 0 && reduxInjuries.length > 0) {
       setInjuries(reduxInjuries);
     }
-  }, [injuries, reduxInjuries]);
+  }, [reduxInjuries]);
 
   const formatDisplayCpf = (cpf) => {
     if (!cpf) return '';
@@ -60,53 +69,56 @@ const NovoPacienteScreen = ({ navigation, route }) => {
   };
 
   const validateRequiredFields = () => {
-    if (!hasConsented || !signaturePhoto) {
-      Alert.alert('Aviso', 'É necessário assinar o termo de consentimento antes de continuar.');
+    if (!isConsentAgreed || !signaturePhoto) {
       return false;
     }
-    
-    
-    return true;
+    return isReadyForSubmission;
   };
 
   const handleSaveChanges = async () => {
     if (!validateRequiredFields()) {
+      let errorMessage = 'Alguns dados obrigatórios estão faltando:';
+      
+      if (validationErrors.consentTerm) {
+        errorMessage += '\n- É necessário assinar o termo de consentimento';
+      }
+      
+      if (validationErrors.anamnesis) {
+        errorMessage += '\n- É necessário completar a anamnese';
+      }
+      
+      if (validationErrors.auth) {
+        errorMessage += '\n- É necessário estar autenticado';
+      }
+      
+      Alert.alert('Aviso', errorMessage);
       return;
     }
     
     try {
-      setIsSaving(true);
+      // Dispatch the submission thunk
+      const resultAction = await dispatch(submitPatientData());
       
-      const finalData = {
-        patient: patientData,
-        consent: {
-          signatureDate,
-          hasConsented,
-          signaturePhotoUri: signaturePhoto?.uri
-        },
-        injuries: injuries,
-      };
-      
-      console.log('Saving complete patient data:', finalData);
-      
-      // Call API services to save data
-      if (injuries && injuries.length > 0) {
-        await injuryService.saveInjuries(injuries, patientData);
+      if (submitPatientData.fulfilled.match(resultAction)) {
+        // The submission was successful
+        Alert.alert('Sucesso', 'Atendimento registrado com sucesso!', [
+          { text: 'OK', onPress: () => navigation.navigate('Home') }
+        ]);
+      } else {
+        // The submission failed
+        Alert.alert('Erro', resultAction.error?.message || 'Ocorreu um erro ao salvar os dados. Por favor, tente novamente.');
       }
-      
-
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      setIsSaving(false);
-      Alert.alert('Sucesso', 'Atendimento registrado com sucesso!', [
-        { text: 'OK', onPress: () => navigation.navigate('Home') }
-      ]);
     } catch (error) {
-      setIsSaving(false);
       console.error('Error saving patient data:', error);
       Alert.alert('Erro', 'Ocorreu um erro ao salvar os dados. Por favor, tente novamente.');
     }
   };
+
+  // Get completion status
+  const isAnamnesisCompleted = anamnesisProgress?.concluido || 
+    (anamnesisProgress?.etapaAtual >= anamnesisProgress?.totalEtapas);
+  
+  const isConsentCompleted = isConsentAgreed && signaturePhoto;
 
   return (
     <SafeAreaView style={styles.container}>
@@ -149,7 +161,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
           disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Termo de consentimento</Text>
-          {hasConsented && signaturePhoto ? (
+          {isConsentCompleted ? (
             <View style={styles.completedBadge}>
               <Icon name="check-circle" size={20} color="#27ae60" />
             </View>
@@ -167,7 +179,13 @@ const NovoPacienteScreen = ({ navigation, route }) => {
           disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Anamnese</Text>
-          <Icon name="chevron-right" size={24} color="#666" />
+          {isAnamnesisCompleted ? (
+            <View style={styles.completedBadge}>
+              <Icon name="check-circle" size={20} color="#27ae60" />
+            </View>
+          ) : (
+            <Icon name="chevron-right" size={24} color="#666" />
+          )}
         </TouchableOpacity>
 
         <TouchableOpacity 
@@ -176,22 +194,32 @@ const NovoPacienteScreen = ({ navigation, route }) => {
           disabled={isSaving}
         >
           <Text style={styles.menuItemText}>Registro de lesões</Text>
-          {injuries && injuries.length > 0 && (
+          {injuries && injuries.length > 0 ? (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>{injuries.length}</Text>
             </View>
-          )}
+          ) : null}
           <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
+
+        <View style={styles.submissionStatusContainer}>
+          {!isReadyForSubmission && (
+            <Text style={styles.validationWarning}>
+              {validationErrors.consentTerm && '• É necessário completar o termo de consentimento\n'}
+              {validationErrors.anamnesis && '• É necessário completar a anamnese\n'}
+              {validationErrors.auth && '• É necessário estar autenticado'}
+            </Text>
+          )}
+        </View>
 
         <TouchableOpacity 
           style={[
             styles.saveButton, 
             isSaving ? styles.savingButton : 
-              (!hasConsented || !signaturePhoto) ? styles.disabledButton : null
+              !isReadyForSubmission ? styles.disabledButton : null
           ]}
           onPress={handleSaveChanges}
-          disabled={isSaving || !hasConsented || !signaturePhoto}
+          disabled={isSaving || !isReadyForSubmission}
         >
           {isSaving ? (
             <>
@@ -350,6 +378,16 @@ const styles = StyleSheet.create({
   activityIndicator: {
     marginRight: 8,
   },
+  submissionStatusContainer: {
+    marginVertical: 8,
+    paddingHorizontal: 4,
+  },
+  validationWarning: {
+    color: '#e74c3c',
+    fontSize: 12,
+    marginBottom: 8,
+    lineHeight: 18
+  }
 });
 
 export default NovoPacienteScreen;

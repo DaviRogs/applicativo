@@ -16,7 +16,8 @@
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to capture photos of injuries",
         "NSPhotoLibraryUsageDescription": "This app uses the photo library to select injury images"
-      }
+      },
+      "bundleIdentifier": "com.anonymous.applicativo"
     },
     "android": {
       "adaptiveIcon": {
@@ -28,11 +29,6 @@
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO",
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
-        "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO"
       ],
       "package": "com.anonymous.applicativo"
@@ -40,7 +36,7 @@
     "web": {
       "favicon": "./assets/favicon.png"
     },
-   "plugins": [
+    "plugins": [
       [
         "expo-camera",
         {
