@@ -223,11 +223,11 @@ export const submitPatientData = createAsyncThunk(
         try {
           console.log(`Processing ${injuriesData.length} injuries...`);
           for (const injuryItem of injuriesData) {
-            console.log(`Registering injury at location: ${injuryItem.locationId || injuryItem.location}`);
+            console.log(`Registering injury at location: ${injuryItem.id || injuryItem.location}`);
             await apiService.registerLesion(
               attendanceId, 
               {
-                location: injuryItem.locationId || injuryItem.location,
+                location: injuryItem.id || injuryItem.location,
                 description: injuryItem.description || ''
               },
               injuryItem.photos || [],

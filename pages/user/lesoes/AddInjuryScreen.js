@@ -44,7 +44,7 @@ const AddInjuryScreen = ({ navigation, route }) => {
         description: injury.description || '',
         photos: injury.photos || [],
         isEditing: true,
-        injuryId: injury.id,
+        injuryId: injury.injuryId,
       }));
       
       navigation.setParams({ injury: undefined });
@@ -100,7 +100,7 @@ const AddInjuryScreen = ({ navigation, route }) => {
     dispatch(setSaving(true));
     
     const injuryData = {
-      id: isEditing ? injuryId : generateUniqueId(),
+      id: isEditing ? injuryId : (injuryId || generateUniqueId()),
       location,
       description,
       photos,

@@ -21,7 +21,10 @@ export const InjuryLocationScreen = ({ navigation }) => {
   const dispatch = useDispatch();
   
   const currentLocation = useSelector(state => state.injury.formState.location);
-  const [selectedLocation, setSelectedLocation] = useState(currentLocation || '');
+  const currentLocationId = useSelector(state => state.injury.formState.injuryId);
+  
+  const [selectedLocationName, setSelectedLocationName] = useState(currentLocation || '');
+  const [selectedLocationObj, setSelectedLocationObj] = useState(null);
   
   const [locations, setLocations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -53,6 +56,13 @@ export const InjuryLocationScreen = ({ navigation }) => {
       }));
       
       setLocations(transformedData);
+      
+      if (currentLocation && currentLocationId) {
+        const matchingLocation = transformedData.find(loc => loc.id === currentLocationId);
+        if (matchingLocation) {
+          setSelectedLocationObj(matchingLocation);
+        }
+      }
     } catch (err) {
       console.error('Error fetching injury locations:', err);
       
@@ -72,7 +82,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
   
   useEffect(() => {
     if (currentLocation) {
-      setSelectedLocation(currentLocation);
+      setSelectedLocationName(currentLocation);
     }
   }, [currentLocation]);
 
@@ -82,15 +92,21 @@ export const InjuryLocationScreen = ({ navigation }) => {
       )
     : locations;
 
+  const handleLocationSelect = (location) => {
+    setSelectedLocationName(location.name);
+    setSelectedLocationObj(location);
+  };
+
   const handleSaveLocation = () => {
-    if (selectedLocation) {
+    if (selectedLocationObj) {
       dispatch(updateFormField({
         field: 'location',
-        value: selectedLocation,
+        value: selectedLocationName,
       }));
+      
       dispatch(updateFormField({
-        field: 'location',
-        value: selectedLocation,
+        field: 'injuryId',
+        value: selectedLocationObj.id,
       }));
       
       navigation.navigate('AddInjury');
@@ -101,19 +117,19 @@ export const InjuryLocationScreen = ({ navigation }) => {
     <TouchableOpacity
       style={[
         styles.locationItem,
-        selectedLocation === item.name && styles.selectedLocation
+        selectedLocationName === item.name && styles.selectedLocation
       ]}
-      onPress={() => setSelectedLocation(item.name)}
+      onPress={() => handleLocationSelect(item)}
       accessibilityRole="button"
       accessibilityLabel={`Selecionar ${item.name}`}
     >
       <Text style={[
         styles.locationText,
-        selectedLocation === item.name && styles.selectedLocationText
+        selectedLocationName === item.name && styles.selectedLocationText
       ]}>
         {item.name}
       </Text>
-      {selectedLocation === item.name && (
+      {selectedLocationName === item.name && (
         <Icon name="check" size={20} color="#1e3d59" />
       )}
     </TouchableOpacity>
@@ -231,10 +247,10 @@ export const InjuryLocationScreen = ({ navigation }) => {
         <TouchableOpacity 
           style={[
             styles.saveButton,
-            !selectedLocation && styles.disabledButton
+            !selectedLocationObj && styles.disabledButton
           ]}
           onPress={handleSaveLocation}
-          disabled={!selectedLocation}
+          disabled={!selectedLocationObj}
           accessibilityLabel="Salvar local selecionado"
           accessibilityRole="button"
         >
@@ -246,7 +262,6 @@ export const InjuryLocationScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Existing styles
   safeArea: {
     flex: 1,
     backgroundColor: '#1e3d59',
@@ -356,8 +371,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
-  
-  // New styles for loading and error states
   centerContent: {
     flex: 1,
     justifyContent: 'center',
