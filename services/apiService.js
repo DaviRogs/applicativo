@@ -49,18 +49,18 @@ export const apiService = {
       let fileName = 'signature.png';
       
       if (typeof signaturePhoto === 'string') {
-        // It's a string - could be a base64 or a file URI
+        // - could be a base64 or a file URI
         if (signaturePhoto.startsWith('data:image')) {
-          // It's a base64 image
+          //  base64 image
           fileUri = await createFileFromBase64(signaturePhoto, fileName);
           fileType = 'image/png';
         } else {
-          // It's a file URI
+          //  file URI
           fileUri = signaturePhoto;
           fileType = 'image/png';
         }
       } else if (signaturePhoto.uri) {
-        // It's an object with a URI
+        //  object with a URI
         fileUri = signaturePhoto.uri;
         fileType = signaturePhoto.type || 'image/png';
         fileName = signaturePhoto.name || fileName;
@@ -115,13 +115,14 @@ export const apiService = {
           body: JSON.stringify(anamnesisData)
         }
       );
-
+      const responseData = await response.json();
       if (!response.ok) {
+        console.error('API Error Response:', responseData);
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
         throw new Error(errorData.message || 'Failed to submit anamnesis data');
       }
 
-      return await response.json();
+      return responseData;
     } catch (error) {
       console.error('Error in submitAnamnesisData:', error);
       throw error;

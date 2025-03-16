@@ -9,11 +9,12 @@ import {
   Platform,
   StatusBar,
   FlatList,
+  ActivityIndicator,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
-import { updateFormField } from  '../../../store/injurySlice';
-
+import { updateFormField } from '../../../store/injurySlice';
+import { API_URL } from '@env';
 
 export const InjuryLocationScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
@@ -22,54 +23,71 @@ export const InjuryLocationScreen = ({ navigation }) => {
   const currentLocation = useSelector(state => state.injury.formState.location);
   const [selectedLocation, setSelectedLocation] = useState(currentLocation || '');
   
+  const [locations, setLocations] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState(null);
+  
+  const fetchLocations = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); 
+      
+      const response = await fetch(`${API_URL}/locais-lesao`, {
+        signal: controller.signal,
+      });
+      
+      clearTimeout(timeoutId);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      const transformedData = data.map(item => ({
+        id: item.id,
+        name: item.nome
+      }));
+      
+      setLocations(transformedData);
+    } catch (err) {
+      console.error('Error fetching injury locations:', err);
+      
+      if (err.name === 'AbortError') {
+        setError('Tempo limite excedido. Verifique sua conexão e tente novamente.');
+      } else {
+        setError('Não foi possível carregar os locais de lesão. Por favor, tente novamente.');
+      }
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+  useEffect(() => {
+    fetchLocations();
+  }, []);
+  
   useEffect(() => {
     if (currentLocation) {
       setSelectedLocation(currentLocation);
     }
   }, [currentLocation]);
 
-  const allLocations = [
-    { id: 1, name: 'Cabeça' },
-    { id: 2, name: 'Face' },
-    { id: 3, name: 'Pescoço' },
-    { id: 4, name: 'Ombro direito' },
-    { id: 5, name: 'Ombro esquerdo' },
-    { id: 6, name: 'Braço direito' },
-    { id: 7, name: 'Braço esquerdo' },
-    { id: 8, name: 'Cotovelo direito' },
-    { id: 9, name: 'Cotovelo esquerdo' },
-    { id: 10, name: 'Antebraço direito' },
-    { id: 11, name: 'Antebraço esquerdo' },
-    { id: 12, name: 'Punho direito' },
-    { id: 13, name: 'Punho esquerdo' },
-    { id: 14, name: 'Mão direita' },
-    { id: 15, name: 'Mão esquerda' },
-    { id: 16, name: 'Tórax' },
-    { id: 17, name: 'Abdômen' },
-    { id: 18, name: 'Lombar' },
-    { id: 19, name: 'Pélvis' },
-    { id: 20, name: 'Quadril direito' },
-    { id: 21, name: 'Quadril esquerdo' },
-    { id: 22, name: 'Coxa direita' },
-    { id: 23, name: 'Coxa esquerda' },
-    { id: 24, name: 'Joelho direito' },
-    { id: 25, name: 'Joelho esquerdo' },
-    { id: 26, name: 'Perna direita' },
-    { id: 27, name: 'Perna esquerda' },
-    { id: 28, name: 'Tornozelo direito' },
-    { id: 29, name: 'Tornozelo esquerdo' },
-    { id: 30, name: 'Pé direito' },
-    { id: 31, name: 'Pé esquerdo' },
-  ];
-
   const filteredLocations = searchQuery
-    ? allLocations.filter(location =>
+    ? locations.filter(location =>
         location.name.toLowerCase().includes(searchQuery.toLowerCase())
       )
-    : allLocations;
+    : locations;
 
   const handleSaveLocation = () => {
     if (selectedLocation) {
+      dispatch(updateFormField({
+        field: 'location',
+        value: selectedLocation,
+      }));
       dispatch(updateFormField({
         field: 'location',
         value: selectedLocation,
@@ -101,6 +119,61 @@ export const InjuryLocationScreen = ({ navigation }) => {
     </TouchableOpacity>
   );
 
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              accessibilityLabel="Voltar"
+            >
+              <Icon name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Local da lesão</Text>
+          </View>
+          <View style={[styles.content, styles.centerContent]}>
+            <ActivityIndicator size="large" color="#1e3d59" />
+            <Text style={styles.loadingText}>Carregando locais de lesão...</Text>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <SafeAreaView style={styles.safeArea}>
+        <View style={styles.container}>
+          <View style={styles.header}>
+            <TouchableOpacity 
+              style={styles.backButton}
+              onPress={() => navigation.goBack()}
+              accessibilityLabel="Voltar"
+            >
+              <Icon name="arrow-back" size={24} color="#fff" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>Local da lesão</Text>
+          </View>
+          <View style={[styles.content, styles.centerContent]}>
+            <Icon name="error-outline" size={48} color="#e74c3c" />
+            <Text style={styles.errorText}>{error}</Text>
+            <TouchableOpacity 
+              style={styles.retryButton}
+              onPress={fetchLocations}
+              accessibilityLabel="Tentar novamente"
+            >
+              <Text style={styles.retryButtonText}>Tentar novamente</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
+  // Main content (when data is loaded successfully)
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
@@ -173,7 +246,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  // Keeping your existing styles
+  // Existing styles
   safeArea: {
     flex: 1,
     backgroundColor: '#1e3d59',
@@ -283,6 +356,36 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: '500',
   },
+  
+  // New styles for loading and error states
+  centerContent: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  loadingText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#666',
+  },
+  errorText: {
+    marginTop: 16,
+    fontSize: 16,
+    color: '#e74c3c',
+    textAlign: 'center',
+    marginHorizontal: 20,
+  },
+  retryButton: {
+    marginTop: 24,
+    backgroundColor: '#1e3d59',
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 8,
+  },
+  retryButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
+  },
 });
-
-export default InjuryLocationScreen;

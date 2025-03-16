@@ -24,13 +24,16 @@
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "permissions": [
+    "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
         "android.permission.CAMERA",
-        "android.permission.RECORD_AUDIO"
+        "android.permission.RECORD_AUDIO",
+        "android.permission.INTERNET",
+        "android.permission.ACCESS_NETWORK_STATE"
       ],
+      
       "package": "com.anonymous.applicativo"
     },
     "web": {
@@ -48,6 +51,11 @@
     ],
     "updates": {
       "enabled": false
+    },
+    "extra": {
+      "eas": {
+        "projectId": "eadd3a6b-5a92-4bb2-81a0-40bee8cac6ed"
+      }
     }
   }
 }
