@@ -13,6 +13,8 @@ import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressBar from '../../../components/ProgressBar';
 import { atualizarAvaliacaoFototipo, avancarEtapa, voltarEtapa } from '../../../store/anamnesisSlice';
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 const AvaliacaoFototipo = () => {
   const navigation = useNavigation();
@@ -30,6 +32,20 @@ const AvaliacaoFototipo = () => {
       [field + 'Pontos']: points
     }));
   };
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('QuestoesGeraisSaude');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
 
   // Calcula o fototipo baseado na pontuação
   useEffect(() => {
@@ -161,8 +177,8 @@ const AvaliacaoFototipo = () => {
       </View>
 
       <ProgressBar 
-        currentStep={progressoQuestionario.etapaAtual} 
-        totalSteps={progressoQuestionario.totalEtapas}
+        currentStep={2} 
+        totalSteps={5}
       />
 
       <ScrollView style={styles.content}>

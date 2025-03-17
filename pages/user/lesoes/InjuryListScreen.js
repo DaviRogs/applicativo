@@ -25,7 +25,8 @@ import { injuryService } from './injuryService';
 const generateUniqueId = () => {
   return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 };
-
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 const InjuryListScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
   
@@ -97,6 +98,22 @@ const InjuryListScreen = ({ navigation, route }) => {
       ]
     );
   };
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          // Custom back button behavior
+          navigation.navigate('NovoPaciente');
+          return true; // Prevent default behavior
+        };
+    
+        // Add event listener for hardware back button
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          // Clean up the event listener when the screen loses focus
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
 
   const handleEditInjury = (injury) => {
     dispatch(resetForm()); 

@@ -20,6 +20,8 @@ import {
   setLoading
 } from '../../../store/consentTermSlice';
 import Icon from 'react-native-vector-icons/MaterialIcons';
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 const ConsentTermScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
@@ -41,6 +43,18 @@ const ConsentTermScreen = ({ navigation, route }) => {
       }));
     }
   }, [route.params?.patientData, dispatch]);
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        handleBackPress();
+        return true; 
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [loading, signaturePhoto])
+  );
 
   // Handle signature photo from camera
   useEffect(() => {
@@ -122,18 +136,15 @@ const ConsentTermScreen = ({ navigation, route }) => {
             text: "Sair sem salvar", 
             style: "destructive",
             onPress: () => {
-              if (navigation.canGoBack()) {
-                navigation.goBack();
-              } else {
                 navigation.navigate('NovoPaciente');
-              }
+              
             }
           }
         ]
       );
     } else {
       if (navigation.canGoBack()) {
-        navigation.goBack();
+        navigation.navigate('NovoPaciente');
       } else {
         navigation.navigate('NovoPaciente');
       }

@@ -14,7 +14,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { useSelector } from 'react-redux';
-
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 const CameraScreen = ({ navigation }) => {
   const [cameraPermission, requestPermission] = useCameraPermissions();
   const [facing, setFacing] = useState('back');
@@ -26,6 +27,18 @@ const CameraScreen = ({ navigation }) => {
   const toggleCameraFacing = () => {
     setFacing(current => (current === 'back' ? 'front' : 'back'));
   };
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AddInjury');
+        return true;
+      };
+      
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const selectImage = async () => {
     try {
@@ -85,8 +98,8 @@ const CameraScreen = ({ navigation }) => {
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
+              onPress={() => navigation.navigate('AddInjury')}
+              >
               <Icon name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Câmera</Text>
@@ -107,8 +120,8 @@ const CameraScreen = ({ navigation }) => {
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
-              onPress={() => navigation.goBack()}
-            >
+              onPress={() => navigation.navigate('AddInjury')}
+              >
               <Icon name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>Permissão Necessária</Text>
@@ -140,8 +153,8 @@ const CameraScreen = ({ navigation }) => {
             
             <TouchableOpacity
               style={[styles.button, {backgroundColor: '#e74c3c', marginTop: 12}]}
-              onPress={() => navigation.goBack()}
-            >
+              onPress={() => navigation.navigate('AddInjury')}
+              >
               <Text style={styles.buttonText}>
                 Voltar
               </Text>
@@ -162,8 +175,8 @@ const CameraScreen = ({ navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
+            onPress={() => navigation.navigate('AddInjury')}
+            >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Capturar foto</Text>

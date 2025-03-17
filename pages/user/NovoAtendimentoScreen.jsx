@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import {
   View,
   Text,
@@ -12,6 +12,7 @@ import {
   Platform,
   Keyboard,
 } from 'react-native';
+import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
 import DateTimePicker from '@react-native-community/datetimepicker';
@@ -29,7 +30,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   const authenticated = useSelector(state => state.auth.isAuthenticated);
   const token = useSelector(state => state.auth.accessToken);
   
-  // Get patient data from Redux store
   const { 
     patientData, 
     checkingCpf, 
@@ -40,7 +40,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [lastCheckedCpf, setLastCheckedCpf] = useState('');
   
-  // Debounce timer for CPF checking
   const cpfCheckTimerRef = useRef(null);
 
   const initialFormData = {
@@ -59,13 +58,28 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   const [formData, setFormData] = useState(initialFormData);
   const [errors, setErrors] = useState({});
 
+  const resetForm = () => {
+    setFormData(initialFormData);
+    setErrors({});
+    setLastCheckedCpf('');
+    dispatch(clearPatientFound());
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.formCompleted) {
+        resetForm();
+        navigation.setParams({ formCompleted: undefined });
+      }
+    }, [route.params?.formCompleted])
+  );
+
   useEffect(() => {
     if (route.params?.patientData) {
       populateFormWithPatientData(route.params.patientData);
     }
   }, [route.params]);
 
-  // Update form when patientData changes in Redux
   useEffect(() => {
     if (patientData && patientFound) {
       populateFormWithPatientData(patientData);
@@ -96,11 +110,9 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     });
   };
 
-  // CPF formatting and validation with debouncing
   useEffect(() => {
     const unformattedCpf = formData.cpf_paciente.replace(/\D/g, '');
     
-    // Auto-format CPF as user types
     if (unformattedCpf.length > 0) {
       const formattedCpf = formatCPF(unformattedCpf);
       if (formattedCpf !== formData.cpf_paciente) {
@@ -111,7 +123,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       }
     }
 
-    // Handle CPF checking with debounce
     if (cpfCheckTimerRef.current) {
       clearTimeout(cpfCheckTimerRef.current);
     }
@@ -130,7 +141,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   }, [formData.cpf_paciente]);
 
   const formatCPF = (cpf) => {
-    cpf = cpf.replace(/\D/g, ''); // Remove non-digits
+    cpf = cpf.replace(/\D/g, '');
     if (cpf.length > 11) cpf = cpf.slice(0, 11);
     
     if (cpf.length <= 3) return cpf;
@@ -149,7 +160,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
     return `(${phone.slice(0, 2)}) ${phone.slice(2, 7)}-${phone.slice(7)}`;
   };
 
-  // Format SUS card number
   const formatSUS = (number) => {
     number = number.replace(/\D/g, '');
     if (number.length > 15) number = number.slice(0, 15);
@@ -228,12 +238,10 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       newErrors.num_cartao_sus = 'O número do SUS deve ter 15 dígitos';
     }
     
-    // Address validation
     if (!formData.endereco_paciente.trim()) {
       newErrors.endereco_paciente = 'Endereço é obrigatório';
     }
     
-    // Phone validation
     const phoneDigits = formData.telefone_paciente.replace(/\D/g, '');
     if (!phoneDigits) {
       newErrors.telefone_paciente = 'Telefone é obrigatório';
@@ -241,7 +249,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       newErrors.telefone_paciente = 'Telefone deve ter entre 10 e 11 dígitos';
     }
     
-    // Email validation
     if (!formData.email_paciente.trim()) {
       newErrors.email_paciente = 'Email é obrigatório';
     } else {
@@ -251,7 +258,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       }
     }
     
-    // Autoriza pesquisa validation
     if (formData.autoriza_pesquisa === null) {
       newErrors.autoriza_pesquisa = 'Selecione uma opção';
     }
@@ -263,10 +269,7 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   const handleInputChange = (field, value) => {
     let processedValue = value;
     
-    // Apply special formatting based on field type
-    if (field === 'cpf_paciente') {
-      // CPF formatting handled in useEffect
-    } else if (field === 'telefone_paciente') {
+    if (field === 'telefone_paciente') {
       processedValue = formatPhone(value);
     } else if (field === 'num_cartao_sus') {
       processedValue = formatSUS(value);
@@ -288,7 +291,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   };
 
   const handleDateChange = (event, selectedDate) => {
-    // On Android, when the user cancels, selectedDate will be undefined
     if (Platform.OS === 'android') {
       setShowDatePicker(false);
     }
@@ -301,7 +303,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       
       handleInputChange('data_nascimento', formattedDate);
       
-      // For Android, we need to hide the picker after selection
       if (Platform.OS === 'android') {
         setShowDatePicker(false);
       }
@@ -314,9 +315,11 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       return;
     }
 
-    // If patient already exists, just navigate to the NovoPaciente screen with the existing data
     if (patientFound && patientData) {
-      navigation.navigate('NovoPaciente', { atendimentoData: patientData });
+      navigation.navigate('NovoPaciente', { 
+        atendimentoData: patientData,
+        onComplete: () => navigation.navigate('NovoAtendimento', { formCompleted: true })
+      });
       return;
     }
 
@@ -333,7 +336,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
         sexo: formData.sexo === 'Feminino' ? 'F' : formData.sexo === 'Masculino' ? 'M' : 'O'
       };
 
-      // Register the new patient
       const resultAction = await dispatch(registerNewPatient({ 
         formData: patientFormData, 
         token 
@@ -341,7 +343,10 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
       
       if (registerNewPatient.fulfilled.match(resultAction)) {
         const newPatientData = resultAction.payload;
-        navigation.navigate('NovoPaciente', { atendimentoData: newPatientData });
+        navigation.navigate('NovoPaciente', { 
+          atendimentoData: newPatientData,
+          onComplete: () => navigation.navigate('NovoAtendimento', { formCompleted: true })
+        });
       } else {
         throw new Error(resultAction.payload || 'Failed to register patient');
       }
@@ -353,7 +358,6 @@ const NovoAtendimentoScreen = ({ navigation, route }) => {
   const parseDate = (dateString) => {
     try {
       const [year, month, day] = dateString.split('-').map(num => parseInt(num, 10));
-      // Month is 0-indexed in JavaScript Date
       const date = new Date(year, month - 1, day);
       return isNaN(date.getTime()) ? new Date() : date;
     } catch (error) {

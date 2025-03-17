@@ -15,7 +15,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateFormField } from '../../../store/injurySlice';
 import { API_URL } from '@env';
-
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 export const InjuryLocationScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const dispatch = useDispatch();
@@ -75,6 +76,17 @@ export const InjuryLocationScreen = ({ navigation }) => {
       setIsLoading(false);
     }
   };
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('NovoPaciente');
+        return true;
+      };
+      
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
   
   useEffect(() => {
     fetchLocations();
@@ -142,7 +154,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => navigation.navigate('AddInjury')}
               accessibilityLabel="Voltar"
             >
               <Icon name="arrow-back" size={24} color="#fff" />
@@ -166,7 +178,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
-              onPress={() => navigation.goBack()}
+              onPress={() => navigation.navigate('AddInjury')}
               accessibilityLabel="Voltar"
             >
               <Icon name="arrow-back" size={24} color="#fff" />
@@ -196,7 +208,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate('AddInjury')}
             accessibilityLabel="Voltar"
           >
             <Icon name="arrow-back" size={24} color="#fff" />

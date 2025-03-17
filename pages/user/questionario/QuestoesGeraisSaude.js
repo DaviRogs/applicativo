@@ -9,11 +9,12 @@ import {
   TextInput,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressBar from '../../../components/ProgressBar';
 import { atualizarQuestoesGerais, avancarEtapa } from '../../../store/anamnesisSlice';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 const QuestoesGeraisSaude = () => {
   const navigation = useNavigation();
@@ -23,6 +24,20 @@ const QuestoesGeraisSaude = () => {
   
   const [formData, setFormData] = useState(questoesGeraisState);
   const [errors, setErrors] = useState({});
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('NovoPaciente');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
 
   const handleDoencaCronicaChange = (doenca) => {
     setFormData(prev => ({
@@ -161,8 +176,8 @@ const QuestoesGeraisSaude = () => {
       </View>
 
       <ProgressBar 
-        currentStep={progressoQuestionario.etapaAtual} 
-        totalSteps={progressoQuestionario.totalEtapas}
+        currentStep={1} 
+        totalSteps={5}
       />
 
       <ScrollView style={styles.content}>

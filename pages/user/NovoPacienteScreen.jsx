@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   Text,
@@ -8,6 +8,7 @@ import {
   Alert,
   Platform,
   ActivityIndicator,
+  Modal,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -16,15 +17,24 @@ import {
   submitPatientData, 
   selectIsReadyForSubmission,
   selectValidationErrors,
-  selectSubmissionStatus
+  selectSubmissionStatus,
+  clearSubmissionData
 } from '../../store/formSubmissionSlice';
+import { clearPatientFound } from '../../store/patientSlice';
+import { resetarQuestionario } from '../../store/anamnesisSlice';
+import { resetConsentForm } from '../../store/consentTermSlice';
+import { resetForm } from '../../store/injurySlice';
+
+import { useFocusEffect } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 const NovoPacienteScreen = ({ navigation, route }) => {
   const [injuries, setInjuries] = useState([]);
+  const [showDiscardModal, setShowDiscardModal] = useState(false);
   
   const dispatch = useDispatch();
 
-  // paciente Data
+  // patient Data
   const patientData = useSelector(state => state.patient.patientData);
   
   // Get values from redux state
@@ -36,6 +46,33 @@ const NovoPacienteScreen = ({ navigation, route }) => {
   const submissionStatus = useSelector(selectSubmissionStatus);
   const isSaving = submissionStatus === 'pending';
   const accessToken = useSelector(state => state.auth?.accessToken);
+
+  const resetAllStates = () => {
+    // Reset all Redux states
+    dispatch(clearSubmissionData());
+    dispatch(clearPatientFound());
+    dispatch(resetarQuestionario());
+    dispatch(resetConsentForm());
+    dispatch(resetForm());
+    
+    // Navigate to Home
+    navigation.navigate('Home');
+  };
+
+  useFocusEffect(
+    useCallback(() => {
+      const onBackPress = () => {
+        if (!showDiscardModal) {
+          setShowDiscardModal(true);
+          return true; // Prevent default behavior
+        }
+        return true;
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [showDiscardModal])
+  );
 
   useEffect(() => {
     if (route.params && route.params.injuries) {
@@ -122,10 +159,41 @@ const NovoPacienteScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      {/* Discard Changes Modal */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={showDiscardModal}
+        onRequestClose={() => setShowDiscardModal(false)}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Descartar alterações</Text>
+            <Text style={styles.modalMessage}>
+              Tem certeza que deseja sair? Todas as alterações serão perdidas.
+            </Text>
+            <View style={styles.modalButtonContainer}>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.modalCancelButton]} 
+                onPress={() => setShowDiscardModal(false)}
+              >
+                <Text style={styles.modalCancelButtonText}>Cancelar</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={[styles.modalButton, styles.modalConfirmButton]}
+                onPress={resetAllStates}
+              >
+                <Text style={styles.modalConfirmButtonText}>Sim, descartar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => setShowDiscardModal(true)}
           disabled={isSaving}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
@@ -387,7 +455,70 @@ const styles = StyleSheet.create({
     fontSize: 12,
     marginBottom: 8,
     lineHeight: 18
-  }
+  },
+  // Modal styles
+  modalContainer: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: 20,
+  },
+  modalContent: {
+    backgroundColor: 'white',
+    borderRadius: 8,
+    padding: 20,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  modalTitle: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    marginBottom: 12,
+    color: '#333',
+  },
+  modalMessage: {
+    fontSize: 16,
+    marginBottom: 24,
+    color: '#666',
+    lineHeight: 22,
+  },
+  modalButtonContainer: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+  },
+  modalButton: {
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 6,
+    marginLeft: 10,
+  },
+  modalCancelButton: {
+    backgroundColor: '#f8f8f8',
+    borderWidth: 1,
+    borderColor: '#ddd',
+  },
+  modalConfirmButton: {
+    backgroundColor: '#e74c3c',
+  },
+  modalCancelButtonText: {
+    color: '#666',
+    fontSize: 14,
+    fontWeight: '500',
+  },
+  modalConfirmButtonText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '500',
+  },
 });
 
 export default NovoPacienteScreen;

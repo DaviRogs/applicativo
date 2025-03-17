@@ -23,9 +23,11 @@ import {
   addInjury,
   updateInjury,
   setSaving,
+  addPhoto,
 } from '../../../store/injurySlice';
 
-
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 const generateUniqueId = () => {
   return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
 };
@@ -36,6 +38,20 @@ const AddInjuryScreen = ({ navigation, route }) => {
   const { location, description, photos, isEditing, injuryId } = useSelector(state => state.injury.formState);
   const isSaving = useSelector(state => state.injury.isSaving);
 
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('InjuryList');
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
   useEffect(() => {
     if (route.params?.injury) {
       const injury = route.params.injury;
@@ -44,7 +60,7 @@ const AddInjuryScreen = ({ navigation, route }) => {
         description: injury.description || '',
         photos: injury.photos || [],
         isEditing: true,
-        injuryId: injury.injuryId,
+        injuryId: injury.id,
       }));
       
       navigation.setParams({ injury: undefined });
@@ -155,8 +171,8 @@ const AddInjuryScreen = ({ navigation, route }) => {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
+            onPress={() => navigation.navigate('InjuryList')}
+            >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>

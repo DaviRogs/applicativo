@@ -123,6 +123,13 @@ const LoginScreen = ({ navigation }) => {
             />
           </View>
 
+          <TouchableOpacity
+            onPress={() => navigation.navigate('EsqueciSenha')}
+            disabled={isLoading}
+          >
+            <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
+          </TouchableOpacity>
+
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
               style={[
@@ -138,25 +145,17 @@ const LoginScreen = ({ navigation }) => {
                 <Text style={styles.continueButtonText}>Entrar</Text>
               )}
             </TouchableOpacity>
-
-            <TouchableOpacity 
-              style={styles.cancelButton} 
-              onPress={() => navigation.navigate('FirstAccess')}
-              disabled={isLoading}
-            >
-              <Text style={styles.cancelButtonText}>Não possuo cadastro</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 };
+
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor:'#FCFCFC'
-
   },
   scrollContainer: {
     flexGrow: 1,
@@ -182,9 +181,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    // gap: 20,
-    // marginTop: 20,
-    // marginBottom: 40,
   },
   logo: {
     width: "100%",
@@ -221,6 +217,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingLeft: 0,
   },
+  forgotPasswordText: {
+    color: '#1e3d59',
+    fontSize: 14,
+    textDecorationLine: 'underline',
+    textAlign: 'right',
+    marginTop: 5,
+    marginBottom: 10,
+  },
   buttonContainer: {
     marginTop: 'auto',
     marginBottom: 24,
@@ -235,18 +239,6 @@ const styles = StyleSheet.create({
   continueButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
-  },
-  cancelButton: {
-    borderWidth: 1,
-    borderColor: '#1e3d59',
-    padding: 10,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  cancelButtonText: {
-    color: '#1e3d59',
-    fontSize: 12,
     fontWeight: '500',
   },
   errorText: {

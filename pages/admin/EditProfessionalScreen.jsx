@@ -23,17 +23,34 @@ const EditProfessionalScreen = ({ navigation, route }) => {
   const token = useSelector(state => state.auth.accessToken);
   
   const [isActive, setIsActive] = useState(professional?.fl_ativo || false);
-  const [selectedRole, setSelectedRole] = useState(professional?.nivel_acesso || 3);
+  const [selectedRole, setSelectedRole] = useState(professional?.nivel_acesso || 1);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [roleModalVisible, setRoleModalVisible] = useState(false);
-  const [currentDate, setCurrentDate] = useState('2025-03-06 16:07:22');
+  const [currentDate, setCurrentDate] = useState('');
+
+  useEffect(() => {
+    const updateCurrentDate = () => {
+      const now = new Date();
+      const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
+      setCurrentDate(formattedDate);
+    };
+    
+    updateCurrentDate();
+    const intervalId = setInterval(updateCurrentDate, 60000); // Update every minute
+    
+    return () => clearInterval(intervalId);
+  }, []);
 
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 1 },
+    { id: 1, name: "Pesquisador", nivel_acesso: 1},
     { id: 2, name: "Supervisor", nivel_acesso: 2 },
     { id: 3, name: "Admin", nivel_acesso: 3 }
   ];
+
+  const availableRoles = isAdmin 
+    ? roles 
+    : roles.filter(role => role.nivel_acesso !== 1); 
 
   const formatCPF = (cpf) => {
     if (!cpf) return '';
@@ -114,8 +131,8 @@ const EditProfessionalScreen = ({ navigation, route }) => {
         </View>
 
         <View style={styles.headerInfo}>
-          <Text style={styles.userText}>Usuário: {userData?.nome_usuario}</Text>
-          <Text style={styles.userText}>Email: {userData?.email}</Text>
+          <Text style={styles.userText}>Usuário: {userData?.nome_usuario || 'Usuário atual'}</Text>
+          <Text style={styles.userText}>Email: {userData?.email || 'Email não disponível'}</Text>
           <Text style={styles.dateText}>{currentDate} (UTC)</Text>
         </View>
 
@@ -187,7 +204,7 @@ const EditProfessionalScreen = ({ navigation, route }) => {
           >
             <Text style={styles.modalTitle}>Selecionar Permissão</Text>
             
-            {roles.map((role) => (
+            {availableRoles.map((role) => (
               <TouchableOpacity 
                 key={role.id}
                 style={[
@@ -354,7 +371,6 @@ const styles = StyleSheet.create({
   switchLabel: {
     fontSize: 16,
     color: '#333',
-    fontWeight: isActive => isActive ? '600' : '400',
   },
   // Modal styles
   modalOverlay: {

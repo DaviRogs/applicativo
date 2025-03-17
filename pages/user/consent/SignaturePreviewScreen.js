@@ -43,8 +43,8 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
   
   const handleSafeGoBack = () => {
     if (navigation.canGoBack()) {
-      navigation.goBack();
-    } else {
+      navigation.navigate('ConsentTerm');
+        } else {
       if (readOnly) {
         navigation.navigate('ConsentTerm');
       } else {

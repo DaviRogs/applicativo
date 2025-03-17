@@ -14,16 +14,32 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch } from 'react-redux';
 import { addPhoto } from '../../../store/injurySlice';
 
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
+
+
 export const PhotoPreviewScreen = ({ route, navigation }) => {
   const dispatch = useDispatch();
   const { photo, viewOnly, index, onDelete } = route.params || {};
 
   if (!photo || !photo.uri) {
     Alert.alert('Erro', 'Imagem inválida', [
-      { text: 'OK', onPress: () => navigation.goBack() }
+      { text: 'OK', onPress: () => navigation.navigate('AddInjury') }
     ]);
     return null;
   }
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('AddInjury');
+        return true;
+      };
+      
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const handleSavePhoto = () => {
     // Add photo to Redux store
@@ -47,8 +63,7 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
             text: "Excluir",
             onPress: () => {
               onDelete();
-              navigation.goBack();
-            },
+              navigation.navigate('AddInjury');            },
             style: "destructive"
           }
         ]
@@ -62,8 +77,8 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
-            onPress={() => navigation.goBack()}
-          >
+            onPress={() => navigation.navigate('AddInjury')}
+            >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
@@ -91,8 +106,8 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
               style={styles.discardButton}
-              onPress={() => navigation.goBack()}
-            >
+              onPress={() => navigation.navigate('AddInjury')}
+              >
               <Icon name="close" size={20} color="#1e3d59" />
               <Text style={styles.discardButtonText}>Descartar</Text>
             </TouchableOpacity>
@@ -111,8 +126,8 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
           <View style={styles.buttonContainer}>
             <TouchableOpacity 
               style={styles.backFullButton}
-              onPress={() => navigation.goBack()}
-            >
+              onPress={() => navigation.navigate('AddInjury')}
+              >
               <Icon name="arrow-back" size={20} color="#fff" />
               <Text style={styles.backButtonText}>Voltar</Text>
             </TouchableOpacity>

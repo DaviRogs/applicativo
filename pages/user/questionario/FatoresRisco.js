@@ -8,11 +8,12 @@ import {
   ScrollView,
   Alert,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressBar from '../../../components/ProgressBar';
 import { atualizarFatoresRisco, avancarEtapa, voltarEtapa }  from '../../../store/anamnesisSlice';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 const FatoresRisco = () => {
   const navigation = useNavigation();
@@ -22,6 +23,20 @@ const FatoresRisco = () => {
   
   const [formData, setFormData] = useState(fatoresRiscoState);
   const [errors, setErrors] = useState({});
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('HistoricoCancer');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
 
   const validateForm = () => {
     let formErrors = {};
@@ -132,8 +147,8 @@ const FatoresRisco = () => {
       </View>
 
       <ProgressBar 
-        currentStep={progressoQuestionario.etapaAtual} 
-        totalSteps={progressoQuestionario.totalEtapas}
+        currentStep={4} 
+        totalSteps={5}
       />
 
       <ScrollView style={styles.content}>

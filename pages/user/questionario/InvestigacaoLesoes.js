@@ -9,11 +9,12 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressBar from '../../../components/ProgressBar';
 import { atualizarInvestigacaoLesoes, voltarEtapa } from '../../../store/anamnesisSlice';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 const InvestigacaoLesoes = () => {
   const navigation = useNavigation();
@@ -24,6 +25,20 @@ const InvestigacaoLesoes = () => {
   const [formData, setFormData] = useState(investigacaoLesoesState);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('FatoresRisco');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
 
   const validateForm = () => {
     let formErrors = {};
@@ -129,8 +144,8 @@ const InvestigacaoLesoes = () => {
       </View>
 
       <ProgressBar 
-        currentStep={progressoQuestionario.etapaAtual} 
-        totalSteps={progressoQuestionario.totalEtapas}
+        currentStep={5} 
+        totalSteps={5}
       />
 
       <ScrollView style={styles.content}>

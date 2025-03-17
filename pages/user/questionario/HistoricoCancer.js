@@ -9,11 +9,12 @@ import {
   Alert,
   TextInput,
 } from 'react-native';
-import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressBar from '../../../components/ProgressBar';
 import { atualizarHistoricoCancer, avancarEtapa, voltarEtapa } from '../../../store/anamnesisSlice';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
 const HistoricoCancer = () => {
   const navigation = useNavigation();
@@ -68,6 +69,20 @@ const HistoricoCancer = () => {
     dispatch(voltarEtapa());
     navigation.navigate('AvaliacaoFototipo');
   };
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('AvaliacaoFototipo');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
 
   const handleAdvance = () => {
     if (validateForm()) {
@@ -129,8 +144,8 @@ const HistoricoCancer = () => {
       </View>
 
       <ProgressBar 
-        currentStep={progressoQuestionario.etapaAtual} 
-        totalSteps={progressoQuestionario.totalEtapas}
+        currentStep={3} 
+        totalSteps={5}
       />
 
       <ScrollView style={styles.content}>

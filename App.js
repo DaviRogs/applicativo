@@ -18,8 +18,6 @@ LogBox.ignoreLogs([
 // Import screens
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
-import FirstAccessScreen from './pages/FirstScreen';
-import VerificationScreen from './pages/VerificationScreen';
 import LoadingScreen from './pages/LoadingScreen';
 import CreatePasswordScreen from './pages/CreatePasswordScreen';
 import SuccessScreen from './pages/SuccessScreen';
@@ -27,6 +25,8 @@ import InitialScreen from './pages/InitialScreen';
 import HomeScreen from './pages/user/HomeScreen';
 import NovoAtendimentoScreen from './pages/user/NovoAtendimentoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
+import EsqueciSenhaScreen from './pages/EsqueciSenhaScreen';
+import RedefinirSenhaScreen from './pages/RedefinirSenhaScreen';
 
 // Admin imports
 import HomeAdminScreen from './pages/admin/HomeAdminScreen';
@@ -103,7 +103,15 @@ const AppContent = () => {
         if (token) {
           console.log("Token found in deep link:", token);
           initialLinkProcessed.current = true;
-          navigationRef.current?.navigate('Register', { token });
+          
+          // Check if it's a password reset link
+          if (url.includes('reset-password') || url.includes('redefinir-senha')) {
+            navigationRef.current?.navigate('RedefinirSenha', { token });
+          } 
+          // Otherwise, assume it's a registration link
+          else {
+            navigationRef.current?.navigate('Register', { token });
+          }
         }
       }
     };
@@ -128,11 +136,11 @@ const AppContent = () => {
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="FirstAccess" component={FirstAccessScreen} />
-          <Stack.Screen name="Verification" component={VerificationScreen} />
           <Stack.Screen name="CreatePassword" component={CreatePasswordScreen} />
           <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
           <Stack.Screen name="InitialScreen" component={InitialScreen} />
+          <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />
+          <Stack.Screen name="RedefinirSenha" component={RedefinirSenhaScreen} />
         </>
       ) : (
         <>
@@ -145,8 +153,6 @@ const AppContent = () => {
               <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen } />
               <Stack.Screen name="RegisterHealthUnit" component={RegisterHealthUnitScreen} />
               <Stack.Screen name="EditHealthUnit" component={EditHealthUnitScreen} />
-               
-
             </>
           )}
           <Stack.Screen name="Home" component={HomeScreen} />
@@ -186,6 +192,7 @@ const App = () => {
         Register: 'register',
         Login: 'login',
         Home: 'home',
+        RedefinirSenha: 'redefinir-senha',
       },
     },
   };

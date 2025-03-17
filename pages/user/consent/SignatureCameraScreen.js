@@ -40,7 +40,7 @@ const SignatureCameraScreen = ({ navigation }) => {
     if (loading) return;
 
     if (navigation.canGoBack()) {
-      navigation.goBack();
+      navigation.navigate('ConsentTerm');
     } else {
       navigation.navigate('ConsentTerm');
     }
