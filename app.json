@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "applicativo",
+    "name": "DermAlert",
     "slug": "applicativo",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -12,19 +12,21 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
+    "scheme": "dermalert",
     "ios": {
       "infoPlist": {
         "NSCameraUsageDescription": "This app uses the camera to capture photos of injuries",
         "NSPhotoLibraryUsageDescription": "This app uses the photo library to select injury images"
       },
-      "bundleIdentifier": "com.anonymous.applicativo"
+      "bundleIdentifier": "com.anonymous.applicativo",
+      "associatedDomains": ["applinks:dermalert.example.com"]
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-    "permissions": [
+      "permissions": [
         "CAMERA",
         "READ_EXTERNAL_STORAGE",
         "WRITE_EXTERNAL_STORAGE",
@@ -33,8 +35,24 @@
         "android.permission.INTERNET",
         "android.permission.ACCESS_NETWORK_STATE"
       ],
-      
-      "package": "com.anonymous.applicativo"
+      "package": "com.anonymous.applicativo",
+      "intentFilters": [
+        {
+          "action": "VIEW",
+          "autoVerify": true,
+          "data": [
+            {
+              "scheme": "https",
+              "host": "dermalert.example.com",
+              "pathPrefix": "/"
+            },
+            {
+              "scheme": "dermalert"
+            }
+          ],
+          "category": ["BROWSABLE", "DEFAULT"]
+        }
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"

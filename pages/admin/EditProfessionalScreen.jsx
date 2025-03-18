@@ -13,8 +13,10 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 import {API_URL} from '@env';
+import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
-const EditProfessionalScreen = ({ navigation, route }) => {
+const EditProfessionalScreen = ({ route }) => {
   const { professional } = route.params || {};
   
   const isAdmin = useSelector(selectIsAdmin);
@@ -28,7 +30,22 @@ const EditProfessionalScreen = ({ navigation, route }) => {
   const [error, setError] = useState(null);
   const [roleModalVisible, setRoleModalVisible] = useState(false);
   const [currentDate, setCurrentDate] = useState('');
+  const navigation = useNavigation();
 
+
+          useFocusEffect(
+            React.useCallback(() => {
+              const onBackPress = () => {
+                navigation.navigate('ProfessionalsList');
+                return true; // Prevent default behavior
+              };
+          
+              BackHandler.addEventListener('hardwareBackPress', onBackPress);
+          
+              return () => 
+                BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+            }, [navigation])
+          );
   useEffect(() => {
     const updateCurrentDate = () => {
       const now = new Date();
@@ -100,7 +117,7 @@ const EditProfessionalScreen = ({ navigation, route }) => {
       Alert.alert(
         "Sucesso",
         "Dados do profissional atualizados com sucesso!",
-        [{ text: "OK", onPress: () => navigation.goBack() }]
+        [{ text: "OK", onPress: () => navigation.navigate('ProfessionalsList')}]
       );
       
     } catch (err) {
@@ -114,7 +131,7 @@ const EditProfessionalScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate('ProfessionalsList')}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profissional</Text>
@@ -176,7 +193,7 @@ const EditProfessionalScreen = ({ navigation, route }) => {
           
           <TouchableOpacity 
             style={styles.secondaryButton}
-            onPress={() => navigation.goBack()}
+            onPress={() => navigation.navigate('ProfessionalsList')}
             disabled={isLoading}
           >
             <Text style={styles.secondaryButtonText}>Cancelar</Text>

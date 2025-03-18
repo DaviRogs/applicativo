@@ -186,7 +186,7 @@ const AppContent = () => {
 
 const App = () => {
   const linking = {
-    prefixes: ['myapp://', 'https://myapp.com'],
+    prefixes: ['dermalert://', 'https://dermalert.example.com'],
     config: {
       screens: {
         Register: 'register',

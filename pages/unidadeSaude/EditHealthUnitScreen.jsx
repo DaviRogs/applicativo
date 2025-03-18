@@ -14,8 +14,10 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
-
-export const EditHealthUnitScreen = ({ navigation, route }) => {
+import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
+import { API_URL } from '@env';
+export const EditHealthUnitScreen = ({  route }) => {
   const { unit } = route.params || {};
   const userData = useSelector(state => state.user.userData);
   
@@ -27,11 +29,29 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const navigation = useNavigation();
+  
  
 
   // Get user role from Redux
   const isAdmin = useSelector(selectIsAdmin);
   const token = useSelector(state => state.auth.accessToken);
+
+
+            useFocusEffect(
+              React.useCallback(() => {
+                const onBackPress = () => {
+                  navigation.navigate('HealthUnitList');
+                  return true; // Prevent default behavior
+                };
+            
+                BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            
+                return () => 
+                  BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+              }, [navigation])
+            );
+    
 
   // Load unit data when component mounts
   useEffect(() => {
@@ -51,7 +71,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
     } else {
       // No unit provided, go back
       Alert.alert('Erro', 'Dados da unidade não fornecidos');
-      navigation.goBack();
+      // navigation.navigate('HealthUnitList');
     }
 
     // Check if user is admin, if not, redirect back
@@ -59,7 +79,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
       Alert.alert(
         'Acesso Negado',
         'Você não tem permissão para acessar esta página.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
+        [{ text: 'OK', onPress: () =>  navigation.navigate('HealthUnitList') }]
       );
     }
   }, [unit, isAdmin, navigation]);
@@ -156,7 +176,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
 
   const handleCloseSuccessModal = () => {
     setSuccessModalVisible(false);
-    navigation.goBack();
+    navigation.navigate('HealthUnitList');
   };
 
   // Header with date and user info
@@ -171,7 +191,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
     return (
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity onPress={() => navigation.goBack()}>
+          <TouchableOpacity onPress={ () =>navigation.navigate('HealthUnitList')}>
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Editar Unidade de Saúde</Text>
@@ -187,7 +207,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={ ()=>navigation.navigate('HealthUnitList')}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Editar Unidade de Saúde</Text>
@@ -283,7 +303,7 @@ export const EditHealthUnitScreen = ({ navigation, route }) => {
           
           <TouchableOpacity 
             style={styles.secondaryButton}
-            onPress={() => navigation.goBack()}
+            onPress={() =>  navigation.navigate('HealthUnitList')            }
             disabled={isLoading}
           >
             <Text style={styles.secondaryButtonText}>Cancelar</Text>

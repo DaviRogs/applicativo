@@ -14,8 +14,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 import {API_URL} from '@env';
+import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
-const ProfessionalsListScreen = ({ navigation }) => {
+
+const ProfessionalsListScreen = () => {
   const [professionals, setProfessionals] = useState([]);
   const [filteredProfessionals, setFilteredProfessionals] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -26,6 +29,9 @@ const ProfessionalsListScreen = ({ navigation }) => {
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [currentDate, setCurrentDate] = useState('2025-03-06 15:49:13');
   const [currentUser, setCurrentUser] = useState('hannanhunny01');
+
+  const navigation = useNavigation();
+  
 
   // Get user role and unit from Redux
   const isAdmin = useSelector(selectIsAdmin);
@@ -38,6 +44,21 @@ const ProfessionalsListScreen = ({ navigation }) => {
     { id: 3, name: "Admin", nivel_acesso: 3 }
   ];
 
+
+      useFocusEffect(
+        React.useCallback(() => {
+          const onBackPress = () => {
+            navigation.navigate('HomeAdmin');
+            return true; // Prevent default behavior
+          };
+      
+          BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      
+          return () => 
+            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [navigation])
+      );
+  
   // Fetch professionals
   const fetchProfessionals = async () => {
     setIsLoading(true);
@@ -205,7 +226,7 @@ const ProfessionalsListScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate('HomeAdmin')}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profissionais</Text>

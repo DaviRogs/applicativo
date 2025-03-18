@@ -15,8 +15,10 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 import {API_URL} from '@env';
+import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
-export const HealthUnitListScreen = ({ navigation }) => {
+export const HealthUnitListScreen = ({  }) => {
   const [units, setUnits] = useState([]);
   const [filteredUnits, setFilteredUnits] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,9 +29,12 @@ export const HealthUnitListScreen = ({ navigation }) => {
   const [statusModalVisible, setStatusModalVisible] = useState(false);
   const [currentDate, setCurrentDate] = useState('2025-03-02 22:37:09');
   const [currentUser, setCurrentUser] = useState('hannanhunny01');
-    const userData = useSelector(state => state.user.userData);
+  const userData = useSelector(state => state.user.userData);
+
+  const navigation = useNavigation();
 
 
+    
   // Get user role from Redux
   const HealthUnitList = useSelector(selectIsAdmin);
   const token = useSelector(state => state.auth.accessToken);
@@ -41,6 +46,21 @@ export const HealthUnitListScreen = ({ navigation }) => {
     setCurrentDate(formattedDate);
   }, []);
 
+
+          useFocusEffect(
+            React.useCallback(() => {
+              const onBackPress = () => {
+                navigation.navigate('HomeAdmin');
+                return true; // Prevent default behavior
+              };
+          
+              BackHandler.addEventListener('hardwareBackPress', onBackPress);
+          
+              return () => 
+                BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+            }, [navigation])
+          );
+  
   // Fetch health units
   const fetchHealthUnits = async () => {
     // if (!isAdmin) {
@@ -207,7 +227,7 @@ export const HealthUnitListScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() =>navigation.navigate('HomeAdmin')}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Unidades de Saúde</Text>

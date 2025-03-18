@@ -15,8 +15,10 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 import {API_URL} from '@env';
+import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
-const RegisterHealthUnitScreen = ({ navigation, route }) => {
+const RegisterHealthUnitScreen = ({  route }) => {
   const [unitName, setUnitName] = useState('');
   const [location, setLocation] = useState('');
   const [unitCode, setUnitCode] = useState('');
@@ -27,10 +29,28 @@ const RegisterHealthUnitScreen = ({ navigation, route }) => {
   const [successModalVisible, setSuccessModalVisible] = useState(false);
   const [currentDate, setCurrentDate] = useState('2025-03-02 23:15:32');
   const [currentUser, setCurrentUser] = useState('hannanhunny01');
+
+    const navigation = useNavigation();
+  
   
   // Get user role from Redux
   const isAdmin = useSelector(selectIsAdmin);
   const token = useSelector(state => state.auth.accessToken);
+
+            useFocusEffect(
+              React.useCallback(() => {
+                const onBackPress = () => {
+                  navigation.navigate('HealthUnitList');
+                  return true; // Prevent default behavior
+                };
+            
+                BackHandler.addEventListener('hardwareBackPress', onBackPress);
+            
+                return () => 
+                  BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+              }, [navigation])
+            );
+    
 
   useEffect(() => {
     // Check if user is admin, if not, redirect back
@@ -38,7 +58,7 @@ const RegisterHealthUnitScreen = ({ navigation, route }) => {
       Alert.alert(
         'Acesso Negado',
         'Você não tem permissão para acessar esta página.',
-        [{ text: 'OK', onPress: () => navigation.goBack() }]
+        [{ text: 'OK', onPress: () =>       navigation.navigate('HealthUnitList')        }]
       );
     }
   }, [isAdmin, navigation]);
@@ -113,7 +133,7 @@ const RegisterHealthUnitScreen = ({ navigation, route }) => {
 
   const handleCloseSuccessModal = () => {
     setSuccessModalVisible(false);
-    navigation.goBack();
+    navigation.navigate('HealthUnitList');
   };
 
   // Header with date and user info
@@ -127,7 +147,7 @@ const RegisterHealthUnitScreen = ({ navigation, route }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() =>       navigation.navigate('HealthUnitList')}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Cadastrar Unidade de Saúde</Text>
@@ -218,7 +238,7 @@ const RegisterHealthUnitScreen = ({ navigation, route }) => {
           
           <TouchableOpacity 
             style={styles.secondaryButton}
-            onPress={() => navigation.goBack()}
+            onPress={() =>       navigation.navigate('HealthUnitList')            }
             disabled={isLoading}
           >
             <Text style={styles.secondaryButtonText}>Cancelar</Text>

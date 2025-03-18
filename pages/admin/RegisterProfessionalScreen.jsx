@@ -16,8 +16,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 import {API_URL} from '@env';
+import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
-const RegisterProfessionalScreen = ({ navigation }) => {
+
+const RegisterProfessionalScreen = () => {
   const [cpf, setCpf] = useState('');
   const [email, setEmail] = useState('');
   const [selectedRole, setSelectedRole] = useState(null);
@@ -25,6 +28,7 @@ const RegisterProfessionalScreen = ({ navigation }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
+  const navigation = useNavigation();
 
   const isAdmin = useSelector(selectIsAdmin);
   const userUnit = useSelector(state => state.user.userData.unidadeSaude[0]);
@@ -47,6 +51,21 @@ const RegisterProfessionalScreen = ({ navigation }) => {
     setSelectedRole(null);
     setError(null);
   };
+
+
+        useFocusEffect(
+          React.useCallback(() => {
+            const onBackPress = () => {
+              navigation.navigate('ProfessionalsList');
+              return true; // Prevent default behavior
+            };
+        
+            BackHandler.addEventListener('hardwareBackPress', onBackPress);
+        
+            return () => 
+              BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+          }, [navigation])
+        );
 
   const handleRegister = async () => {
     if (!cpf || !email || !selectedRole) {
@@ -144,13 +163,13 @@ const RegisterProfessionalScreen = ({ navigation }) => {
 
   const handleCloseSuccessModal = () => {
     setSuccessModalVisible(false);
-    navigation.goBack();
+    navigation.navigate('ProfessionalsList');
   };
 
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
+        <TouchableOpacity onPress={() => navigation.navigate('ProfessionalsList')}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Cadastrar Profissional</Text>
@@ -229,7 +248,7 @@ const RegisterProfessionalScreen = ({ navigation }) => {
         
         <TouchableOpacity 
           style={styles.secondaryButton}
-          onPress={() => navigation.goBack()}
+          onPress={() => navigation.navigate('ProfessionalsList')}
           disabled={isLoading}
         >
           <Text style={styles.secondaryButtonText}>Cancelar</Text>
