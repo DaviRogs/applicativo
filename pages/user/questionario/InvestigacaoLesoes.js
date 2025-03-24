@@ -8,10 +8,13 @@ import {
   ScrollView,
   Alert,
   TextInput,
+  StatusBar,
+  Platform,
+  ActivityIndicator
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import ProgressBar from '../../../components/ProgressBar';
+import ProgressSteps from '../../../components/ProgressBar';
 import { atualizarInvestigacaoLesoes, voltarEtapa } from '../../../store/anamnesisSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
@@ -26,19 +29,19 @@ const InvestigacaoLesoes = () => {
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('FatoresRisco');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        handleBack();
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const validateForm = () => {
     let formErrors = {};
@@ -118,11 +121,14 @@ const InvestigacaoLesoes = () => {
             key={index}
             style={styles.radioOption}
             onPress={() => handleOptionSelect(field, option.value)}
+            activeOpacity={0.7}
           >
             <View style={[
               styles.radioCircle,
               formData[field] === option.value && styles.radioSelected
-            ]} />
+            ]}>
+              {formData[field] === option.value && <View style={styles.radioInner} />}
+            </View>
             <Text style={styles.radioText}>{option.label}</Text>
           </TouchableOpacity>
         ))}
@@ -131,8 +137,12 @@ const InvestigacaoLesoes = () => {
     </View>
   );
 
+
+
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -143,12 +153,19 @@ const InvestigacaoLesoes = () => {
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
-      <ProgressBar 
-        currentStep={5} 
-        totalSteps={5}
-      />
+      <View style={styles.progressContainer}>
+        <ProgressSteps 
+          currentStep={5} 
+          totalSteps={5}
+          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+        />
+      </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        
         <Text style={styles.sectionTitle}>Investigação de Câncer de Pele e Lesões Suspeitas</Text>
 
         <View style={styles.questionContainer}>
@@ -199,18 +216,20 @@ const InvestigacaoLesoes = () => {
           {formData.consultaMedica === 'sim' && (
             <View>
               <Text style={styles.subQuestion}>Se sim, qual foi o diagnóstico?</Text>
-              <TextInput
-                style={styles.textInput}
-                placeholder="Descreva o diagnóstico médico"
-                placeholderTextColor="#999"
-                multiline={true}
-                numberOfLines={3}
-                value={formData.diagnosticoMedico}
-                onChangeText={(text) => setFormData(prev => ({
-                  ...prev,
-                  diagnosticoMedico: text
-                }))}
-              />
+              <View style={styles.textInputContainer}>
+                <TextInput
+                  style={styles.textInput}
+                  placeholder="Descreva o diagnóstico médico"
+                  placeholderTextColor="#999"
+                  multiline={true}
+                  numberOfLines={3}
+                  value={formData.diagnosticoMedico}
+                  onChangeText={(text) => setFormData(prev => ({
+                    ...prev,
+                    diagnosticoMedico: text
+                  }))}
+                />
+              </View>
               {errors.diagnosticoMedico && (
                 <Text style={styles.errorText}>{errors.diagnosticoMedico}</Text>
               )}
@@ -219,30 +238,44 @@ const InvestigacaoLesoes = () => {
         </View>
 
         <View style={styles.infoBox}>
-        <Icon name="info-outline" size={20} color="#1e3d59" style={styles.infoIcon} />
-        <Text style={styles.infoText}>
+          <Icon name="info-outline" size={24} color="#1e3d59" style={styles.infoIcon} />
+          <Text style={styles.infoText}>
             Atenção: Oriente os pacientes a procurarem um dermatologista regularmente para exames de pele, 
             especialmente se houver qualquer alteração em pintas ou manchas existentes.
-        </Text>
+          </Text>
         </View>
-
 
         <View style={styles.navigationButtons}>
           <TouchableOpacity 
             style={[styles.navigationButton, styles.backBtn]}
             onPress={handleBack}
+            activeOpacity={0.7}
           >
+            <Icon name="arrow-back" size={18} color="#1e3d59" style={styles.buttonIcon} />
             <Text style={styles.backButtonText}>Voltar</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={[styles.navigationButton, styles.submitButton, submitting && styles.buttonDisabled]}
+            style={[
+              styles.navigationButton, 
+              styles.submitButton, 
+              submitting && styles.buttonDisabled
+            ]}
             onPress={handleSubmit}
             disabled={submitting}
+            activeOpacity={0.7}
           >
-            <Text style={styles.submitButtonText}>
-              {submitting ? 'Enviando...' : 'Concluir'}
-            </Text>
+            {submitting ? (
+              <View style={styles.submitContent}>
+                <ActivityIndicator size="small" color="#fff" style={styles.submitLoader} />
+                <Text style={styles.submitButtonText}>Enviando...</Text>
+              </View>
+            ) : (
+              <View style={styles.submitContent}>
+                <Text style={styles.submitButtonText}>Concluir</Text>
+                <Icon name="check-circle" size={18} color="#fff" style={styles.buttonIcon} />
+              </View>
+            )}
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -259,8 +292,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 26,
-    height: 90,
+    paddingTop: Platform.OS === 'ios' ? 44 : 26,
+    height: Platform.OS === 'ios' ? 90 : 80,
     paddingHorizontal: 16,
   },
   backButton: {
@@ -271,13 +304,41 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
   },
+  progressContainer: {
+    backgroundColor: '#f8f8f8',
+  },
   content: {
     flex: 1,
     padding: 16,
   },
+  headerInfo: {
+    backgroundColor: '#f8f8f8',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  infoIcon: {
+    marginRight: 8,
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#555',
+    fontWeight: '500',
+  },
+  userText: {
+    fontSize: 14,
+    color: '#555',
+  },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
     marginBottom: 24,
   },
@@ -289,14 +350,15 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#333',
     marginBottom: 12,
   },
   subQuestion: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 12,
-    marginBottom: 8,
+    fontSize: 15,
+    color: '#555',
+    marginTop: 16,
+    marginBottom: 10,
   },
   radioGroupContainer: {
     marginBottom: 8,
@@ -311,14 +373,23 @@ const styles = StyleSheet.create({
     marginRight: 24,
     marginBottom: 12,
     width: '45%',
+    paddingVertical: 6,
   },
   radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: '#1e3d59',
     marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#fff',
   },
   radioSelected: {
     backgroundColor: '#1e3d59',
@@ -327,27 +398,29 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
-  textInput: {
+  textInputContainer: {
     borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 8,
+    backgroundColor: '#f9f9f9',
+    marginTop: 4,
+  },
+  textInput: {
     padding: 12,
-    fontSize: 14,
+    fontSize: 15,
     color: '#333',
     minHeight: 80,
     textAlignVertical: 'top',
   },
   infoBox: {
-    backgroundColor: '#f0f7fc',
+    backgroundColor: '#e3f2fd',
     borderRadius: 8,
     padding: 16,
     marginBottom: 24,
     flexDirection: 'row',
     alignItems: 'flex-start',
-  },
-  infoIcon: {
-    marginRight: 10,
-    marginTop: 2,
+    borderLeftWidth: 4,
+    borderLeftColor: '#1e3d59',
   },
   infoText: {
     fontSize: 14,
@@ -363,9 +436,14 @@ const styles = StyleSheet.create({
   },
   navigationButton: {
     flex: 1,
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginHorizontal: 6,
   },
   backBtn: {
     backgroundColor: '#fff',
@@ -375,25 +453,34 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#1e3d59',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   submitButton: {
     backgroundColor: '#1e8e3e',
     marginLeft: 8,
   },
+  submitContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  submitLoader: {
+    marginRight: 10,
+  },
   buttonDisabled: {
     backgroundColor: '#b7b7b7',
   },
   submitButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   errorText: {
     color: 'red',
     fontSize: 12,
     marginTop: 4,
+    marginBottom: 4,
   },
 });
 

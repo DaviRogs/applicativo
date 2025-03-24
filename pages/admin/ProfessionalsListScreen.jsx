@@ -8,15 +8,16 @@ import {
   FlatList,
   ActivityIndicator,
   Modal,
-  RefreshControl
+  RefreshControl,
+  StatusBar,
+  Platform
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 import {API_URL} from '@env';
-import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-
 
 const ProfessionalsListScreen = () => {
   const [professionals, setProfessionals] = useState([]);
@@ -27,11 +28,10 @@ const ProfessionalsListScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
-  const [currentDate, setCurrentDate] = useState('2025-03-06 15:49:13');
+  const [currentDate, setCurrentDate] = useState('2025-03-24 04:45:52');
   const [currentUser, setCurrentUser] = useState('hannanhunny01');
 
   const navigation = useNavigation();
-  
 
   // Get user role and unit from Redux
   const isAdmin = useSelector(selectIsAdmin);
@@ -44,20 +44,19 @@ const ProfessionalsListScreen = () => {
     { id: 3, name: "Admin", nivel_acesso: 1 }
   ];
 
-
-      useFocusEffect(
-        React.useCallback(() => {
-          const onBackPress = () => {
-            navigation.navigate('HomeAdmin');
-            return true; // Prevent default behavior
-          };
-      
-          BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      
-          return () => 
-            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-        }, [navigation])
-      );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('HomeAdmin');
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
   
   // Fetch professionals
   const fetchProfessionals = async () => {
@@ -187,11 +186,17 @@ const ProfessionalsListScreen = () => {
     <TouchableOpacity 
       style={styles.professionalCard}
       onPress={() => navigation.navigate('EditProfessional', { professional: item })}
+      activeOpacity={0.7}
     >
-      <View>
-        <Text style={styles.professionalName}>{item.nome_usuario}</Text>
-        <Text style={styles.professionalCpf}>{formatCPF(item.cpf)}</Text>
-        <Text style={styles.professionalEmail}>{item.email}</Text>
+      <View style={styles.cardContent}>
+        <View style={styles.profileIcon}>
+          <Icon name="person" size={24} color="#fff" />
+        </View>
+        <View style={styles.professionalInfo}>
+          <Text style={styles.professionalName}>{item.nome_usuario}</Text>
+          <Text style={styles.professionalCpf}>{formatCPF(item.cpf)}</Text>
+          <Text style={styles.professionalEmail}>{item.email}</Text>
+        </View>
       </View>
       <View style={styles.cardActions}>
         <View style={[
@@ -208,6 +213,7 @@ const ProfessionalsListScreen = () => {
             setStatusModalVisible(true);
           }}
           style={styles.statusButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
           <Icon name="more-vert" size={24} color="#666" />
         </TouchableOpacity>
@@ -217,41 +223,70 @@ const ProfessionalsListScreen = () => {
 
   const renderHeader = () => (
     <View style={styles.headerInfo}>
-      <Text style={styles.userText}>Usuário: {userData?.nome_usuario}</Text>
-      <Text style={styles.userText}>Email: {userData?.email}</Text>
-      <Text style={styles.dateText}>{currentDate} (UTC)</Text>
+      <View style={styles.userInfoRow}>
+        <Icon name="person-outline" size={16} color="#1e3d59" style={styles.infoIcon} />
+        <Text style={styles.userText}>Usuário: {userData?.nome_usuario || currentUser}</Text>
+      </View>
+      <View style={styles.userInfoRow}>
+        <Icon name="email-outline" size={16} color="#1e3d59" style={styles.infoIcon} />
+        <Text style={styles.userText}>Email: {userData?.email || 'hannanhunny01@example.com'}</Text>
+      </View>
+      <View style={styles.userInfoRow}>
+        <Icon name="access-time" size={16} color="#1e3d59" style={styles.infoIcon} />
+        <Text style={styles.dateText}>{currentDate} (UTC)</Text>
+      </View>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('HomeAdmin')}>
+        <TouchableOpacity 
+          onPress={() => navigation.navigate('HomeAdmin')}
+          style={styles.backButton}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Profissionais</Text>
       </View>
 
       <View style={styles.content}>
-        <View style={styles.unitInfo}>
-          <Icon name="business" size={20} color="#1e3d59" />
-          <Text style={styles.unitName}>{userUnit?.nome_unidade_saude}</Text>
-          <Text style={styles.unitAddress}>{userUnit?.nome_localizacao}</Text>
+        <View style={styles.unitInfoCard}>
+          <View style={styles.unitIconContainer}>
+            <Icon name="business" size={24} color="#1e3d59" />
+          </View>
+          <View style={styles.unitTextContainer}>
+            <Text style={styles.unitName}>{userUnit?.nome_unidade_saude}</Text>
+            <Text style={styles.unitAddress}>{userUnit?.nome_localizacao}</Text>
+          </View>
         </View>
 
         {renderHeader()}
 
-        <Text style={styles.sectionTitle}>Profissionais cadastrados</Text>
-        
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Pesquisar por nome ou CPF"
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Profissionais cadastrados</Text>
+          
+          <View style={styles.searchContainer}>
+            <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Pesquisar por nome ou CPF"
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity 
+                onPress={() => setSearchQuery('')}
+                hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+              >
+                <Icon name="cancel" size={20} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {isLoading && !refreshing ? (
@@ -261,7 +296,7 @@ const ProfessionalsListScreen = () => {
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Icon name="error-outline" size={40} color="#F44336" />
+            <Icon name="error-outline" size={48} color="#F44336" />
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity style={styles.retryButton} onPress={fetchProfessionals}>
               <Text style={styles.retryButtonText}>Tentar novamente</Text>
@@ -279,7 +314,7 @@ const ProfessionalsListScreen = () => {
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Icon name="person-search" size={48} color="#999" />
+                <Icon name="person-search" size={60} color="#ddd" />
                 <Text style={styles.emptyText}>
                   {searchQuery ? 'Nenhum profissional encontrado para esta busca.' : 'Nenhum profissional cadastrado.'}
                 </Text>
@@ -291,9 +326,10 @@ const ProfessionalsListScreen = () => {
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => navigation.navigate('RegisterProfessional')}
+          activeOpacity={0.8}
         >
           <Text style={styles.addButtonText}>Cadastrar Profissional</Text>
-          <Icon name="add" size={24} color="#1e3d59" />
+          <Icon name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -316,12 +352,14 @@ const ProfessionalsListScreen = () => {
               e.stopPropagation();
             }}
           >
-            <Text style={styles.modalTitle}>Alterar Status</Text>
-            {selectedProfessional && (
-              <Text style={styles.modalSubtitle}>
-                {selectedProfessional.nome_usuario}
-              </Text>
-            )}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Alterar Status</Text>
+              {selectedProfessional && (
+                <Text style={styles.modalSubtitle}>
+                  {selectedProfessional.nome_usuario}
+                </Text>
+              )}
+            </View>
             
             <TouchableOpacity 
               style={[styles.statusOption, styles.activeOption]}
@@ -355,144 +393,204 @@ const ProfessionalsListScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f8f9fa',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'ios' ? 44 : 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
   },
   headerTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '500',
-    marginLeft: 16,
+    fontWeight: '600',
     flex: 1,
   },
   content: {
     flex: 1,
     padding: 16,
   },
-  unitInfo: {
-    marginBottom: 16,
+  unitInfoCard: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
-    padding: 12,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  unitIconContainer: {
+    width: 50,
+    height: 50,
+    borderRadius: 25,
+    backgroundColor: '#f0f4f8',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  unitTextContainer: {
+    flex: 1,
   },
   unitName: {
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
     color: '#1e3d59',
-    marginTop: 8,
+    marginBottom: 4,
   },
   unitAddress: {
     fontSize: 14,
     color: '#666',
   },
   headerInfo: {
-    backgroundColor: '#f8f8f8',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#fff',
+    padding: 16,
+    borderRadius: 12,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  userInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  infoIcon: {
+    marginRight: 8,
   },
   dateText: {
     fontSize: 14,
     color: '#555',
     fontWeight: '500',
-    marginTop: 5,
   },
   userText: {
     fontSize: 14,
     color: '#555',
-    marginTop: 4,
+  },
+  sectionHeader: {
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#1e3d59',
     marginBottom: 16,
   },
   searchContainer: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  searchInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    paddingRight: 40,
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 2,
     borderWidth: 1,
-    borderColor: '#ddd',
-    fontSize: 16,
+    borderColor: '#e0e0e0',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   searchIcon: {
-    position: 'absolute',
-    right: 12,
-    top: 12,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 16,
+    color: '#333',
+    padding: 0,
   },
   listContainer: {
     paddingBottom: 16,
   },
   professionalCard: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    padding: 16,
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 12,
     marginBottom: 12,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    overflow: 'hidden',
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
+  },
+  cardContent: {
+    flexDirection: 'row',
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#f0f0f0',
+  },
+  profileIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#1e3d59',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+  },
+  professionalInfo: {
+    flex: 1,
   },
   professionalName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
+    marginBottom: 4,
   },
   professionalCpf: {
     fontSize: 14,
     color: '#666',
-    marginTop: 4,
+    marginBottom: 2,
   },
   professionalEmail: {
     fontSize: 14,
     color: '#666',
-    marginTop: 2,
   },
   cardActions: {
-    alignItems: 'flex-end',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    padding: 12,
+    backgroundColor: '#f8f9fa',
   },
   statusBadge: {
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 12,
-    marginBottom: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   activeBadge: {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
   },
   inactiveBadge: {
-    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+    backgroundColor: 'rgba(244, 67, 54, 0.15)',
   },
   activeText: {
-    color: '#4CAF50',
+    color: '#388E3C',
     fontWeight: '600',
     fontSize: 13,
   },
   inactiveText: {
-    color: '#F44336',
+    color: '#D32F2F',
     fontWeight: '600',
     fontSize: 13,
   },
@@ -503,22 +601,19 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 8,
-    marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#1e3d59',
+    backgroundColor: '#1e3d59',
+    padding: 12,
+    borderRadius: 12,
+    elevation: 3,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 2,
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
   },
   addButtonText: {
-    color: '#1e3d59',
-    fontSize: 16,
-    fontWeight: '500',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
     marginRight: 8,
   },
   loadingContainer: {
@@ -528,7 +623,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   loadingText: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
     color: '#666',
   },
@@ -539,27 +634,29 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   errorText: {
-    marginTop: 12,
+    marginTop: 16,
     fontSize: 16,
     color: '#F44336',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   retryButton: {
     backgroundColor: '#1e3d59',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    elevation: 2,
   },
   retryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
+    marginTop: 20,
   },
   emptyText: {
     marginTop: 16,
@@ -575,49 +672,53 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContainer: {
-    width: '80%',
+    width: '85%',
     backgroundColor: '#fff',
-    borderRadius: 12,
-    padding: 20,
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalHeader: {
+    backgroundColor: '#1e3d59',
+    padding: 16,
     alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    color: '#fff',
+    marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
+    color: 'rgba(255, 255, 255, 0.8)',
   },
   statusOption: {
     flexDirection: 'row',
     alignItems: 'center',
-    width: '100%',
     padding: 16,
-    borderRadius: 8,
-    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
   activeOption: {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    backgroundColor: 'rgba(76, 175, 80, 0.05)',
   },
   inactiveOption: {
-    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+    backgroundColor: 'rgba(244, 67, 54, 0.05)',
   },
   statusOptionText: {
-    marginLeft: 12,
+    marginLeft: 16,
     fontSize: 16,
     fontWeight: '500',
     color: '#333',
   },
   cancelButton: {
-    marginTop: 8,
-    padding: 12,
-    width: '100%',
+    padding: 16,
     alignItems: 'center',
-    borderRadius: 8,
     backgroundColor: '#f5f5f5',
   },
   cancelButtonText: {

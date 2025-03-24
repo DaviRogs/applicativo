@@ -332,7 +332,7 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     backgroundColor: '#fff',
-    padding: 16,
+    padding: 12,
     borderTopWidth: 1,
     borderTopColor: '#eee',
   },
@@ -347,7 +347,7 @@ const styles = StyleSheet.create({
   },
   newAttendanceText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
     marginRight: 8,
   },

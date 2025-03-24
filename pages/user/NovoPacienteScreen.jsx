@@ -9,6 +9,7 @@ import {
   Platform,
   ActivityIndicator,
   Modal,
+  StatusBar,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -158,7 +159,9 @@ const NovoPacienteScreen = ({ navigation, route }) => {
   const isConsentCompleted = isConsentAgreed && signaturePhoto;
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       {/* Discard Changes Modal */}
       <Modal
         animationType="fade"
@@ -176,12 +179,14 @@ const NovoPacienteScreen = ({ navigation, route }) => {
               <TouchableOpacity 
                 style={[styles.modalButton, styles.modalCancelButton]} 
                 onPress={() => setShowDiscardModal(false)}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalCancelButtonText}>Cancelar</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={[styles.modalButton, styles.modalConfirmButton]}
                 onPress={resetAllStates}
+                activeOpacity={0.7}
               >
                 <Text style={styles.modalConfirmButtonText}>Sim, descartar</Text>
               </TouchableOpacity>
@@ -195,17 +200,22 @@ const NovoPacienteScreen = ({ navigation, route }) => {
           style={styles.backButton}
           onPress={() => setShowDiscardModal(true)}
           disabled={isSaving}
+          activeOpacity={0.7}
         >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Novo atendimento</Text>
       </View>
+      
+  
 
       <View style={styles.content}>
         {patientData ? (
           <View style={styles.patientCard}>
             <View style={styles.patientInfo}>
-              <Icon name="person" size={24} color="#1e3d59" />
+              <View style={styles.patientIconContainer}>
+                <Icon name="person" size={24} color="#fff" />
+              </View>
               <View style={styles.patientDetails}>
                 <Text style={styles.patientName}>{patientData.nome_paciente}</Text>
                 <Text style={styles.patientId}>
@@ -213,22 +223,44 @@ const NovoPacienteScreen = ({ navigation, route }) => {
                 </Text>
               </View>
             </View>
-            <TouchableOpacity onPress={handleEditPatient} disabled={isSaving}>
-              <Icon name="edit" size={20} color="#666" />
+            <TouchableOpacity 
+              onPress={handleEditPatient} 
+              disabled={isSaving}
+              style={styles.editButton}
+              activeOpacity={0.7}
+            >
+              <Icon name="edit" size={20} color="#1e3d59" />
             </TouchableOpacity>
           </View>
         ) : (
           <View style={styles.patientCard}>
+            <ActivityIndicator size="small" color="#1e3d59" style={styles.loadingIndicator} />
             <Text style={styles.loadingText}>Carregando dados do paciente...</Text>
           </View>
         )}
 
+        <View style={styles.sectionTitle}>
+          <Text style={styles.sectionTitleText}>Etapas do atendimento</Text>
+        </View>
+
         <TouchableOpacity 
-          style={styles.menuItem}
+          style={[styles.menuItem, isConsentCompleted && styles.completedMenuItem]}
           onPress={() => navigation.navigate('ConsentTerm', { patientData })}
           disabled={isSaving}
+          activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Termo de consentimento</Text>
+          <View style={styles.menuItemContent}>
+            <View style={[styles.menuItemIcon, isConsentCompleted ? styles.completedIcon : styles.pendingIcon]}>
+              <Icon name="assignment" size={20} color={isConsentCompleted ? "#fff" : "#1e3d59"} />
+            </View>
+            <View style={styles.menuItemTextContainer}>
+              <Text style={styles.menuItemText}>Termo de consentimento</Text>
+              <Text style={styles.menuItemDescription}>
+                {isConsentCompleted ? 'Termo assinado' : 'Assinatura do paciente requerida'}
+              </Text>
+            </View>
+          </View>
+          
           {isConsentCompleted ? (
             <View style={styles.completedBadge}>
               <Icon name="check-circle" size={20} color="#27ae60" />
@@ -238,15 +270,26 @@ const NovoPacienteScreen = ({ navigation, route }) => {
               <Text style={styles.requiredText}>Obrigatório</Text>
             </View>
           )}
-          <Icon name="chevron-right" size={24} color="#666" />
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.menuItem} 
+          style={[styles.menuItem, isAnamnesisCompleted && styles.completedMenuItem]} 
           onPress={() => navigation.navigate('QuestoesGeraisSaude', { patientData })}
           disabled={isSaving}
+          activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Anamnese</Text>
+          <View style={styles.menuItemContent}>
+            <View style={[styles.menuItemIcon, isAnamnesisCompleted ? styles.completedIcon : styles.pendingIcon]}>
+              <Icon name="event-note" size={20} color={isAnamnesisCompleted ? "#fff" : "#1e3d59"} />
+            </View>
+            <View style={styles.menuItemTextContainer}>
+              <Text style={styles.menuItemText}>Anamnese</Text>
+              <Text style={styles.menuItemDescription}>
+                {isAnamnesisCompleted ? 'Questionário concluído' : 'Preenchimento das perguntas'}
+              </Text>
+            </View>
+          </View>
+          
           {isAnamnesisCompleted ? (
             <View style={styles.completedBadge}>
               <Icon name="check-circle" size={20} color="#27ae60" />
@@ -257,26 +300,44 @@ const NovoPacienteScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.menuItem} 
+          style={[styles.menuItem, injuries.length > 0 && styles.completedMenuItem]} 
           onPress={() => navigation.navigate('InjuryList', { patientData })}
           disabled={isSaving}
+          activeOpacity={0.7}
         >
-          <Text style={styles.menuItemText}>Registro de lesões</Text>
-          {injuries && injuries.length > 0 ? (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>{injuries.length}</Text>
+          <View style={styles.menuItemContent}>
+            <View style={[styles.menuItemIcon, injuries.length > 0 ? styles.optionalCompletedIcon : styles.optionalIcon]}>
+              <Icon name="healing" size={20} color={injuries.length > 0 ? "#fff" : "#1e3d59"} />
             </View>
-          ) : null}
-          <Icon name="chevron-right" size={24} color="#666" />
+            <View style={styles.menuItemTextContainer}>
+              <Text style={styles.menuItemText}>Registro de lesões</Text>
+              <Text style={styles.menuItemDescription}>
+                {injuries.length > 0 
+                  ? `${injuries.length} ${injuries.length === 1 ? 'lesão registrada' : 'lesões registradas'}` 
+                  : 'Opcional: registro fotográfico'}
+              </Text>
+            </View>
+          </View>
+          
+          {injuries && injuries.length > 0 ? (
+            <View style={styles.countBadge}>
+              <Text style={styles.countBadgeText}>{injuries.length}</Text>
+            </View>
+          ) : (
+            <Icon name="chevron-right" size={24} color="#666" />
+          )}
         </TouchableOpacity>
 
         <View style={styles.submissionStatusContainer}>
           {!isReadyForSubmission && (
-            <Text style={styles.validationWarning}>
-              {validationErrors.consentTerm && '• É necessário completar o termo de consentimento\n'}
-              {validationErrors.anamnesis && '• É necessário completar a anamnese\n'}
-              {validationErrors.auth && '• É necessário estar autenticado'}
-            </Text>
+            <View style={styles.validationWarningContainer}>
+              <Icon name="error-outline" size={18} color="#e74c3c" style={styles.warningIcon} />
+              <Text style={styles.validationWarning}>
+                {validationErrors.consentTerm && '• É necessário completar o termo de consentimento\n'}
+                {validationErrors.anamnesis && '• É necessário completar a anamnese\n'}
+                {validationErrors.auth && '• É necessário estar autenticado'}
+              </Text>
+            </View>
           )}
         </View>
 
@@ -288,14 +349,18 @@ const NovoPacienteScreen = ({ navigation, route }) => {
           ]}
           onPress={handleSaveChanges}
           disabled={isSaving || !isReadyForSubmission}
+          activeOpacity={0.8}
         >
           {isSaving ? (
-            <>
+            <View style={styles.savingContainer}>
               <ActivityIndicator size="small" color="#fff" style={styles.activityIndicator} />
               <Text style={styles.saveButtonText}>Salvando...</Text>
-            </>
+            </View>
           ) : (
-            <Text style={styles.saveButtonText}>Salvar alterações</Text>
+            <View style={styles.saveButtonContent}>
+              <Icon name="save" size={20} color="#fff" style={styles.saveIcon} />
+              <Text style={styles.saveButtonText}>Finalizar atendimento</Text>
+            </View>
           )}
         </TouchableOpacity>
       </View>
@@ -304,30 +369,70 @@ const NovoPacienteScreen = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#1e3d59',
+  },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f7f9fc',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
     paddingTop: Platform.OS === 'ios' ? 44 : 26,
-    height: Platform.OS === 'ios' ? 90 : 90,
+    paddingBottom: 0,
     paddingHorizontal: 16,
+    height: Platform.OS === 'ios' ? 90 : 90,
   },
   backButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
     marginRight: 16,
-    padding: 4,
   },
   headerTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  metadataContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 10,
+    backgroundColor: '#f7f9fc',
+    borderBottomWidth: 1,
+    borderBottomColor: '#e8edf3',
+  },
+  metadataItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  metadataIcon: {
+    marginRight: 6,
+  },
+  metadataText: {
+    fontSize: 12,
+    color: '#666',
   },
   content: {
     flex: 1,
     padding: 16,
+    backgroundColor: '#f7f9fc',
+  },
+  sectionTitle: {
+    marginBottom: 12,
+    marginTop: 8,
+  },
+  sectionTitleText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#333',
+    marginLeft: 4,
   },
   patientCard: {
     flexDirection: 'row',
@@ -335,8 +440,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     backgroundColor: '#fff',
     padding: 16,
-    borderRadius: 8,
-    marginBottom: 24,
+    borderRadius: 12,
+    marginBottom: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -344,12 +449,22 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 2,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
   },
   patientInfo: {
     flexDirection: 'row',
     alignItems: 'center',
     flex: 1,
+  },
+  patientIconContainer: {
+    width: 42,
+    height: 42,
+    borderRadius: 21,
+    backgroundColor: '#1e3d59',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   patientDetails: {
     marginLeft: 12,
@@ -357,13 +472,26 @@ const styles = StyleSheet.create({
   },
   patientName: {
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
   },
   patientId: {
     fontSize: 14,
     color: '#666',
     marginTop: 4,
+  },
+  editButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: '#f0f7ff',
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+  },
+  loadingIndicator: {
+    marginRight: 12,
   },
   loadingText: {
     fontSize: 14,
@@ -376,8 +504,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     backgroundColor: '#fff',
-    borderRadius: 8,
-    marginBottom: 8,
+    borderRadius: 12,
+    marginBottom: 12,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -385,27 +513,71 @@ const styles = StyleSheet.create({
     },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 1,
+    elevation: 2,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+  },
+  completedMenuItem: {
+    borderLeftWidth: 4,
+    borderLeftColor: '#27ae60',
+    backgroundColor: '#f7fff9',
+  },
+  menuItemContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  menuItemIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
+  },
+  menuItemTextContainer: {
+    flex: 1,
   },
   menuItemText: {
     fontSize: 16,
+    fontWeight: '600',
     color: '#333',
-    flex: 1,
   },
-  badge: {
-    backgroundColor: '#e74c3c',
-    borderRadius: 12,
-    minWidth: 24,
-    height: 24,
+  menuItemDescription: {
+    fontSize: 13,
+    color: '#666',
+    marginTop: 2,
+  },
+  pendingIcon: {
+    backgroundColor: '#f0f7ff',
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+  },
+  completedIcon: {
+    backgroundColor: '#27ae60',
+  },
+  optionalIcon: {
+    backgroundColor: '#f0f7ff',
+    borderWidth: 1,
+    borderColor: '#e8edf3',
+  },
+  optionalCompletedIcon: {
+    backgroundColor: '#3498db',
+  },
+  countBadge: {
+    backgroundColor: '#3498db',
+    borderRadius: 18,
+    minWidth: 32,
+    height: 32,
     justifyContent: 'center',
     alignItems: 'center',
     marginRight: 8,
+    paddingHorizontal: 10,
   },
-  badgeText: {
+  countBadgeText: {
     color: '#fff',
-    fontSize: 12,
-    fontWeight: 'bold',
-    paddingHorizontal: 6,
+    fontSize: 14,
+    fontWeight: '600',
   },
   completedBadge: {
     marginRight: 8,
@@ -413,27 +585,72 @@ const styles = StyleSheet.create({
   requiredBadge: {
     backgroundColor: '#f39c12',
     borderRadius: 4,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    paddingHorizontal: 8,
+    paddingVertical: 3,
     marginRight: 8,
   },
   requiredText: {
     color: '#fff',
     fontSize: 10,
-    fontWeight: 'bold',
+    fontWeight: '600',
+  },
+  submissionStatusContainer: {
+    marginTop: 8,
+    marginBottom: 16,
+    paddingHorizontal: 4,
+  },
+  validationWarningContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    backgroundColor: '#fdf0ed',
+    padding: 12,
+    borderRadius: 8,
+    borderLeftWidth: 3,
+    borderLeftColor: '#e74c3c',
+  },
+  warningIcon: {
+    marginRight: 8,
+    marginTop: 2,
+  },
+  validationWarning: {
+    color: '#e74c3c',
+    fontSize: 13,
+    flex: 1,
+    lineHeight: 18,
   },
   saveButton: {
     backgroundColor: '#1e3d59',
-    padding: 12,
-    borderRadius: 8,
+    padding: 16,
+    borderRadius: 12,
     alignItems: 'center',
     marginTop: 'auto',
     marginBottom: 16,
     flexDirection: 'row',
     justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  saveButtonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  savingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  saveIcon: {
+    marginRight: 8,
   },
   savingButton: {
-    backgroundColor: '#888',
+    backgroundColor: '#767676',
   },
   disabledButton: {
     backgroundColor: '#cccccc',
@@ -441,20 +658,10 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   activityIndicator: {
     marginRight: 8,
-  },
-  submissionStatusContainer: {
-    marginVertical: 8,
-    paddingHorizontal: 4,
-  },
-  validationWarning: {
-    color: '#e74c3c',
-    fontSize: 12,
-    marginBottom: 8,
-    lineHeight: 18
   },
   // Modal styles
   modalContainer: {
@@ -466,8 +673,8 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: 'white',
-    borderRadius: 8,
-    padding: 20,
+    borderRadius: 12,
+    padding: 24,
     width: '100%',
     maxWidth: 400,
     shadowColor: '#000',
@@ -480,26 +687,28 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalTitle: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 12,
+    fontSize: 20,
+    fontWeight: '700',
+    marginBottom: 16,
     color: '#333',
   },
   modalMessage: {
     fontSize: 16,
     marginBottom: 24,
     color: '#666',
-    lineHeight: 22,
+    lineHeight: 24,
   },
   modalButtonContainer: {
     flexDirection: 'row',
     justifyContent: 'flex-end',
   },
   modalButton: {
-    paddingVertical: 10,
+    paddingVertical: 12,
     paddingHorizontal: 16,
-    borderRadius: 6,
-    marginLeft: 10,
+    borderRadius: 8,
+    marginLeft: 12,
+    minWidth: 100,
+    alignItems: 'center',
   },
   modalCancelButton: {
     backgroundColor: '#f8f8f8',
@@ -512,12 +721,12 @@ const styles = StyleSheet.create({
   modalCancelButtonText: {
     color: '#666',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   modalConfirmButtonText: {
     color: '#fff',
     fontSize: 14,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
 

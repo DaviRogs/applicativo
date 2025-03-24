@@ -4,6 +4,8 @@ import {
   Text,
   StyleSheet,
   TouchableOpacity,
+  StatusBar,
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlyoutMenu from '../../components/FlyoutMenu';
@@ -65,6 +67,8 @@ const HomeScreen = ({navigation}) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <FlyoutMenu 
         visible={menuVisible} 
         onClose={() => setMenuVisible(false)} 
@@ -78,7 +82,10 @@ const HomeScreen = ({navigation}) => {
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Home</Text>
-        <TouchableOpacity onPress={() => setMenuVisible(true)}>
+        <TouchableOpacity 
+          onPress={() => setMenuVisible(true)}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Icon name="more-vert" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
@@ -90,7 +97,7 @@ const HomeScreen = ({navigation}) => {
           <View style={styles.unitCard}>
             <View style={styles.unitInfo}>
               <Icon name="business" size={24} color="#1e3d59" />
-              <Text style={styles.unitName}>{selectedUnit.nome_unidade_saude + " - "+ selectedUnit.codigo_unidade_saude } </Text>
+              <Text style={styles.unitName}>{selectedUnit.nome_unidade_saude + " - "+ selectedUnit.codigo_unidade_saude}</Text>
               <Text style={styles.unitAddress}>{selectedUnit.nome_localizacao}</Text>
             </View>
 
@@ -98,13 +105,17 @@ const HomeScreen = ({navigation}) => {
               <TouchableOpacity 
                 style={styles.statItem}
                 onPress={() => navigation.navigate('ProfessionalsList')}
+                activeOpacity={0.8}
               >
                 <Icon name="people" size={24} color="#1e3d59" />
                 <Text style={styles.statLabel}>Usuário Cadastrados</Text>
                 <Text style={styles.statValue}>33</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity style={styles.statItem}>
+              <TouchableOpacity 
+                style={styles.statItem}
+                activeOpacity={0.8}
+              >
                 <Icon name="person" size={24} color="#1e3d59" />
                 <Text style={styles.statLabel}>Pacientes</Text>
                 <Text style={styles.statValue}>440</Text>
@@ -117,6 +128,7 @@ const HomeScreen = ({navigation}) => {
           <TouchableOpacity 
             style={styles.changeUnitButton}
             onPress={() => setUnitModalVisible(true)}
+            activeOpacity={0.8}
           >
             <Text style={styles.changeUnitButtonText}>Trocar Unidade</Text>
           </TouchableOpacity>
@@ -136,29 +148,34 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'ios' ? 44 : 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
   },
   headerTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   content: {
     padding: 16,
   },
   title: {
     fontSize: 24,
-    fontWeight: '600',
+    fontWeight: '700',
     color: '#1e3d59',
     marginBottom: 24,
     lineHeight: 32,
   },
   unitCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 16,
+    borderRadius: 12,
+    padding: 20,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -167,21 +184,22 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   unitInfo: {
     marginBottom: 24,
   },
   unitName: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#1e3d59',
     marginTop: 12,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   unitAddress: {
     fontSize: 14,
     color: '#666',
+    lineHeight: 20,
   },
   statsContainer: {
     flexDirection: 'row',
@@ -194,30 +212,37 @@ const styles = StyleSheet.create({
     padding: 16,
     borderWidth: 1,
     borderColor: '#e0e0e0',
-    borderRadius: 8,
+    borderRadius: 10,
+    backgroundColor: '#f9f9f9',
   },
   statLabel: {
     fontSize: 14,
     color: '#666',
     marginTop: 8,
     marginBottom: 4,
+    textAlign: 'center',
   },
   statValue: {
-    fontSize: 24,
-    fontWeight: '600',
+    fontSize: 26,
+    fontWeight: '700',
     color: '#1e3d59',
   },
   changeUnitButton: {
     backgroundColor: '#1e3d59',
-    borderRadius: 8,
-    padding: 12,
+    borderRadius: 10,
+    padding: 14,
     alignItems: 'center',
     marginTop: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   changeUnitButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
 });
 

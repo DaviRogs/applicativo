@@ -7,11 +7,13 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  StatusBar,
+  Platform
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import ProgressBar from '../../../components/ProgressBar';
+import ProgressSteps from '../../../components/ProgressBar';
 import { atualizarAvaliacaoFototipo, avancarEtapa, voltarEtapa } from '../../../store/anamnesisSlice';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
@@ -33,19 +35,19 @@ const AvaliacaoFototipo = () => {
     }));
   };
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('QuestoesGeraisSaude');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        handleBack();
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   // Calcula o fototipo baseado na pontuação
   useEffect(() => {
@@ -151,6 +153,7 @@ const AvaliacaoFototipo = () => {
             formData[field] === option.label && styles.selectedOption
           ]}
           onPress={() => handleOptionSelection(field, option.label, option.points)}
+          activeOpacity={0.7}
         >
           <Text style={[
             styles.optionText,
@@ -160,12 +163,29 @@ const AvaliacaoFototipo = () => {
           </Text>
         </TouchableOpacity>
       ))}
-      {errors[field] && <Text style={styles.errorText}>{errors[field]}</Text>}
+      {errors[field] && (
+        <Text style={styles.errorText}>
+          {errors[field]}
+        </Text>
+      )}
     </View>
   );
 
+  const getFototipoColor = (fototipo) => {
+    switch(fototipo) {
+      case 'Fototipo I': return '#ffdbdb';
+      case 'Fototipo II': return '#ffe8db';
+      case 'Fototipo III': return '#fff3db';
+      case 'Fototipo IV': return '#e8f0dc';
+      case 'Fototipo V-VI': return '#daeaf2';
+      default: return '#f5f5f5';
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -176,12 +196,18 @@ const AvaliacaoFototipo = () => {
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
-      <ProgressBar 
-        currentStep={2} 
-        totalSteps={5}
-      />
+      <View style={styles.progressContainer}>
+        <ProgressSteps 
+          currentStep={2} 
+          totalSteps={5}
+          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+        />
+      </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.sectionTitle}>Avaliação de Fototipo (Classificação de Fitzpatrick)</Text>
         <Text style={styles.sectionDescription}>
           Esta seção utiliza a Escala de Fitzpatrick para determinar o fototipo da sua pele.
@@ -266,19 +292,26 @@ const AvaliacaoFototipo = () => {
         </View>
 
         {formData.fototipo && (
-          <View style={styles.resultContainer}>
-            <Text style={styles.resultTitle}>Resultado</Text>
-            <Text style={styles.resultScore}>
-              Pontuação total: {formData.pontosTotal} pontos
-            </Text>
-            <Text style={styles.resultFototipo}>{formData.fototipo}</Text>
-            <Text style={styles.resultDescription}>
-              {formData.fototipo === 'Fototipo I' && 'Pele extremamente clara, sempre queima, nunca bronzeia.'}
-              {formData.fototipo === 'Fototipo II' && 'Pele clara, queima com facilidade, bronzeia minimamente.'}
-              {formData.fototipo === 'Fototipo III' && 'Pele menos clara, queima moderadamente, bronzeia gradualmente.'}
-              {formData.fototipo === 'Fototipo IV' && 'Pele morena clara, queima minimamente, sempre bronzeia.'}
-              {formData.fototipo === 'Fototipo V-VI' && 'Pele morena escura a negra, raramente queima, bronzeia facilmente.'}
-            </Text>
+          <View style={[
+            styles.resultContainer,
+            {backgroundColor: getFototipoColor(formData.fototipo)}
+          ]}>
+            <View style={styles.resultHeader}>
+              <Text style={styles.resultTitle}>Resultado</Text>
+              <Text style={styles.resultScore}>
+                Pontuação total: {formData.pontosTotal} pontos
+              </Text>
+            </View>
+            <View style={styles.resultContent}>
+              <Text style={styles.resultFototipo}>{formData.fototipo}</Text>
+              <Text style={styles.resultDescription}>
+                {formData.fototipo === 'Fototipo I' && 'Pele extremamente clara, sempre queima, nunca bronzeia.'}
+                {formData.fototipo === 'Fototipo II' && 'Pele clara, queima com facilidade, bronzeia minimamente.'}
+                {formData.fototipo === 'Fototipo III' && 'Pele menos clara, queima moderadamente, bronzeia gradualmente.'}
+                {formData.fototipo === 'Fototipo IV' && 'Pele morena clara, queima minimamente, sempre bronzeia.'}
+                {formData.fototipo === 'Fototipo V-VI' && 'Pele morena escura a negra, raramente queima, bronzeia facilmente.'}
+              </Text>
+            </View>
           </View>
         )}
 
@@ -286,15 +319,19 @@ const AvaliacaoFototipo = () => {
           <TouchableOpacity 
             style={[styles.navigationButton, styles.backBtn]}
             onPress={handleBack}
+            activeOpacity={0.7}
           >
+            <Icon name="arrow-back" size={18} color="#1e3d59" style={styles.buttonIcon} />
             <Text style={styles.backButtonText}>Voltar</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
             style={[styles.navigationButton, styles.advanceButton]}
             onPress={handleAdvance}
+            activeOpacity={0.7}
           >
             <Text style={styles.advanceButtonText}>Avançar</Text>
+            <Icon name="arrow-forward" size={18} color="#fff" style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -311,8 +348,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 26,
-    height: 90,
+    paddingTop: Platform.OS === 'ios' ? 44 : 26,
+    height: Platform.OS === 'ios' ? 90 : 80,
     paddingHorizontal: 16,
   },
   backButton: {
@@ -323,13 +360,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
   },
+  progressContainer: {
+    backgroundColor: '#f8f8f8',
+  },
   content: {
     flex: 1,
     padding: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
     marginBottom: 8,
   },
@@ -347,6 +387,7 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#333',
     marginBottom: 12,
   },
@@ -365,38 +406,53 @@ const styles = StyleSheet.create({
     borderColor: '#1e3d59',
   },
   optionText: {
-    fontSize: 14,
+    fontSize: 13,
     color: '#333',
   },
   selectedOptionText: {
     color: '#fff',
+    fontWeight: '500',
   },
   resultContainer: {
-    backgroundColor: '#f5f5f5',
     padding: 16,
-    borderRadius: 8,
+    borderRadius: 10,
     marginBottom: 24,
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    borderWidth: 1,
+    borderColor: 'rgba(0,0,0,0.05)',
+  },
+  resultHeader: {
+    marginBottom: 12,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0,0,0,0.05)',
+    paddingBottom: 12,
   },
   resultTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
-    marginBottom: 8,
+    marginBottom: 4,
   },
   resultScore: {
-    fontSize: 16,
-    color: '#333',
-    marginBottom: 8,
+    fontSize: 15,
+    color: '#555',
+  },
+  resultContent: {
+    paddingTop: 4,
   },
   resultFototipo: {
     fontSize: 22,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#1e3d59',
     marginBottom: 8,
   },
   resultDescription: {
     fontSize: 14,
-    color: '#666',
+    color: '#555',
     lineHeight: 20,
   },
   navigationButtons: {
@@ -407,9 +463,14 @@ const styles = StyleSheet.create({
   },
   navigationButton: {
     flex: 1,
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginHorizontal: 6,
   },
   backBtn: {
     backgroundColor: '#fff',
@@ -419,7 +480,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#1e3d59',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   advanceButton: {
@@ -428,13 +489,14 @@ const styles = StyleSheet.create({
   },
   advanceButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   errorText: {
     color: 'red',
     fontSize: 12,
     marginTop: 4,
+    marginBottom: 4,
   },
 });
 

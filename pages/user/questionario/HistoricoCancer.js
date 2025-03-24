@@ -8,10 +8,12 @@ import {
   ScrollView,
   Alert,
   TextInput,
+  StatusBar,
+  Platform
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import ProgressBar from '../../../components/ProgressBar';
+import ProgressSteps from '../../../components/ProgressBar';
 import { atualizarHistoricoCancer, avancarEtapa, voltarEtapa } from '../../../store/anamnesisSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
@@ -70,19 +72,19 @@ const HistoricoCancer = () => {
     navigation.navigate('AvaliacaoFototipo');
   };
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('AvaliacaoFototipo');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        handleBack();
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const handleAdvance = () => {
     if (validateForm()) {
@@ -118,11 +120,14 @@ const HistoricoCancer = () => {
             key={index}
             style={styles.radioOption}
             onPress={() => handleRadioChange(field, option.value)}
+            activeOpacity={0.7}
           >
             <View style={[
               styles.radioCircle,
               formData[field] === option.value && styles.radioSelected
-            ]} />
+            ]}>
+              {formData[field] === option.value && <View style={styles.radioInner} />}
+            </View>
             <Text style={styles.radioText}>{option.label}</Text>
           </TouchableOpacity>
         ))}
@@ -133,6 +138,8 @@ const HistoricoCancer = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -143,12 +150,18 @@ const HistoricoCancer = () => {
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
-      <ProgressBar 
-        currentStep={3} 
-        totalSteps={5}
-      />
+      <View style={styles.progressContainer}>
+        <ProgressSteps 
+          currentStep={3} 
+          totalSteps={5}
+          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+        />
+      </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
         <Text style={styles.sectionTitle}>Histórico Familiar e Pessoal de Câncer de Pele</Text>
 
         <View style={styles.questionContainer}>
@@ -179,54 +192,68 @@ const HistoricoCancer = () => {
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoCancerFamiliar('melanoma')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerFamiliar === 'melanoma' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerFamiliar === 'melanoma' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Melanoma</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoCancerFamiliar('carcinoma_basocelular')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerFamiliar === 'carcinoma_basocelular' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerFamiliar === 'carcinoma_basocelular' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Carcinoma Basocelular</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoCancerFamiliar('carcinoma_espinocelular')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerFamiliar === 'carcinoma_espinocelular' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerFamiliar === 'carcinoma_espinocelular' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Carcinoma Espinocelular</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoCancerFamiliar('outro')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerFamiliar === 'outro' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerFamiliar === 'outro' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Outro</Text>
                 </TouchableOpacity>
                 {formData.tipoCancerFamiliar === 'outro' && (
-                  <TextInput
-                    style={styles.conditionalInput}
-                    placeholder="Especifique o tipo de câncer"
-                    placeholderTextColor="#999"
-                    value={formData.tipoCancerFamiliarOutro}
-                    onChangeText={(text) => setFormData(prev => ({
-                      ...prev,
-                      tipoCancerFamiliarOutro: text
-                    }))}
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.conditionalInput}
+                      placeholder="Especifique o tipo de câncer"
+                      placeholderTextColor="#999"
+                      value={formData.tipoCancerFamiliarOutro}
+                      onChangeText={(text) => setFormData(prev => ({
+                        ...prev,
+                        tipoCancerFamiliarOutro: text
+                      }))}
+                    />
+                  </View>
                 )}
               </View>
               {errors.tipoCancerFamiliar && (
@@ -251,54 +278,68 @@ const HistoricoCancer = () => {
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'melanoma' }))}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerPessoal === 'melanoma' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerPessoal === 'melanoma' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Melanoma</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'carcinoma_basocelular' }))}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerPessoal === 'carcinoma_basocelular' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerPessoal === 'carcinoma_basocelular' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Carcinoma Basocelular</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'carcinoma_espinocelular' }))}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerPessoal === 'carcinoma_espinocelular' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerPessoal === 'carcinoma_espinocelular' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Carcinoma Espinocelular</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'outro' }))}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoCancerPessoal === 'outro' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoCancerPessoal === 'outro' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Outro</Text>
                 </TouchableOpacity>
                 {formData.tipoCancerPessoal === 'outro' && (
-                  <TextInput
-                    style={styles.conditionalInput}
-                    placeholder="Especifique o tipo de câncer"
-                    placeholderTextColor="#999"
-                    value={formData.tipoCancerPessoalOutro}
-                    onChangeText={(text) => setFormData(prev => ({
-                      ...prev,
-                      tipoCancerPessoalOutro: text
-                    }))}
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.conditionalInput}
+                      placeholder="Especifique o tipo de câncer"
+                      placeholderTextColor="#999"
+                      value={formData.tipoCancerPessoalOutro}
+                      onChangeText={(text) => setFormData(prev => ({
+                        ...prev,
+                        tipoCancerPessoalOutro: text
+                      }))}
+                    />
+                  </View>
                 )}
               </View>
               {errors.tipoCancerPessoal && (
@@ -332,54 +373,68 @@ const HistoricoCancer = () => {
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('cirurgia')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoTratamento === 'cirurgia' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoTratamento === 'cirurgia' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Cirurgia</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('crioterapia')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoTratamento === 'crioterapia' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoTratamento === 'crioterapia' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Crioterapia</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('radioterapia')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoTratamento === 'radioterapia' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoTratamento === 'radioterapia' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Radioterapia</Text>
                 </TouchableOpacity>
                 <TouchableOpacity 
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('outro')}
+                  activeOpacity={0.7}
                 >
                   <View style={[
                     styles.radioCircle,
                     formData.tipoTratamento === 'outro' && styles.radioSelected
-                  ]} />
+                  ]}>
+                    {formData.tipoTratamento === 'outro' && <View style={styles.radioInner} />}
+                  </View>
                   <Text style={styles.radioText}>Outro</Text>
                 </TouchableOpacity>
                 {formData.tipoTratamento === 'outro' && (
-                  <TextInput
-                    style={styles.conditionalInput}
-                    placeholder="Especifique o tratamento"
-                    placeholderTextColor="#999"
-                    value={formData.tipoTratamentoOutro}
-                    onChangeText={(text) => setFormData(prev => ({
-                      ...prev,
-                      tipoTratamentoOutro: text
-                    }))}
-                  />
+                  <View style={styles.inputContainer}>
+                    <TextInput
+                      style={styles.conditionalInput}
+                      placeholder="Especifique o tratamento"
+                      placeholderTextColor="#999"
+                      value={formData.tipoTratamentoOutro}
+                      onChangeText={(text) => setFormData(prev => ({
+                        ...prev,
+                        tipoTratamentoOutro: text
+                      }))}
+                    />
+                  </View>
                 )}
               </View>
               {errors.tipoTratamento && (
@@ -393,15 +448,19 @@ const HistoricoCancer = () => {
           <TouchableOpacity 
             style={[styles.navigationButton, styles.backBtn]}
             onPress={handleBack}
+            activeOpacity={0.7}
           >
+            <Icon name="arrow-back" size={18} color="#1e3d59" style={styles.buttonIcon} />
             <Text style={styles.backButtonText}>Voltar</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
             style={[styles.navigationButton, styles.advanceButton]}
             onPress={handleAdvance}
+            activeOpacity={0.7}
           >
             <Text style={styles.advanceButtonText}>Avançar</Text>
+            <Icon name="arrow-forward" size={18} color="#fff" style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -418,8 +477,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 26,
-    height: 90,
+    paddingTop: Platform.OS === 'ios' ? 44 : 26,
+    height: Platform.OS === 'ios' ? 90 : 80,
     paddingHorizontal: 16,
   },
   backButton: {
@@ -430,13 +489,16 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
   },
+  progressContainer: {
+    backgroundColor: '#f8f8f8',
+  },
   content: {
     flex: 1,
     padding: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
     marginBottom: 24,
   },
@@ -448,14 +510,15 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#333',
     marginBottom: 12,
   },
   subQuestion: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 12,
-    marginBottom: 8,
+    fontSize: 15,
+    color: '#555',
+    marginTop: 16,
+    marginBottom: 10,
   },
   radioGroupContainer: {
     marginBottom: 8,
@@ -470,20 +533,30 @@ const styles = StyleSheet.create({
     marginRight: 24,
     marginBottom: 12,
     width: '45%',
+    paddingVertical: 6,
   },
   fullWidthOption: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 12,
     width: '100%',
+    paddingVertical: 6,
   },
   radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: '#1e3d59',
     marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#fff',
   },
   radioSelected: {
     backgroundColor: '#1e3d59',
@@ -492,13 +565,18 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  inputContainer: {
+    marginTop: 4,
+    marginBottom: 8,
+  },
   conditionalInput: {
-    borderBottomWidth: 1,
-    borderBottomColor: '#ddd',
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
     padding: 12,
-    fontSize: 14,
+    fontSize: 15,
     color: '#333',
-    marginTop: 8,
+    backgroundColor: '#f9f9f9',
   },
   navigationButtons: {
     flexDirection: 'row',
@@ -508,9 +586,14 @@ const styles = StyleSheet.create({
   },
   navigationButton: {
     flex: 1,
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginHorizontal: 6,
   },
   backBtn: {
     backgroundColor: '#fff',
@@ -520,7 +603,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#1e3d59',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   advanceButton: {
@@ -529,13 +612,14 @@ const styles = StyleSheet.create({
   },
   advanceButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   errorText: {
     color: 'red',
     fontSize: 12,
     marginTop: 4,
+    marginBottom: 4,
   },
 });
 

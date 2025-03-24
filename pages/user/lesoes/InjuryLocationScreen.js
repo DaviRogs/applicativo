@@ -10,16 +10,19 @@ import {
   StatusBar,
   FlatList,
   ActivityIndicator,
+  Keyboard
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateFormField } from '../../../store/injurySlice';
 import { API_URL } from '@env';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
+
 export const InjuryLocationScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const dispatch = useDispatch();
+  const [keyboardVisible, setKeyboardVisible] = useState(false);
   
   const currentLocation = useSelector(state => state.injury.formState.location);
   const currentLocationId = useSelector(state => state.injury.formState.injuryId);
@@ -76,10 +79,31 @@ export const InjuryLocationScreen = ({ navigation }) => {
       setIsLoading(false);
     }
   };
+  
+  useEffect(() => {
+    const keyboardDidShowListener = Keyboard.addListener(
+      'keyboardDidShow',
+      () => {
+        setKeyboardVisible(true);
+      }
+    );
+    const keyboardDidHideListener = Keyboard.addListener(
+      'keyboardDidHide',
+      () => {
+        setKeyboardVisible(false);
+      }
+    );
+
+    return () => {
+      keyboardDidShowListener.remove();
+      keyboardDidHideListener.remove();
+    };
+  }, []);
+  
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
-        navigation.navigate('NovoPaciente');
+        navigation.navigate('AddInjury');
         return true;
       };
       
@@ -107,6 +131,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
   const handleLocationSelect = (location) => {
     setSelectedLocationName(location.name);
     setSelectedLocationObj(location);
+    Keyboard.dismiss();
   };
 
   const handleSaveLocation = () => {
@@ -125,37 +150,48 @@ export const InjuryLocationScreen = ({ navigation }) => {
     }
   };
 
-  const renderLocationItem = ({ item }) => (
-    <TouchableOpacity
-      style={[
-        styles.locationItem,
-        selectedLocationName === item.name && styles.selectedLocation
-      ]}
-      onPress={() => handleLocationSelect(item)}
-      accessibilityRole="button"
-      accessibilityLabel={`Selecionar ${item.name}`}
-    >
-      <Text style={[
-        styles.locationText,
-        selectedLocationName === item.name && styles.selectedLocationText
-      ]}>
-        {item.name}
-      </Text>
-      {selectedLocationName === item.name && (
-        <Icon name="check" size={20} color="#1e3d59" />
-      )}
-    </TouchableOpacity>
-  );
+  const renderLocationItem = ({ item }) => {
+    const isSelected = selectedLocationName === item.name;
+    
+    return (
+      <TouchableOpacity
+        style={[
+          styles.locationItem,
+          isSelected && styles.selectedLocation
+        ]}
+        onPress={() => handleLocationSelect(item)}
+        activeOpacity={0.7}
+        accessibilityRole="button"
+        accessibilityLabel={`Selecionar ${item.name}`}
+        accessibilityState={{ selected: isSelected }}
+      >
+        <Text style={[
+          styles.locationText,
+          isSelected && styles.selectedLocationText
+        ]}>
+          {item.name}
+        </Text>
+        
+        {isSelected && (
+          <View style={styles.checkIconContainer}>
+            <Icon name="check-circle" size={22} color="#1e3d59" />
+          </View>
+        )}
+      </TouchableOpacity>
+    );
+  };
 
   if (isLoading) {
     return (
       <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <View style={styles.container}>
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => navigation.navigate('AddInjury')}
               accessibilityLabel="Voltar"
+              activeOpacity={0.7}
             >
               <Icon name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
@@ -174,12 +210,14 @@ export const InjuryLocationScreen = ({ navigation }) => {
   if (error) {
     return (
       <SafeAreaView style={styles.safeArea}>
+        <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <View style={styles.container}>
           <View style={styles.header}>
             <TouchableOpacity 
               style={styles.backButton}
               onPress={() => navigation.navigate('AddInjury')}
               accessibilityLabel="Voltar"
+              activeOpacity={0.7}
             >
               <Icon name="arrow-back" size={24} color="#fff" />
             </TouchableOpacity>
@@ -187,12 +225,15 @@ export const InjuryLocationScreen = ({ navigation }) => {
           </View>
           <View style={[styles.content, styles.centerContent]}>
             <Icon name="error-outline" size={48} color="#e74c3c" />
+            <Text style={styles.errorTitle}>Falha na conexão</Text>
             <Text style={styles.errorText}>{error}</Text>
             <TouchableOpacity 
               style={styles.retryButton}
               onPress={fetchLocations}
               accessibilityLabel="Tentar novamente"
+              activeOpacity={0.8}
             >
+              <Icon name="refresh" size={18} color="#fff" style={styles.buttonIcon} />
               <Text style={styles.retryButtonText}>Tentar novamente</Text>
             </TouchableOpacity>
           </View>
@@ -201,15 +242,16 @@ export const InjuryLocationScreen = ({ navigation }) => {
     );
   }
 
-  // Main content (when data is loaded successfully)
   return (
     <SafeAreaView style={styles.safeArea}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
       <View style={styles.container}>
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
             onPress={() => navigation.navigate('AddInjury')}
             accessibilityLabel="Voltar"
+            activeOpacity={0.7}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
@@ -219,8 +261,11 @@ export const InjuryLocationScreen = ({ navigation }) => {
         <View style={styles.content}>
           <View style={styles.searchContainer}>
             <Text style={styles.label}>Selecione o local da lesão</Text>
-            <View style={styles.searchInputContainer}>
-              <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+            <View style={[
+              styles.searchInputContainer,
+              searchQuery.length > 0 && styles.activeSearchInputContainer
+            ]}>
+              <Icon name="search" size={20} color={searchQuery.length > 0 ? "#1e3d59" : "#999"} style={styles.searchIcon} />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Busque por um local específico..."
@@ -235,8 +280,9 @@ export const InjuryLocationScreen = ({ navigation }) => {
                   onPress={() => setSearchQuery('')}
                   style={styles.clearButton}
                   accessibilityLabel="Limpar busca"
+                  hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
-                  <Icon name="close" size={20} color="#666" />
+                  <Icon name="close" size={18} color="#666" />
                 </TouchableOpacity>
               )}
             </View>
@@ -247,27 +293,50 @@ export const InjuryLocationScreen = ({ navigation }) => {
             keyExtractor={item => item.id.toString()}
             renderItem={renderLocationItem}
             style={styles.locationList}
-            contentContainerStyle={filteredLocations.length === 0 && styles.emptyList}
+            contentContainerStyle={[
+              styles.listContentContainer,
+              filteredLocations.length === 0 && styles.emptyList
+            ]}
+            showsVerticalScrollIndicator={false}
             ListEmptyComponent={() => (
-              <Text style={styles.noResultsText}>
-                Nenhum local encontrado para "{searchQuery}"
-              </Text>
+              <View style={styles.noResultsContainer}>
+                <Icon name="search-off" size={48} color="#999" />
+                <Text style={styles.noResultsText}>
+                  Nenhum local encontrado para "{searchQuery}"
+                </Text>
+                <TouchableOpacity 
+                  onPress={() => setSearchQuery('')}
+                  style={styles.clearSearchButton}
+                >
+                  <Text style={styles.clearSearchText}>Limpar busca</Text>
+                </TouchableOpacity>
+              </View>
             )}
           />
         </View>
 
-        <TouchableOpacity 
-          style={[
-            styles.saveButton,
-            !selectedLocationObj && styles.disabledButton
-          ]}
-          onPress={handleSaveLocation}
-          disabled={!selectedLocationObj}
-          accessibilityLabel="Salvar local selecionado"
-          accessibilityRole="button"
-        >
-          <Text style={styles.saveButtonText}>Confirmar</Text>
-        </TouchableOpacity>
+        {!keyboardVisible && (
+          <View style={styles.footer}>
+            <TouchableOpacity 
+              style={[
+                styles.saveButton,
+                !selectedLocationObj && styles.disabledButton
+              ]}
+              onPress={handleSaveLocation}
+              disabled={!selectedLocationObj}
+              accessibilityLabel="Confirmar seleção"
+              accessibilityRole="button"
+              activeOpacity={selectedLocationObj ? 0.8 : 1}
+            >
+              <Text style={styles.saveButtonText}>
+                {selectedLocationObj ? 'Confirmar seleção' : 'Selecione um local'}
+              </Text>
+              {selectedLocationObj && (
+                <Icon name="check" size={20} color="#fff" style={styles.saveButtonIcon} />
+              )}
+            </TouchableOpacity>
+          </View>
+        )}
       </View>
     </SafeAreaView>
   );
@@ -281,7 +350,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f7f9fc',
   },
   header: {
     flexDirection: 'row',
@@ -293,13 +362,17 @@ const styles = StyleSheet.create({
     height: Platform.OS === 'ios' ? 90 : 80,
   },
   backButton: {
-    marginRight: 16,
-    padding: 4,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 12,
   },
   headerTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   content: {
     flex: 1,
@@ -311,52 +384,93 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     color: '#333',
-    marginBottom: 8,
-    fontWeight: '500',
+    marginBottom: 10,
+    fontWeight: '600',
   },
   searchInputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+  },
+  activeSearchInputContainer: {
+    borderColor: '#1e3d59',
+    backgroundColor: '#f5f8ff',
   },
   searchIcon: {
-    marginLeft: 12,
+    marginLeft: 14,
   },
   searchInput: {
     flex: 1,
-    padding: 12,
+    padding: 14,
     fontSize: 16,
     color: '#333',
   },
   clearButton: {
-    padding: 12,
+    padding: 10,
+    marginRight: 4,
   },
   locationList: {
     flex: 1,
+  },
+  listContentContainer: {
+    paddingBottom: 20,
   },
   emptyList: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
   },
+  noResultsContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+    marginTop: 40,
+  },
   noResultsText: {
     fontSize: 16,
     color: '#666',
     textAlign: 'center',
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  clearSearchButton: {
+    backgroundColor: '#e8edf3',
+    paddingVertical: 10,
+    paddingHorizontal: 20,
+    borderRadius: 20,
+  },
+  clearSearchText: {
+    color: '#1e3d59',
+    fontWeight: '600',
+    fontSize: 14,
   },
   locationItem: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
     padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#f0f0f0',
+    marginBottom: 8,
+    borderRadius: 10,
+    backgroundColor: '#fff',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.05,
+    shadowRadius: 2,
+    elevation: 1,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
   },
   selectedLocation: {
-    backgroundColor: '#f0f7ff',
+    backgroundColor: '#f5f8ff',
     borderLeftWidth: 4,
     borderLeftColor: '#1e3d59',
   },
@@ -365,23 +479,16 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   selectedLocationText: {
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#1e3d59',
   },
-  saveButton: {
-    backgroundColor: '#1e3d59',
-    margin: 16,
-    padding: 16,
-    borderRadius: 8,
+  checkIconContainer: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    width: 24,
+    height: 24,
+    justifyContent: 'center',
     alignItems: 'center',
-  },
-  disabledButton: {
-    backgroundColor: '#cccccc',
-  },
-  saveButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
   },
   centerContent: {
     flex: 1,
@@ -393,24 +500,75 @@ const styles = StyleSheet.create({
     marginTop: 16,
     fontSize: 16,
     color: '#666',
+    fontWeight: '500',
+  },
+  errorTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#333',
+    marginTop: 16,
+    marginBottom: 8,
   },
   errorText: {
-    marginTop: 16,
     fontSize: 16,
-    color: '#e74c3c',
+    color: '#666',
     textAlign: 'center',
-    marginHorizontal: 20,
+    marginBottom: 24,
   },
   retryButton: {
-    marginTop: 24,
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#1e3d59',
     paddingVertical: 12,
     paddingHorizontal: 24,
-    borderRadius: 8,
+    borderRadius: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  buttonIcon: {
+    marginRight: 8,
   },
   retryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  footer: {
+    backgroundColor: '#fff',
+    padding: 16,
+    borderTopWidth: 1,
+    borderTopColor: '#e8edf3',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.05,
+    shadowRadius: 3,
+    elevation: 5,
+  },
+  saveButton: {
+    backgroundColor: '#1e3d59',
+    padding: 16,
+    borderRadius: 10,
+    alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  saveButtonIcon: {
+    marginLeft: 8,
+  },
+  disabledButton: {
+    backgroundColor: '#b7b7b7',
+  },
+  saveButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });

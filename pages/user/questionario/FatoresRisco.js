@@ -7,11 +7,13 @@ import {
   SafeAreaView,
   ScrollView,
   Alert,
+  StatusBar,
+  Platform
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import ProgressBar from '../../../components/ProgressBar';
-import { atualizarFatoresRisco, avancarEtapa, voltarEtapa }  from '../../../store/anamnesisSlice';
+import ProgressSteps from '../../../components/ProgressBar';
+import { atualizarFatoresRisco, avancarEtapa, voltarEtapa } from '../../../store/anamnesisSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
@@ -23,20 +25,22 @@ const FatoresRisco = () => {
   
   const [formData, setFormData] = useState(fatoresRiscoState);
   const [errors, setErrors] = useState({});
+  const [currentDate] = useState('2025-03-24 05:49:38');
+  const [currentUser] = useState('hannanhunny01');
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('HistoricoCancer');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        handleBack();
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const validateForm = () => {
     let formErrors = {};
@@ -121,11 +125,14 @@ const FatoresRisco = () => {
             key={index}
             style={styles.radioOption}
             onPress={() => handleOptionSelect(field, option.value)}
+            activeOpacity={0.7}
           >
             <View style={[
               styles.radioCircle,
               formData[field] === option.value && styles.radioSelected
-            ]} />
+            ]}>
+              {formData[field] === option.value && <View style={styles.radioInner} />}
+            </View>
             <Text style={styles.radioText}>{option.label}</Text>
           </TouchableOpacity>
         ))}
@@ -136,6 +143,8 @@ const FatoresRisco = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -146,12 +155,19 @@ const FatoresRisco = () => {
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
-      <ProgressBar 
-        currentStep={4} 
-        totalSteps={5}
-      />
+      <View style={styles.progressContainer}>
+        <ProgressSteps 
+          currentStep={4} 
+          totalSteps={5}
+          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+        />
+      </View>
 
-      <ScrollView style={styles.content}>
+      <ScrollView 
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+      >
+        
         <Text style={styles.sectionTitle}>Fatores de Risco e Proteção para Câncer de Pele</Text>
 
         <View style={styles.questionContainer}>
@@ -260,15 +276,19 @@ const FatoresRisco = () => {
           <TouchableOpacity 
             style={[styles.navigationButton, styles.backBtn]}
             onPress={handleBack}
+            activeOpacity={0.7}
           >
+            <Icon name="arrow-back" size={18} color="#1e3d59" style={styles.buttonIcon} />
             <Text style={styles.backButtonText}>Voltar</Text>
           </TouchableOpacity>
           
           <TouchableOpacity 
             style={[styles.navigationButton, styles.advanceButton]}
             onPress={handleAdvance}
+            activeOpacity={0.7}
           >
             <Text style={styles.advanceButtonText}>Avançar</Text>
+            <Icon name="arrow-forward" size={18} color="#fff" style={styles.buttonIcon} />
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -285,8 +305,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 26,
-    height: 90,
+    paddingTop: Platform.OS === 'ios' ? 44 : 26,
+    height: Platform.OS === 'ios' ? 90 : 80,
     paddingHorizontal: 16,
   },
   backButton: {
@@ -297,13 +317,41 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontWeight: '500',
   },
+  progressContainer: {
+    backgroundColor: '#f8f8f8',
+  },
   content: {
     flex: 1,
     padding: 16,
   },
+  headerInfo: {
+    backgroundColor: '#f8f8f8',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#eee',
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 4,
+  },
+  infoIcon: {
+    marginRight: 8,
+  },
+  dateText: {
+    fontSize: 14,
+    color: '#555',
+    fontWeight: '500',
+  },
+  userText: {
+    fontSize: 14,
+    color: '#555',
+  },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
+    fontWeight: '600',
     color: '#333',
     marginBottom: 24,
   },
@@ -315,14 +363,15 @@ const styles = StyleSheet.create({
   },
   question: {
     fontSize: 16,
+    fontWeight: '500',
     color: '#333',
     marginBottom: 12,
   },
   subQuestion: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 12,
-    marginBottom: 8,
+    fontSize: 15,
+    color: '#555',
+    marginTop: 16,
+    marginBottom: 10,
   },
   radioGroupContainer: {
     marginBottom: 8,
@@ -336,15 +385,24 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginRight: 24,
     marginBottom: 12,
-    width: '45%', 
+    width: '45%',
+    paddingVertical: 6,
   },
   radioCircle: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
     borderWidth: 2,
     borderColor: '#1e3d59',
     marginRight: 8,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  radioInner: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: '#fff',
   },
   radioSelected: {
     backgroundColor: '#1e3d59',
@@ -361,9 +419,14 @@ const styles = StyleSheet.create({
   },
   navigationButton: {
     flex: 1,
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginHorizontal: 6,
   },
   backBtn: {
     backgroundColor: '#fff',
@@ -373,7 +436,7 @@ const styles = StyleSheet.create({
   },
   backButtonText: {
     color: '#1e3d59',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   advanceButton: {
@@ -382,13 +445,14 @@ const styles = StyleSheet.create({
   },
   advanceButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   errorText: {
     color: 'red',
     fontSize: 12,
     marginTop: 4,
+    marginBottom: 4,
   },
 });
 

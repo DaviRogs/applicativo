@@ -8,10 +8,12 @@ import {
   ScrollView,
   TextInput,
   Alert,
+  StatusBar,
+  Platform
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import ProgressBar from '../../../components/ProgressBar';
+import ProgressSteps from '../../../components/ProgressBar';
 import { atualizarQuestoesGerais, avancarEtapa } from '../../../store/anamnesisSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
@@ -25,19 +27,19 @@ const QuestoesGeraisSaude = () => {
   const [formData, setFormData] = useState(questoesGeraisState);
   const [errors, setErrors] = useState({});
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('NovoPaciente');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('NovoPaciente');
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const handleDoencaCronicaChange = (doenca) => {
     setFormData(prev => ({
@@ -165,6 +167,8 @@ const QuestoesGeraisSaude = () => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -175,10 +179,13 @@ const QuestoesGeraisSaude = () => {
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
-      <ProgressBar 
-        currentStep={1} 
-        totalSteps={5}
-      />
+      <View style={styles.progressContainer}>
+        <ProgressSteps 
+          currentStep={1} 
+          totalSteps={5}
+          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+        />
+      </View>
 
       <ScrollView style={styles.content}>
         <Text style={styles.sectionTitle}>Questões gerais de saúde</Text>
@@ -415,8 +422,8 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 26,
-    height: 90,
+    paddingTop: Platform.OS === 'ios' ? 44 : 26,
+    height: Platform.OS === 'ios' ? 90 : 80,
     paddingHorizontal: 16,
   },
   backButton: {
@@ -426,6 +433,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     fontWeight: '500',
+  },
+  progressContainer: {
+    backgroundColor: '#f8f8f8',
   },
   content: {
     flex: 1,
@@ -513,7 +523,7 @@ const styles = StyleSheet.create({
   },
   advanceButton: {
     backgroundColor: '#1e3d59',
-    padding: 16,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginTop: 24,
@@ -521,7 +531,7 @@ const styles = StyleSheet.create({
   },
   advanceButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   errorText: {

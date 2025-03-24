@@ -9,16 +9,18 @@ import {
   ActivityIndicator,
   Modal,
   RefreshControl,
-  Alert
+  Alert,
+  StatusBar,
+  Platform
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
 import {API_URL} from '@env';
-import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
-export const HealthUnitListScreen = ({  }) => {
+export const HealthUnitListScreen = () => {
   const [units, setUnits] = useState([]);
   const [filteredUnits, setFilteredUnits] = useState([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -27,47 +29,30 @@ export const HealthUnitListScreen = ({  }) => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
-  const [currentDate, setCurrentDate] = useState('2025-03-02 22:37:09');
-  const [currentUser, setCurrentUser] = useState('hannanhunny01');
+  
   const userData = useSelector(state => state.user.userData);
-
   const navigation = useNavigation();
-
-
     
   // Get user role from Redux
-  const HealthUnitList = useSelector(selectIsAdmin);
+  const isAdmin = useSelector(selectIsAdmin);
   const token = useSelector(state => state.auth.accessToken);
 
-  // Set current date and time
-  useEffect(() => {
-    const now = new Date();
-    const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')} ${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
-    setCurrentDate(formattedDate);
-  }, []);
-
-
-          useFocusEffect(
-            React.useCallback(() => {
-              const onBackPress = () => {
-                navigation.navigate('HomeAdmin');
-                return true; // Prevent default behavior
-              };
-          
-              BackHandler.addEventListener('hardwareBackPress', onBackPress);
-          
-              return () => 
-                BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-            }, [navigation])
-          );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('HomeAdmin');
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
   
   // Fetch health units
   const fetchHealthUnits = async () => {
-    // if (!isAdmin) {
-    //   navigation.goBack();
-    //   return;
-    // }
-    console.log('fetchHealthUnits');
     setIsLoading(true);
     setError(null);
 
@@ -182,9 +167,18 @@ export const HealthUnitListScreen = ({  }) => {
     <View style={styles.unitCard}>
       <View style={styles.unitInfo}>
         <Text style={styles.unitName}>{item.nome_unidade_saude}</Text>
-        <Text style={styles.unitCode}>Código: {item.codigo_unidade_saude}</Text>
-        <Text style={styles.unitCity}>{item.cidade_unidade_saude}</Text>
-        <Text style={styles.unitAddress}>{item.nome_localizacao}</Text>
+        <View style={styles.unitDetail}>
+          <Icon name="local-offer" size={16} color="#666" style={styles.detailIcon} />
+          <Text style={styles.unitCode}>Código: {item.codigo_unidade_saude}</Text>
+        </View>
+        <View style={styles.unitDetail}>
+          <Icon name="location-city" size={16} color="#666" style={styles.detailIcon} />
+          <Text style={styles.unitCity}>{item.cidade_unidade_saude}</Text>
+        </View>
+        <View style={styles.unitDetail}>
+          <Icon name="place" size={16} color="#666" style={styles.detailIcon} />
+          <Text style={styles.unitAddress}>{item.nome_localizacao}</Text>
+        </View>
       </View>
       <View style={styles.cardActions}>
         <View style={[
@@ -208,6 +202,7 @@ export const HealthUnitListScreen = ({  }) => {
               setStatusModalVisible(true);
             }}
             style={styles.statusButton}
+            hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
           >
             <Icon name="more-vert" size={24} color="#666" />
           </TouchableOpacity>
@@ -216,18 +211,24 @@ export const HealthUnitListScreen = ({  }) => {
     </View>
   );
 
-  // Header with date and user
+  // Header with user information from Redux
   const renderHeader = () => (
     <View style={styles.headerInfo}>
-     <Text style={styles.userText}>Usuário: {userData?.nome_usuario}</Text>
-             <Text style={styles.userText}>Email: {userData?.email}</Text>
+      <Text style={styles.userText}>Usuário: {userData?.nome_usuario}</Text>
+      <Text style={styles.userText}>Email: {userData?.email}</Text>
     </View>
   );
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
-        <TouchableOpacity onPress={() =>navigation.navigate('HomeAdmin')}>
+        <TouchableOpacity 
+          style={styles.backButton}
+          onPress={() => navigation.navigate('HomeAdmin')}
+          hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+        >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Unidades de Saúde</Text>
@@ -236,17 +237,27 @@ export const HealthUnitListScreen = ({  }) => {
       <View style={styles.content}>
         {renderHeader()}
 
-        <Text style={styles.sectionTitle}>Unidades cadastradas</Text>
-        
-        <View style={styles.searchContainer}>
-          <TextInput
-            style={styles.searchInput}
-            placeholder="Pesquisar por nome, código ou cidade"
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-          <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+        <View style={styles.sectionHeader}>
+          <Text style={styles.sectionTitle}>Unidades cadastradas</Text>
+          
+          <View style={styles.searchContainer}>
+            <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+            <TextInput
+              style={styles.searchInput}
+              placeholder="Pesquisar por nome, código ou cidade"
+              placeholderTextColor="#999"
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+            />
+            {searchQuery.length > 0 && (
+              <TouchableOpacity 
+                onPress={() => setSearchQuery('')}
+                hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
+              >
+                <Icon name="close" size={20} color="#999" />
+              </TouchableOpacity>
+            )}
+          </View>
         </View>
 
         {isLoading && !refreshing ? (
@@ -256,9 +267,13 @@ export const HealthUnitListScreen = ({  }) => {
           </View>
         ) : error ? (
           <View style={styles.errorContainer}>
-            <Icon name="error-outline" size={40} color="#F44336" />
+            <Icon name="error-outline" size={48} color="#F44336" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchHealthUnits}>
+            <TouchableOpacity 
+              style={styles.retryButton} 
+              onPress={fetchHealthUnits}
+              activeOpacity={0.8}
+            >
               <Text style={styles.retryButtonText}>Tentar novamente</Text>
             </TouchableOpacity>
           </View>
@@ -274,7 +289,7 @@ export const HealthUnitListScreen = ({  }) => {
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
-                <Icon name="business" size={48} color="#999" />
+                <Icon name="business" size={60} color="#ddd" />
                 <Text style={styles.emptyText}>
                   {searchQuery ? 'Nenhuma unidade encontrada para esta busca.' : 'Nenhuma unidade cadastrada.'}
                 </Text>
@@ -286,9 +301,10 @@ export const HealthUnitListScreen = ({  }) => {
         <TouchableOpacity 
           style={styles.addButton}
           onPress={() => navigation.navigate('RegisterHealthUnit')}
+          activeOpacity={0.8}
         >
           <Text style={styles.addButtonText}>Cadastrar Nova Unidade</Text>
-          <Icon name="add" size={24} color="#1e3d59" />
+          <Icon name="add" size={24} color="#fff" />
         </TouchableOpacity>
       </View>
 
@@ -311,28 +327,32 @@ export const HealthUnitListScreen = ({  }) => {
               e.stopPropagation();
             }}
           >
-            <Text style={styles.modalTitle}>Alterar Status</Text>
-            {selectedUnit && (
-              <Text style={styles.modalSubtitle}>
-                {selectedUnit.nome_unidade_saude}
-              </Text>
-            )}
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Alterar Status</Text>
+              {selectedUnit && (
+                <Text style={styles.modalSubtitle}>
+                  {selectedUnit.nome_unidade_saude}
+                </Text>
+              )}
+            </View>
             
-            <TouchableOpacity 
-              style={[styles.statusOption, styles.activeOption]}
-              onPress={() => handleStatusChange(true)}
-            >
-              <Icon name="check-circle" size={24} color="#4CAF50" />
-              <Text style={styles.statusOptionText}>Ativo</Text>
-            </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.statusOption, styles.inactiveOption]}
-              onPress={() => handleStatusChange(false)}
-            >
-              <Icon name="cancel" size={24} color="#F44336" />
-              <Text style={styles.statusOptionText}>Inativo</Text>
-            </TouchableOpacity>
+            <View style={styles.modalContent}>
+              <TouchableOpacity 
+                style={[styles.statusOption, styles.activeOption]}
+                onPress={() => handleStatusChange(true)}
+              >
+                <Icon name="check-circle" size={24} color="#4CAF50" />
+                <Text style={styles.statusOptionText}>Ativo</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.statusOption, styles.inactiveOption]}
+                onPress={() => handleStatusChange(false)}
+              >
+                <Icon name="cancel" size={24} color="#F44336" />
+                <Text style={styles.statusOptionText}>Inativo</Text>
+              </TouchableOpacity>
+            </View>
             
             <TouchableOpacity 
               style={styles.cancelButton}
@@ -350,21 +370,29 @@ export const HealthUnitListScreen = ({  }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f5f8fa',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'ios' ? 44 : 40,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
   },
   headerTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '500',
-    marginLeft: 16,
+    fontWeight: '600',
     flex: 1,
   },
   content: {
@@ -372,12 +400,17 @@ const styles = StyleSheet.create({
     padding: 16,
   },
   headerInfo: {
-    backgroundColor: '#f8f8f8',
-    padding: 12,
-    borderRadius: 8,
+    backgroundColor: '#fff',
+    padding: 14,
+    borderRadius: 10,
     marginBottom: 16,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e0e0e0',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
   },
   dateText: {
     fontSize: 14,
@@ -387,80 +420,94 @@ const styles = StyleSheet.create({
   userText: {
     fontSize: 14,
     color: '#555',
-    marginTop: 4,
+    marginBottom: 6,
+  },
+  sectionHeader: {
+    marginBottom: 16,
   },
   sectionTitle: {
     fontSize: 18,
-    fontWeight: '500',
-    color: '#333',
+    fontWeight: '600',
+    color: '#1e3d59',
     marginBottom: 16,
   },
   searchContainer: {
-    position: 'relative',
-    marginBottom: 16,
-  },
-  searchInput: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: '#fff',
-    borderRadius: 8,
-    padding: 12,
-    paddingRight: 40,
+    borderRadius: 10,
+    paddingHorizontal: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
-    fontSize: 16,
+    borderColor: '#e0e0e0',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
   },
   searchIcon: {
-    position: 'absolute',
-    right: 12,
-    top: 12,
+    marginRight: 8,
+  },
+  searchInput: {
+    flex: 1,
+    height: 44,
+    fontSize: 15,
+    color: '#333',
+    padding: 0,
   },
   listContainer: {
     paddingBottom: 16,
   },
   unitCard: {
     backgroundColor: '#fff',
-    borderRadius: 8,
+    borderRadius: 10,
     padding: 16,
     marginBottom: 12,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e0e0e0',
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 2,
-    elevation: 2,
   },
   unitInfo: {
-    marginBottom: 12,
+    marginBottom: 14,
   },
   unitName: {
     fontSize: 18,
     fontWeight: '600',
     color: '#1e3d59',
-    marginBottom: 4,
+    marginBottom: 10,
+  },
+  unitDetail: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 6,
+  },
+  detailIcon: {
+    marginRight: 8,
   },
   unitCode: {
     fontSize: 14,
     fontWeight: '500',
     color: '#555',
-    marginBottom: 4,
   },
   unitCity: {
     fontSize: 14,
-    fontWeight: '500',
     color: '#555',
-    marginBottom: 4,
   },
   unitAddress: {
     fontSize: 14,
     color: '#666',
-    marginTop: 2,
+    flex: 1,
   },
   cardActions: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     borderTopWidth: 1,
-    borderTopColor: '#eee',
+    borderTopColor: '#f0f0f0',
     paddingTop: 12,
     marginTop: 4,
   },
@@ -469,30 +516,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   editButton: {
-    padding: 6,
-    marginRight: 8,
+    padding: 8,
+    marginRight: 4,
+    borderRadius: 20,
+    backgroundColor: '#f5f8fa',
   },
   statusButton: {
-    padding: 6,
+    padding: 8,
+    borderRadius: 20,
   },
   statusBadge: {
     paddingHorizontal: 12,
-    paddingVertical: 4,
-    borderRadius: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   activeBadge: {
-    backgroundColor: 'rgba(76, 175, 80, 0.1)',
+    backgroundColor: 'rgba(76, 175, 80, 0.15)',
   },
   inactiveBadge: {
-    backgroundColor: 'rgba(244, 67, 54, 0.1)',
+    backgroundColor: 'rgba(244, 67, 54, 0.15)',
   },
   activeText: {
-    color: '#4CAF50',
+    color: '#388E3C',
     fontWeight: '600',
     fontSize: 13,
   },
   inactiveText: {
-    color: '#F44336',
+    color: '#D32F2F',
     fontWeight: '600',
     fontSize: 13,
   },
@@ -500,22 +550,20 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 8,
+    backgroundColor: '#1e3d59',
+    padding: 12,
+    borderRadius: 10,
     marginTop: 16,
-    borderWidth: 1,
-    borderColor: '#1e3d59',
+    elevation: 2,
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
+    shadowOpacity: 0.2,
     shadowRadius: 2,
-    elevation: 2,
   },
   addButtonText: {
-    color: '#1e3d59',
-    fontSize: 16,
-    fontWeight: '500',
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
     marginRight: 8,
   },
   loadingContainer: {
@@ -528,6 +576,7 @@ const styles = StyleSheet.create({
     marginTop: 12,
     fontSize: 16,
     color: '#666',
+    textAlign: 'center',
   },
   errorContainer: {
     flex: 1,
@@ -544,19 +593,25 @@ const styles = StyleSheet.create({
   },
   retryButton: {
     backgroundColor: '#1e3d59',
-    paddingVertical: 10,
-    paddingHorizontal: 20,
-    borderRadius: 8,
+    paddingVertical: 12,
+    paddingHorizontal: 24,
+    borderRadius: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   retryButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   emptyContainer: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: 40,
+    marginTop: 20,
   },
   emptyText: {
     marginTop: 16,
@@ -572,22 +627,33 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContainer: {
-    width: '80%',
+    width: '85%',
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 20,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalHeader: {
+    backgroundColor: '#1e3d59',
+    padding: 16,
     alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 8,
+    color: '#fff',
+    marginBottom: 4,
   },
   modalSubtitle: {
     fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
+    color: 'rgba(255,255,255,0.8)',
+  },
+  modalContent: {
+    padding: 16,
   },
   statusOption: {
     flexDirection: 'row',
@@ -605,21 +671,21 @@ const styles = StyleSheet.create({
   },
   statusOptionText: {
     marginLeft: 12,
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
     color: '#333',
   },
   cancelButton: {
-    marginTop: 8,
     padding: 12,
     width: '100%',
     alignItems: 'center',
-    borderRadius: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
     backgroundColor: '#f5f5f5',
   },
   cancelButtonText: {
     color: '#666',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
 });

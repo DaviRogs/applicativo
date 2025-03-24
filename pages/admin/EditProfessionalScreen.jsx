@@ -7,13 +7,16 @@ import {
   Switch,
   ActivityIndicator,
   Alert,
-  Modal
+  Modal,
+  StatusBar,
+  ScrollView,
+  Platform
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
-import {API_URL} from '@env';
-import { useFocusEffect , useNavigation } from '@react-navigation/native';
+import { API_URL } from '@env';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 const EditProfessionalScreen = ({ route }) => {
@@ -29,40 +32,27 @@ const EditProfessionalScreen = ({ route }) => {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [roleModalVisible, setRoleModalVisible] = useState(false);
-  const [currentDate, setCurrentDate] = useState('');
+
   const navigation = useNavigation();
 
-
-          useFocusEffect(
-            React.useCallback(() => {
-              const onBackPress = () => {
-                navigation.navigate('ProfessionalsList');
-                return true; // Prevent default behavior
-              };
-          
-              BackHandler.addEventListener('hardwareBackPress', onBackPress);
-          
-              return () => 
-                BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-            }, [navigation])
-          );
-  useEffect(() => {
-    const updateCurrentDate = () => {
-      const now = new Date();
-      const formattedDate = now.toISOString().slice(0, 19).replace('T', ' ');
-      setCurrentDate(formattedDate);
-    };
-    
-    updateCurrentDate();
-    const intervalId = setInterval(updateCurrentDate, 60000); // Update every minute
-    
-    return () => clearInterval(intervalId);
-  }, []);
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('ProfessionalsList');
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 3},
-    { id: 2, name: "Supervisor", nivel_acesso: 2 },
-    { id: 3, name: "Admin", nivel_acesso: 1 }
+    { id: 1, name: "Pesquisador", nivel_acesso: 3, icon: "science" },
+    { id: 2, name: "Supervisor", nivel_acesso: 2, icon: "supervisor-account" },
+    { id: 3, name: "Admin", nivel_acesso: 1, icon: "admin-panel-settings" }
   ];
 
   const availableRoles = isAdmin 
@@ -79,6 +69,12 @@ const EditProfessionalScreen = ({ route }) => {
   const getRoleName = (nivelAcesso) => {
     const role = roles.find(r => r.nivel_acesso === nivelAcesso);
     return role ? role.name : 'Não definido';
+  };
+
+  // Get role icon by nivel_acesso
+  const getRoleIcon = (nivelAcesso) => {
+    const role = roles.find(r => r.nivel_acesso === nivelAcesso);
+    return role ? role.icon : 'help-outline';
   };
 
   const handleSaveChanges = async () => {
@@ -130,76 +126,130 @@ const EditProfessionalScreen = ({ route }) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
+      
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.navigate('ProfessionalsList')}>
+        <TouchableOpacity
+          style={styles.backButton}
+          onPress={() => navigation.navigate('ProfessionalsList')}
+          hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+        >
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Profissional</Text>
+        <Text style={styles.headerTitle}>Editar Profissional</Text>
       </View>
 
-      <View style={styles.content}>
-        <View style={styles.profileHeader}>
-          <Icon name="account-circle" size={48} color="#1e3d59" />
-          <View style={styles.profileInfo}>
-            <Text style={styles.profileName}>{professional?.nome_usuario || 'Nome não disponível'}</Text>
-            <Text style={styles.profileCpf}>{formatCPF(professional?.cpf) || 'CPF não disponível'}</Text>
-            <Text style={styles.profileEmail}>{professional?.email || 'Email não disponível'}</Text>
+      <ScrollView 
+        style={styles.scrollView}
+        contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={styles.card}>
+          <View style={styles.profileHeader}>
+            <View style={styles.profileIconContainer}>
+              <Icon name="person" size={36} color="#fff" />
+            </View>
+            <View style={styles.profileInfo}>
+              <Text style={styles.profileName}>{professional?.nome_usuario || 'Nome não disponível'}</Text>
+              <Text style={styles.profileCpf}>{formatCPF(professional?.cpf) || 'CPF não disponível'}</Text>
+              <Text style={styles.profileEmail}>{professional?.email || 'Email não disponível'}</Text>
+            </View>
+          </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.unitSection}>
+            <View style={styles.unitRow}>
+              <Icon name="business" size={20} color="#1e3d59" style={styles.rowIcon} />
+              <Text style={styles.unitText}>{userUnit?.nome_unidade_saude || 'Unidade não disponível'}</Text>
+            </View>
+            <View style={styles.unitRow}>
+              <Icon name="location-on" size={20} color="#1e3d59" style={styles.rowIcon} />
+              <Text style={styles.unitText}>{userUnit?.nome_localizacao || 'Localização não disponível'}</Text>
+            </View>
           </View>
         </View>
 
-        <View style={styles.headerInfo}>
-          <Text style={styles.userText}>Usuário: {userData?.nome_usuario || 'Usuário atual'}</Text>
-          <Text style={styles.userText}>Email: {userData?.email || 'Email não disponível'}</Text>
-          <Text style={styles.dateText}>{currentDate} (UTC)</Text>
-        </View>
 
-        <View style={styles.formGroup}>
-          <Text style={styles.label}>Permissão</Text>
-          <TouchableOpacity 
-            style={styles.selectButton}
-            onPress={() => setRoleModalVisible(true)}
-          >
-            <Text style={styles.selectButtonText}>
-              {getRoleName(selectedRole)}
-            </Text>
-            <Icon name="arrow-drop-down" size={24} color="#666" />
-          </TouchableOpacity>
-        </View>
 
-        <View style={styles.switchContainer}>
-          <Text style={styles.switchLabel}>
-            {isActive ? "Usuário Ativo" : "Usuário Inativo"}
-          </Text>
-          <Switch
-            value={isActive}
-            onValueChange={setIsActive}
-            trackColor={{ false: "#ddd", true: "#1e3d59" }}
-            thumbColor="#fff"
-          />
+        <View style={styles.card}>
+          <View style={styles.sectionTitle}>
+            <Icon name="security" size={20} color="#1e3d59" />
+            <Text style={styles.sectionTitleText}>Permissões do Usuário</Text>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Nível de Acesso</Text>
+            <TouchableOpacity 
+              style={styles.selectButton}
+              onPress={() => setRoleModalVisible(true)}
+            >
+              <View style={styles.roleInfo}>
+                <Icon name={getRoleIcon(selectedRole)} size={22} color="#1e3d59" />
+                <Text style={styles.selectButtonText}>
+                  {getRoleName(selectedRole)}
+                </Text>
+              </View>
+              <Icon name="keyboard-arrow-down" size={24} color="#666" />
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.formGroup}>
+            <Text style={styles.label}>Status do Usuário</Text>
+            <View style={styles.statusContainer}>
+              <View style={styles.statusTextContainer}>
+                <Icon 
+                  name={isActive ? "check-circle" : "cancel"} 
+                  size={22} 
+                  color={isActive ? "#4CAF50" : "#F44336"}
+                  style={styles.statusIcon}
+                />
+                <Text style={[
+                  styles.statusText,
+                  isActive ? styles.activeText : styles.inactiveText
+                ]}>
+                  {isActive ? "Usuário Ativo" : "Usuário Inativo"}
+                </Text>
+              </View>
+              <Switch
+                value={isActive}
+                onValueChange={setIsActive}
+                trackColor={{ false: "#ffcdd2", true: "#c8e6c9" }}
+                thumbColor={isActive ? "#4CAF50" : "#F44336"}
+                ios_backgroundColor="#ffcdd2"
+              />
+            </View>
+          </View>
         </View>
 
         <View style={styles.buttonContainer}>
           <TouchableOpacity 
-            style={[styles.primaryButton, isLoading && styles.disabledButton]}
+            style={[styles.saveButton, isLoading && styles.disabledButton]}
             onPress={handleSaveChanges}
             disabled={isLoading}
           >
             {isLoading ? (
               <ActivityIndicator size="small" color="#fff" />
             ) : (
-              <Text style={styles.primaryButtonText}>Salvar alterações</Text>
+              <View style={styles.buttonContent}>
+                <Icon name="save" size={20} color="#fff" style={styles.buttonIcon} />
+                <Text style={styles.saveButtonText}>Salvar alterações</Text>
+              </View>
             )}
           </TouchableOpacity>
           
           <TouchableOpacity 
-            style={styles.secondaryButton}
+            style={styles.cancelButton}
             onPress={() => navigation.navigate('ProfessionalsList')}
             disabled={isLoading}
           >
-            <Text style={styles.secondaryButtonText}>Cancelar</Text>
+            <View style={styles.buttonContent}>
+              <Icon name="close" size={20} color="#666" style={styles.buttonIcon} />
+              <Text style={styles.cancelButtonText}>Cancelar</Text>
+            </View>
           </TouchableOpacity>
         </View>
-      </View>
+      </ScrollView>
 
       <Modal
         visible={roleModalVisible}
@@ -215,43 +265,53 @@ const EditProfessionalScreen = ({ route }) => {
           <View 
             style={styles.modalContainer}
             onStartShouldSetResponder={() => true}
-            onTouchEnd={e => {
-              e.stopPropagation();
-            }}
+            onTouchEnd={e => e.stopPropagation()}
           >
-            <Text style={styles.modalTitle}>Selecionar Permissão</Text>
+            <View style={styles.modalHeader}>
+              <Text style={styles.modalTitle}>Selecionar Nível de Acesso</Text>
+            </View>
             
-            {availableRoles.map((role) => (
-              <TouchableOpacity 
-                key={role.id}
-                style={[
-                  styles.roleOption,
-                  selectedRole === role.nivel_acesso && styles.selectedRoleOption
-                ]}
-                onPress={() => {
-                  setSelectedRole(role.nivel_acesso);
-                  setRoleModalVisible(false);
-                }}
-              >
-                <Text 
+            <View style={styles.modalContent}>
+              {availableRoles.map((role) => (
+                <TouchableOpacity 
+                  key={role.id}
                   style={[
-                    styles.roleOptionText,
-                    selectedRole === role.nivel_acesso && styles.selectedRoleText
+                    styles.roleOption,
+                    selectedRole === role.nivel_acesso && styles.selectedRoleOption
                   ]}
+                  onPress={() => {
+                    setSelectedRole(role.nivel_acesso);
+                    setRoleModalVisible(false);
+                  }}
                 >
-                  {role.name}
-                </Text>
-                {selectedRole === role.nivel_acesso && (
-                  <Icon name="check" size={24} color="#1e3d59" />
-                )}
-              </TouchableOpacity>
-            ))}
+                  <View style={styles.roleOptionContent}>
+                    <Icon 
+                      name={role.icon} 
+                      size={22} 
+                      color={selectedRole === role.nivel_acesso ? "#1e3d59" : "#666"} 
+                      style={styles.roleIcon}
+                    />
+                    <Text 
+                      style={[
+                        styles.roleOptionText,
+                        selectedRole === role.nivel_acesso && styles.selectedRoleText
+                      ]}
+                    >
+                      {role.name}
+                    </Text>
+                  </View>
+                  {selectedRole === role.nivel_acesso && (
+                    <Icon name="check" size={22} color="#1e3d59" />
+                  )}
+                </TouchableOpacity>
+              ))}
+            </View>
             
             <TouchableOpacity 
-              style={styles.cancelButton}
+              style={styles.modalCancelButton}
               onPress={() => setRoleModalVisible(false)}
             >
-              <Text style={styles.cancelButtonText}>Cancelar</Text>
+              <Text style={styles.modalCancelText}>Cancelar</Text>
             </TouchableOpacity>
           </View>
         </TouchableOpacity>
@@ -263,131 +323,235 @@ const EditProfessionalScreen = ({ route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#f5f8fa',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: 40,
+    paddingTop: Platform.OS === 'ios' ? 44 : StatusBar.currentHeight + 10,
     paddingBottom: 16,
     paddingHorizontal: 16,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 4,
+  },
+  backButton: {
+    padding: 8,
+    marginRight: 8,
   },
   headerTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '500',
-    marginLeft: 16,
+    fontWeight: '600',
     flex: 1,
   },
-  content: {
+  scrollView: {
     flex: 1,
+  },
+  contentContainer: {
     padding: 16,
+    paddingBottom: 32,
   },
-  headerInfo: {
-    backgroundColor: '#f8f8f8',
-    padding: 12,
-    borderRadius: 8,
+  card: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
     marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#ddd',
+    padding: 16,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
-    marginTop: 5,
+  profileHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
-  userText: {
+  profileIconContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: '#1e3d59',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: 16,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  profileInfo: {
+    flex: 1,
+  },
+  profileName: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e3d59',
+    marginBottom: 4,
+  },
+  profileCpf: {
     fontSize: 14,
-    color: '#555',
+    color: '#666',
+    marginBottom: 2,
+  },
+  profileEmail: {
+    fontSize: 14,
+    color: '#666',
+  },
+  divider: {
+    height: 1,
+    backgroundColor: '#eee',
+    marginVertical: 16,
+  },
+  unitSection: {
     marginTop: 4,
+  },
+  unitRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  rowIcon: {
+    marginRight: 12,
+  },
+  unitText: {
+    fontSize: 14,
+    color: '#444',
+  },
+  sectionTitle: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  sectionTitleText: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#1e3d59',
+    marginLeft: 8,
+  },
+  infoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  infoIcon: {
+    marginRight: 8,
+  },
+  infoLabel: {
+    fontSize: 14,
+    color: '#666',
+    width: 60,
+  },
+  infoValue: {
+    fontSize: 14,
+    color: '#333',
+    fontWeight: '500',
+    flex: 1,
   },
   formGroup: {
     marginBottom: 20,
   },
   label: {
-    fontSize: 14,
-    color: '#333',
-    marginBottom: 8,
+    fontSize: 15,
+    color: '#555',
+    marginBottom: 10,
+    fontWeight: '500',
   },
   selectButton: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f8fa',
     borderRadius: 8,
-    padding: 12,
+    padding: 10,
     borderWidth: 1,
-    borderColor: '#ddd',
+    borderColor: '#e0e0e0',
+  },
+  roleInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
   },
   selectButtonText: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#333',
+    marginLeft: 12,
+  },
+  statusContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    backgroundColor: '#f5f8fa',
+    borderRadius: 8,
+    padding: 14,
+    paddingRight: 10,
+    borderWidth: 1,
+    borderColor: '#e0e0e0',
+  },
+  statusTextContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusIcon: {
+    marginRight: 12,
+  },
+  statusText: {
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  activeText: {
+    color: '#388E3C',
+  },
+  inactiveText: {
+    color: '#D32F2F',
   },
   buttonContainer: {
-    marginTop: 'auto',
-    gap: 12,
+    marginTop: 8,
+    marginBottom: 16,
   },
-  primaryButton: {
+  buttonContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  buttonIcon: {
+    marginRight: 8,
+  },
+  saveButton: {
     backgroundColor: '#1e3d59',
     borderRadius: 8,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
+    marginBottom: 12,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   disabledButton: {
     backgroundColor: '#9aa5b1',
   },
-  primaryButtonText: {
+  saveButtonText: {
     color: '#fff',
-    fontSize: 16,
-    fontWeight: '500',
+    fontSize: 14,
+    fontWeight: '600',
   },
-  secondaryButton: {
+  cancelButton: {
     backgroundColor: '#fff',
     borderRadius: 8,
-    padding: 16,
+    padding: 12,
     alignItems: 'center',
     borderWidth: 1,
     borderColor: '#ddd',
   },
-  secondaryButtonText: {
+  cancelButtonText: {
     color: '#666',
-    fontSize: 16,
-  },
-  profileHeader: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  profileInfo: {
-    marginLeft: 16,
-    flex: 1,
-  },
-  profileName: {
-    fontSize: 18,
+    fontSize: 14,
     fontWeight: '500',
-    color: '#333',
-  },
-  profileCpf: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 4,
-  },
-  profileEmail: {
-    fontSize: 14,
-    color: '#666',
-    marginTop: 2,
-  },
-  switchContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: 24,
-  },
-  switchLabel: {
-    fontSize: 16,
-    color: '#333',
   },
   // Modal styles
   modalOverlay: {
@@ -397,29 +561,47 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   modalContainer: {
-    width: '80%',
+    width: '85%',
     backgroundColor: '#fff',
     borderRadius: 12,
-    padding: 20,
+    overflow: 'hidden',
+    elevation: 5,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 3 },
+    shadowOpacity: 0.25,
+    shadowRadius: 4,
+  },
+  modalHeader: {
+    backgroundColor: '#1e3d59',
+    padding: 16,
+    alignItems: 'center',
   },
   modalTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#333',
-    marginBottom: 16,
-    textAlign: 'center',
+    color: '#fff',
+  },
+  modalContent: {
+    padding: 8,
   },
   roleOption: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    paddingVertical: 16,
-    paddingHorizontal: 12,
+    paddingVertical: 14,
+    paddingHorizontal: 16,
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
+  roleOptionContent: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  roleIcon: {
+    marginRight: 12,
+  },
   selectedRoleOption: {
-    backgroundColor: 'rgba(30, 61, 89, 0.1)',
+    backgroundColor: 'rgba(30, 61, 89, 0.05)',
   },
   roleOptionText: {
     fontSize: 16,
@@ -429,15 +611,14 @@ const styles = StyleSheet.create({
     color: '#1e3d59',
     fontWeight: '600',
   },
-  cancelButton: {
-    marginTop: 16,
-    padding: 12,
-    width: '100%',
+  modalCancelButton: {
+    padding: 16,
     alignItems: 'center',
-    borderRadius: 8,
+    borderTopWidth: 1,
+    borderTopColor: '#eee',
     backgroundColor: '#f5f5f5',
   },
-  cancelButtonText: {
+  modalCancelText: {
     color: '#666',
     fontSize: 16,
     fontWeight: '500',
