@@ -1,6 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { logout } from './authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API_URL} from '@env';
 
 const initialState = {
   userData: null,
@@ -9,7 +10,6 @@ const initialState = {
   loading: false,
   error: null,
 };
-import {API_URL} from '@env';
 
 export const fetchCurrentUser = createAsyncThunk(
   'user/fetchCurrentUser',
@@ -32,6 +32,7 @@ export const fetchCurrentUser = createAsyncThunk(
       if (response.status === 401) {
         await AsyncStorage.removeItem('accessToken');
         await AsyncStorage.removeItem('refreshToken');
+        await AsyncStorage.removeItem('selectedAdminUnit'); 
         dispatch(logout());
         return rejectWithValue('Token invalid or expired');
       }
@@ -41,6 +42,18 @@ export const fetchCurrentUser = createAsyncThunk(
       }
 
       const data = await response.json();
+      
+      if (data.roles && (data.roles[0].name === 'Admin' || data.roles[0].nivel_acesso === 1)) {
+        try {
+          const storedUnit = await AsyncStorage.getItem('selectedAdminUnit');
+          if (storedUnit) {
+            data.selectedUnit = JSON.parse(storedUnit);
+          }
+        } catch (error) {
+          console.error('Error retrieving stored unit:', error);
+        }
+      }
+      
       return data;
     } catch (error) {
       return rejectWithValue(error.message);
@@ -83,13 +96,17 @@ const userSlice = createSlice({
       state.userRole = null;
       state.unidadeSaude = null;
       state.error = null;
+      AsyncStorage.removeItem('selectedAdminUnit').catch(error => 
+        console.error('Error removing stored unit:', error)
+      );
     },
     updateUnidadeSaude: (state, action) => {
       state.unidadeSaude = action.payload;
       if (state.userData) {
         state.userData = {
           ...state.userData,
-          unidadeSaude: action.payload
+          unidadeSaude: action.payload,
+          selectedUnit: action.payload[0] // Store the selected unit
         };
       }
     },
@@ -118,6 +135,9 @@ const userSlice = createSlice({
         state.userRole = null;
         state.unidadeSaude = null;
         state.error = null;
+        AsyncStorage.removeItem('selectedAdminUnit').catch(error => 
+          console.error('Error removing stored unit:', error)
+        );
       })
       .addCase(fetchHealthUnits.pending, (state) => {
         state.loading = true;
@@ -137,7 +157,7 @@ export const { clearUserData, updateUnidadeSaude } = userSlice.actions;
 
 export const selectIsAdmin = (state) => {
   const userRole = state.user?.userRole;
-  return userRole?.name === 'Admin' || userRole?.nivel_acesso === 3;
+  return userRole?.name === 'Admin' || userRole?.nivel_acesso === 1;
 };
 
 export const selectIsSupervisor = (state) => {

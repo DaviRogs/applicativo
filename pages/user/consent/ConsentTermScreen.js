@@ -9,7 +9,8 @@ import {
   Image,
   Alert,
   ActivityIndicator,
-  Platform
+  Platform,
+  StatusBar
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
 import { 
@@ -165,6 +166,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
 
   return (
     <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
       <View style={styles.header}>
         <TouchableOpacity 
           style={styles.backButton}
@@ -179,6 +181,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
       <ScrollView 
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
+        showsVerticalScrollIndicator={false}
       >
         <View style={styles.termContainer}>
           <Text style={styles.termTitle}>
@@ -230,13 +233,20 @@ const ConsentTermScreen = ({ navigation, route }) => {
                   style={styles.signatureImage}
                   resizeMode="contain"
                 />
+                <View style={styles.previewOverlay}>
+                  <Icon name="fullscreen" size={24} color="#fff" />
+                  <Text style={styles.previewText}>Visualizar</Text>
+                </View>
               </TouchableOpacity>
               
               <View style={styles.signatureInfo}>
                 {signatureDate && (
-                  <Text style={styles.signatureDate}>
-                    Assinado em: {formatDate(signatureDate)}
-                  </Text>
+                  <View style={styles.dateContainer}>
+                    <Icon name="access-time" size={14} color="#666" />
+                    <Text style={styles.signatureDate}>
+                      {formatDate(signatureDate)}
+                    </Text>
+                  </View>
                 )}
                 
                 <TouchableOpacity 
@@ -255,8 +265,11 @@ const ConsentTermScreen = ({ navigation, route }) => {
               onPress={handleCaptureSignature}
               disabled={loading}
             >
-              <Icon name="camera-alt" size={24} color="#1e3d59" />
+              <Icon name="camera-alt" size={40} color="#1e3d59" />
               <Text style={styles.captureButtonText}>Capturar assinatura</Text>
+              <Text style={styles.captureButtonSubtext}>
+                Tire uma foto da assinatura do paciente
+              </Text>
             </TouchableOpacity>
           )}
         </View>
@@ -270,6 +283,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
           ]}
           onPress={handleSaveConsent}
           disabled={!signaturePhoto || loading}
+          activeOpacity={0.8}
         >
           {loading ? (
             <>
@@ -277,7 +291,10 @@ const ConsentTermScreen = ({ navigation, route }) => {
               <Text style={styles.saveButtonText}>Processando...</Text>
             </>
           ) : (
-            <Text style={styles.saveButtonText}>Confirmar e Salvar</Text>
+            <>
+              <Icon name="check-circle" size={22} color="#fff" style={styles.saveIcon} />
+              <Text style={styles.saveButtonText}>Confirmar e Salvar</Text>
+            </>
           )}
         </TouchableOpacity>
       </View>
@@ -288,51 +305,61 @@ const ConsentTermScreen = ({ navigation, route }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#f5f8fa',
   },
   header: {
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: '#1e3d59',
-    paddingTop: Platform.OS === 'ios' ? 44 : 20,
+    paddingTop: Platform.OS === 'ios' ? 0 : StatusBar.currentHeight || 0,
     paddingBottom: 16,
-    height: Platform.OS === 'ios' ? 90 : 80,
     paddingHorizontal: 16,
+    height: Platform.OS === 'ios' ? 90 : 80,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
   },
   backButton: {
     marginRight: 16,
     padding: 8,
+    borderRadius: 20,
   },
   headerTitle: {
     color: '#fff',
-    fontSize: 20,
-    fontWeight: '500',
+    fontSize: 18,
+    fontWeight: '600',
   },
   scrollView: {
     flex: 1,
   },
   contentContainer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 20,
     paddingBottom: 32,
   },
   termContainer: {
-    backgroundColor: '#f8f9fa',
-    padding: 16,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 10,
     marginBottom: 24,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   termTitle: {
     fontWeight: 'bold',
     fontSize: 18,
-    color: '#333',
+    color: '#1e3d59',
     textAlign: 'center',
-    marginBottom: 16,
+    marginBottom: 20,
   },
   termParagraph: {
     fontSize: 15,
-    lineHeight: 22,
+    lineHeight: 24,
     color: '#333',
     marginBottom: 16,
     textAlign: 'justify',
@@ -342,13 +369,21 @@ const styles = StyleSheet.create({
     color: '#1e3d59',
   },
   signatureSection: {
+    backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 20,
     marginBottom: 24,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   signatureTitle: {
-    fontSize: 16,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 12,
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e3d59',
+    marginBottom: 16,
   },
   signatureContainer: {
     width: '100%',
@@ -356,67 +391,117 @@ const styles = StyleSheet.create({
   },
   signaturePreview: {
     width: '100%',
-    height: 160,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
+    height: 180,
+    borderRadius: 10,
     overflow: 'hidden',
     backgroundColor: '#f9f9f9',
+    elevation: 1,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 1,
+    position: 'relative',
   },
   signatureImage: {
     width: '100%',
     height: '100%',
+  },
+  previewOverlay: {
+    position: 'absolute',
+    right: 10,
+    bottom: 10,
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    borderRadius: 20,
+    padding: 8,
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  previewText: {
+    color: '#fff',
+    fontSize: 14,
+    marginLeft: 4,
   },
   signatureInfo: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    marginTop: 8,
+    marginTop: 12,
+    flexWrap: 'wrap',
+  },
+  dateContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f0f4f8',
+    paddingHorizontal: 10,
+    paddingVertical: 6,
+    borderRadius: 16,
   },
   signatureDate: {
-    fontSize: 12,
+    fontSize: 13,
     color: '#666',
-    fontStyle: 'italic',
+    marginLeft: 4,
+    fontWeight: '500',
   },
   removeSignatureButton: {
     flexDirection: 'row',
     alignItems: 'center',
-    padding: 6,
+    padding: 8,
+    backgroundColor: '#ffefef',
+    borderRadius: 16,
   },
   removeSignatureText: {
     color: '#e74c3c',
-    fontSize: 14,
+    fontSize: 13,
     marginLeft: 4,
+    fontWeight: '500',
   },
   captureButton: {
     width: '100%',
-    height: 160,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    borderRadius: 8,
-    backgroundColor: '#f9f9f9',
+    height: 180,
+    borderRadius: 10,
+    backgroundColor: '#f0f4f8',
     justifyContent: 'center',
     alignItems: 'center',
+    borderWidth: 2,
+    borderColor: '#e0e5eb',
+    borderStyle: 'dashed',
   },
   captureButtonText: {
     color: '#1e3d59',
-    fontSize: 16,
-    marginTop: 8,
+    fontSize: 18,
+    fontWeight: '600',
+    marginTop: 12,
+  },
+  captureButtonSubtext: {
+    color: '#666',
+    fontSize: 14,
+    marginTop: 6,
   },
   footer: {
-    padding: 16,
+    paddingHorizontal: 16,
+    paddingVertical: 12,
     borderTopWidth: 1,
     borderTopColor: '#eee',
     backgroundColor: '#fff',
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -3 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
   },
   saveButton: {
     backgroundColor: '#1e3d59',
-    paddingVertical: 15,
-    borderRadius: 8,
+    paddingVertical: 13,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
   },
   disabledButton: {
     backgroundColor: '#b3c1cc',
@@ -424,10 +509,13 @@ const styles = StyleSheet.create({
   saveButtonText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '500',
+    fontWeight: '600',
+  },
+  saveIcon: {
+    marginRight: 8,
   },
   loader: {
-    marginRight: 8,
+    marginRight: 10,
   },
 });
 

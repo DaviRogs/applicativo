@@ -1,4 +1,4 @@
-import React, { useState, useEffect, use } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
@@ -8,30 +8,59 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlyoutMenu from '../../components/FlyoutMenu';
 import UnitSelectionModal from '../../components/UnitSelectionModal';
-import { useSelector } from 'react-redux';
-import { selectHasAdminAccess ,selectIsAdmin} from '../../store/userSlice';
+import { useSelector, useDispatch } from 'react-redux';
+import { selectIsAdmin, updateUnidadeSaude } from '../../store/userSlice';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 const HomeScreen = ({navigation}) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [unitModalVisible, setUnitModalVisible] = useState(false);
-  const [selectedUnit, setSelectedUnit] = useState(null);
-
-  console.log(selectedUnit);
+  
+  const dispatch = useDispatch();
   const hasAdminAccess = useSelector(selectIsAdmin);
-  const userUnit = useSelector(state => state.user.userData.unidadeSaude)|| [];
-
+  const userUnits = useSelector(state => state.user.userData?.unidadeSaude || []);
+  const selectedUnit = useSelector(state => 
+    hasAdminAccess 
+      ? state.user.userData?.selectedUnit 
+      : state.user.userData?.unidadeSaude?.[0]
+  );
 
   useEffect(() => {
-    if (hasAdminAccess && !selectedUnit) {
-      setUnitModalVisible(true);
-    }else if (!selectedUnit ) { 
-      setSelectedUnit(userUnit[0]);
+    const checkSelectedUnit = async () => {
+      try {
+        if (hasAdminAccess) {
+          const storedUnit = await AsyncStorage.getItem('selectedAdminUnit');
+          
+          if (storedUnit && !selectedUnit) {
+            const parsedUnit = JSON.parse(storedUnit);
+            dispatch(updateUnidadeSaude([parsedUnit]));
+            return;
+          }
+          
+          if (!selectedUnit && !storedUnit) {
+            setUnitModalVisible(true);
+          }
+        } else if (userUnits.length > 0 && !selectedUnit) {
+          dispatch(updateUnidadeSaude([userUnits[0]]));
+        }
+      } catch (error) {
+        console.error('Error getting stored unit:', error);
+      }
+    };
+    
+    checkSelectedUnit();
+  }, [hasAdminAccess, selectedUnit, userUnits, dispatch]);
 
+  const handleUnitSelection = async (unit) => {
+    dispatch(updateUnidadeSaude([unit]));
+    
+    try {
+      await AsyncStorage.setItem('selectedAdminUnit', JSON.stringify(unit));
+    } catch (error) {
+      console.error('Error storing selected unit:', error);
     }
-  }, [hasAdminAccess, selectedUnit, userUnit]);
-
-  const handleUnitSelection = (unit) => {
-    setSelectedUnit(unit);
-    setUnitModalVisible(false); // Close the modal after selection
+    
+    setUnitModalVisible(false);
   };
 
   return (
@@ -83,6 +112,15 @@ const HomeScreen = ({navigation}) => {
             </View>
           </View>
         )}
+        
+        {hasAdminAccess && selectedUnit && (
+          <TouchableOpacity 
+            style={styles.changeUnitButton}
+            onPress={() => setUnitModalVisible(true)}
+          >
+            <Text style={styles.changeUnitButtonText}>Trocar Unidade</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </View>
   );
@@ -129,6 +167,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+    marginBottom: 16,
   },
   unitInfo: {
     marginBottom: 24,
@@ -167,6 +206,18 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: '600',
     color: '#1e3d59',
+  },
+  changeUnitButton: {
+    backgroundColor: '#1e3d59',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  changeUnitButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '500',
   },
 });
 

@@ -31,7 +31,6 @@ const SignatureCameraScreen = ({ navigation }) => {
       };
 
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-
       return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
     }, [])
   );
@@ -98,6 +97,7 @@ const SignatureCameraScreen = ({ navigation }) => {
   if (!cameraPermission) {
     return (
       <View style={[styles.container, styles.centerContent]}>
+        <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <ActivityIndicator size="large" color="#1e3d59" />
         <Text style={styles.permissionText}>
           Verificando permissões da câmera...
@@ -108,7 +108,8 @@ const SignatureCameraScreen = ({ navigation }) => {
 
   if (!cameraPermission.granted) {
     return (
-      <SafeAreaView style={[styles.container, { backgroundColor: '#fff' }]}>
+      <SafeAreaView style={[styles.container, { backgroundColor: '#f5f8fa' }]}>
+        <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <View style={styles.header}>
           <TouchableOpacity 
             style={styles.backButton}
@@ -120,38 +121,43 @@ const SignatureCameraScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.centerContent}>
-          <Icon name="no-photography" size={64} color="#e74c3c" />
-          <Text style={styles.permissionTitle}>Acesso à câmera necessário</Text>
-          <Text style={styles.permissionText}>
-            Para capturar a assinatura, permita o acesso à câmera do dispositivo.
-          </Text>
+          <View style={styles.permissionCard}>
+            <Icon name="no-photography" size={64} color="#e74c3c" />
+            <Text style={styles.permissionTitle}>Acesso à câmera necessário</Text>
+            <Text style={styles.permissionText}>
+              Para capturar a assinatura, permita o acesso à câmera do dispositivo.
+            </Text>
 
-          <TouchableOpacity 
-            style={styles.permissionButton} 
-            onPress={requestCameraPermission}
-          >
-            <Text style={styles.permissionButtonText}>
-              Permitir acesso à câmera
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.permissionButton, styles.galleryButton]} 
-            onPress={handlePickImage}
-          >
-            <Text style={styles.permissionButtonText}>
-              Selecionar da galeria
-            </Text>
-          </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.permissionButton, styles.cancelButton]} 
-            onPress={handleSafeGoBack}
-          >
-            <Text style={styles.permissionButtonText}>
-              Voltar
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.permissionButton} 
+              onPress={requestCameraPermission}
+            >
+              <Icon name="camera-alt" size={20} color="#fff" style={styles.buttonIcon} />
+              <Text style={styles.permissionButtonText}>
+                Permitir acesso à câmera
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.permissionButton, styles.galleryButton]} 
+              onPress={handlePickImage}
+            >
+              <Icon name="photo-library" size={20} color="#fff" style={styles.buttonIcon} />
+              <Text style={styles.permissionButtonText}>
+                Selecionar da galeria
+              </Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.permissionButton, styles.cancelButton]} 
+              onPress={handleSafeGoBack}
+            >
+              <Icon name="arrow-back" size={20} color="#fff" style={styles.buttonIcon} />
+              <Text style={styles.permissionButtonText}>
+                Voltar
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </SafeAreaView>
     );
@@ -159,6 +165,7 @@ const SignatureCameraScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
+      <StatusBar barStyle="light-content" backgroundColor="#000" />
       <CameraView
         style={styles.camera}
         ref={cameraRef}
@@ -176,6 +183,14 @@ const SignatureCameraScreen = ({ navigation }) => {
             <Text style={styles.headerTitle}>Capturar Assinatura</Text>
           </View>
 
+          <View style={styles.framingContainer}>
+            <View style={styles.framingGuide}>
+              <Text style={styles.framingText}>
+                Posicione a assinatura aqui
+              </Text>
+            </View>
+          </View>
+
           <View style={styles.instructionContainer}>
             <Text style={styles.instructionText}>
               Posicione a assinatura do paciente dentro do quadro
@@ -184,11 +199,12 @@ const SignatureCameraScreen = ({ navigation }) => {
 
           <View style={styles.controls}>
             <TouchableOpacity
-              style={styles.galleryIcon}
+              style={styles.controlButton}
               onPress={handlePickImage}
               disabled={loading}
             >
               <Icon name="photo-library" size={28} color="#fff" />
+              <Text style={styles.controlButtonText}>Galeria</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -204,11 +220,12 @@ const SignatureCameraScreen = ({ navigation }) => {
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.flipIcon}
+              style={styles.controlButton}
               onPress={toggleCameraFacing}
               disabled={loading}
             >
               <Icon name="flip-camera-android" size={28} color="#fff" />
+              <Text style={styles.controlButtonText}>Virar</Text>
             </TouchableOpacity>
           </View>
         </SafeAreaView>
@@ -227,29 +244,53 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
+    backgroundColor: '#f5f8fa',
+  },
+  permissionCard: {
+    width: '100%',
     backgroundColor: '#fff',
+    borderRadius: 10,
+    padding: 24,
+    alignItems: 'center',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   permissionTitle: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#333',
+    color: '#1e3d59',
     marginTop: 16,
-    marginBottom: 8,
+    marginBottom: 12,
+    textAlign: 'center',
   },
   permissionText: {
     fontSize: 16,
-    color: '#666',
+    color: '#555',
     textAlign: 'center',
     marginVertical: 16,
+    lineHeight: 22,
   },
   permissionButton: {
     backgroundColor: '#1e3d59',
     paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 10,
     marginTop: 16,
-    width: '80%',
+    width: '100%',
     alignItems: 'center',
+    flexDirection: 'row',
+    justifyContent: 'center',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  buttonIcon: {
+    marginRight: 8,
   },
   galleryButton: {
     backgroundColor: '#3d8577',
@@ -272,15 +313,15 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingTop: Platform.OS === 'ios' ? 0 : StatusBar.currentHeight,
+    paddingTop: Platform.OS === 'ios' ? 0 : StatusBar.currentHeight || 0,
     paddingBottom: 16,
     paddingHorizontal: 16,
-    height: Platform.OS === 'ios' ? 90 : 70,
+    height: Platform.OS === 'ios' ? 90 : 80,
   },
   headerTitle: {
     color: '#fff',
     fontSize: 20,
-    fontWeight: '500',
+    fontWeight: '600',
     flex: 1,
     marginLeft: 16,
   },
@@ -288,9 +329,28 @@ const styles = StyleSheet.create({
     padding: 8,
     borderRadius: 20,
   },
+  framingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  framingGuide: {
+    width: '90%',
+    height: 120,
+    borderWidth: 2,
+    borderColor: 'rgba(255,255,255,0.7)',
+    borderRadius: 8,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  framingText: {
+    color: 'rgba(255,255,255,0.9)',
+    fontSize: 14,
+  },
   instructionContainer: {
     position: 'absolute',
-    top: Platform.OS === 'ios' ? 120 : 100,
+    top: Platform.OS === 'ios' ? 100 : 80,
     left: 0,
     right: 0,
     alignItems: 'center',
@@ -298,11 +358,12 @@ const styles = StyleSheet.create({
   instructionText: {
     color: '#fff',
     backgroundColor: 'rgba(0,0,0,0.7)',
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
     borderRadius: 20,
     overflow: 'hidden',
     fontSize: 14,
+    fontWeight: '500',
   },
   controls: {
     position: 'absolute',
@@ -312,14 +373,17 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
+    paddingHorizontal: 20,
   },
-  galleryIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
+  controlButton: {
     alignItems: 'center',
+    borderRadius: 10,
+    padding: 10,
+  },
+  controlButtonText: {
+    color: '#fff',
+    marginTop: 4,
+    fontSize: 12,
   },
   captureButton: {
     width: 80,
@@ -336,14 +400,6 @@ const styles = StyleSheet.create({
     height: 64,
     borderRadius: 32,
     backgroundColor: 'white',
-  },
-  flipIcon: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    backgroundColor: 'rgba(0,0,0,0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
 });
 

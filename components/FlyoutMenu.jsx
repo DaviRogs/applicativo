@@ -18,6 +18,8 @@ const FlyoutMenu = ({ visible, onClose }) => {
   const handleLogout = () => {
     dispatch(logout());
     onClose();
+    navigation.navigate('Login');
+
   };
 
   return (

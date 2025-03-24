@@ -60,9 +60,9 @@ const EditProfessionalScreen = ({ route }) => {
   }, []);
 
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 1},
+    { id: 1, name: "Pesquisador", nivel_acesso: 3},
     { id: 2, name: "Supervisor", nivel_acesso: 2 },
-    { id: 3, name: "Admin", nivel_acesso: 3 }
+    { id: 3, name: "Admin", nivel_acesso: 1 }
   ];
 
   const availableRoles = isAdmin 
