@@ -44,7 +44,16 @@ export const injurySlice = createSlice({
         injuryId: null,
       };
     },
-    
+    resetFormAll: (state) => {
+      state.formState = {
+        location: '',
+        description: '',
+        photos: [],
+        isEditing: false,
+        injuryId: null,
+      };
+      state.injuries = [];
+    },
     // Add photo to form
     addPhoto: (state, action) => {
       state.formState.photos.push(action.payload);
@@ -97,6 +106,7 @@ export const {
   updateFormField,
   setFormState,
   resetForm,
+  resetFormAll,
   addPhoto,
   removePhoto,
   addInjury,

@@ -24,12 +24,13 @@ import {
 import { clearPatientFound } from '../../store/patientSlice';
 import { resetarQuestionario } from '../../store/anamnesisSlice';
 import { resetConsentForm } from '../../store/consentTermSlice';
-import { resetForm } from '../../store/injurySlice';
+import { resetFormAll } from '../../store/injurySlice';
 
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
+import {  useNavigation } from '@react-navigation/native';
 
-const NovoPacienteScreen = ({ navigation, route }) => {
+const NovoPacienteScreen = ({  route }) => {
   const [injuries, setInjuries] = useState([]);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
   
@@ -37,6 +38,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
 
   // patient Data
   const patientData = useSelector(state => state.patient.patientData);
+
   
   // Get values from redux state
   const { signaturePhoto, isConsentAgreed, signatureDate } = useSelector(state => state.consentTerm);
@@ -47,6 +49,22 @@ const NovoPacienteScreen = ({ navigation, route }) => {
   const submissionStatus = useSelector(selectSubmissionStatus);
   const isSaving = submissionStatus === 'pending';
   const accessToken = useSelector(state => state.auth?.accessToken);
+      const navigation = useNavigation();
+    
+      useFocusEffect(
+        React.useCallback(() => {
+          const onBackPress = () => {
+            navigation.navigate('Home');
+            return true; // Prevent default behavior
+          };
+      
+          BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      
+          return () => 
+            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [navigation])
+      );
+    
 
   const resetAllStates = () => {
     // Reset all Redux states
@@ -54,7 +72,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
     dispatch(clearPatientFound());
     dispatch(resetarQuestionario());
     dispatch(resetConsentForm());
-    dispatch(resetForm());
+    dispatch(resetFormAll());
     
     // Navigate to Home
     navigation.navigate('Home');
@@ -94,6 +112,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
   }, [reduxInjuries]);
 
   const formatDisplayCpf = (cpf) => {
+
     if (!cpf) return '';
     cpf = cpf.replace(/\D/g, '');
     if (cpf.length === 11) {
@@ -110,6 +129,10 @@ const NovoPacienteScreen = ({ navigation, route }) => {
     if (!isConsentAgreed || !signaturePhoto) {
       return false;
     }
+    if (injuries.length === 0) {
+      return false;
+    }
+  
     return isReadyForSubmission;
   };
 
@@ -139,6 +162,7 @@ const NovoPacienteScreen = ({ navigation, route }) => {
       
       if (submitPatientData.fulfilled.match(resultAction)) {
         // The submission was successful
+        resetAllStates();
         Alert.alert('Sucesso', 'Atendimento registrado com sucesso!', [
           { text: 'OK', onPress: () => navigation.navigate('Home') }
         ]);
@@ -329,28 +353,29 @@ const NovoPacienteScreen = ({ navigation, route }) => {
         </TouchableOpacity>
 
         <View style={styles.submissionStatusContainer}>
-          {!isReadyForSubmission && (
-            <View style={styles.validationWarningContainer}>
-              <Icon name="error-outline" size={18} color="#e74c3c" style={styles.warningIcon} />
-              <Text style={styles.validationWarning}>
-                {validationErrors.consentTerm && '• É necessário completar o termo de consentimento\n'}
-                {validationErrors.anamnesis && '• É necessário completar a anamnese\n'}
-                {validationErrors.auth && '• É necessário estar autenticado'}
-              </Text>
-            </View>
-          )}
-        </View>
+        {(!isReadyForSubmission || injuries.length === 0) && (
+          <View style={styles.validationWarningContainer}>
+            <Icon name="error-outline" size={18} color="#e74c3c" style={styles.warningIcon} />
+            <Text style={styles.validationWarning}>
+              {validationErrors.consentTerm && '• É necessário completar o termo de consentimento\n'}
+              {validationErrors.anamnesis && '• É necessário completar a anamnese\n'}
+              {validationErrors.auth && '• É necessário estar autenticado\n'}
+              {injuries.length === 0 && '• É necessário registrar pelo menos uma lesão'}
+            </Text>
+          </View>
+        )}
+       </View>
 
-        <TouchableOpacity 
-          style={[
-            styles.saveButton, 
-            isSaving ? styles.savingButton : 
-              !isReadyForSubmission ? styles.disabledButton : null
-          ]}
-          onPress={handleSaveChanges}
-          disabled={isSaving || !isReadyForSubmission}
-          activeOpacity={0.8}
-        >
+       <TouchableOpacity 
+            style={[
+              styles.saveButton, 
+              isSaving ? styles.savingButton : 
+                (!isReadyForSubmission || injuries.length === 0) ? styles.disabledButton : null
+            ]}
+            onPress={handleSaveChanges}
+            disabled={isSaving || !isReadyForSubmission || injuries.length === 0}
+            activeOpacity={0.8}
+          >
           {isSaving ? (
             <View style={styles.savingContainer}>
               <ActivityIndicator size="small" color="#fff" style={styles.activityIndicator} />

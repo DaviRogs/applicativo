@@ -3,6 +3,21 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { apiService } from '../services/apiService';
 
 
+import { clearPatientFound } from './patientSlice';
+import { resetarQuestionario } from './anamnesisSlice';
+import { resetConsentForm } from './consentTermSlice';
+import { resetFormAll } from './injurySlice';
+
+
+export const resetAllStates = () => (dispatch) => {
+  dispatch(clearSubmissionData());
+  dispatch(clearPatientFound());
+  dispatch(resetarQuestionario());
+  dispatch(resetConsentForm());
+  dispatch(resetFormAll());
+};
+
+
 const convertToBoolean = (value) => {
   if (typeof value === 'boolean') return value;
   if (typeof value === 'string') {
@@ -258,6 +273,7 @@ export const submitPatientData = createAsyncThunk(
   }
 );
 
+
 const initialState = {
   isReadyForSubmission: false,
   submissionStatus: 'idle', 
@@ -346,7 +362,8 @@ const formSubmissionSlice = createSlice({
 export const { 
   validateFormCompletion, 
   resetSubmissionStatus,
-  clearSubmissionData
+  clearSubmissionData,
+
 } = formSubmissionSlice.actions;
 
 // Selectors

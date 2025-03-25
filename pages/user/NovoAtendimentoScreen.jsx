@@ -24,11 +24,31 @@ import {
   clearPatientFound 
 } from '../../store/patientSlice';
 
-const NovoAtendimentoScreen = ({ navigation, route }) => {
+import {  useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
+
+
+const NovoAtendimentoScreen = ({  route }) => {
   const dispatch = useDispatch();
   const user = useSelector(state => state.user.userData);
   const authenticated = useSelector(state => state.auth.isAuthenticated);
   const token = useSelector(state => state.auth.accessToken);
+    const navigation = useNavigation();
+  
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('Home');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
+  
   
   const { 
     patientData, 

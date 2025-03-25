@@ -14,8 +14,11 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import FlyoutMenu from '../../components/FlyoutMenu';
 import { useSelector } from 'react-redux';
 import { API_URL } from '@env';
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
 
-const HomeScreen = ({ navigation }) => {
+
+const HomeScreen = ({  }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +29,23 @@ const HomeScreen = ({ navigation }) => {
   const user = useSelector(state => state.user.userData);
   const authenticated = useSelector(state => state.auth.isAuthenticated);
   const token = useSelector(state => state.auth.accessToken);
+
+      const navigation = useNavigation();
+    
+      useFocusEffect(
+        React.useCallback(() => {
+          const onBackPress = () => {
+            navigation.navigate('Home');
+            return true; // Prevent default behavior
+          };
+      
+          BackHandler.addEventListener('hardwareBackPress', onBackPress);
+      
+          return () => 
+            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+        }, [navigation])
+      );
+    
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
