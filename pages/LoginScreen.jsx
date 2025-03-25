@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import {
   SafeAreaView,
   View,
@@ -10,23 +10,87 @@ import {
   ScrollView,
   Image,
   ActivityIndicator,
-  Platform
+  Platform,
+  Animated,
+  Easing,
+  Keyboard
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { login } from '../store/authSlice';
 import { fetchCurrentUser } from '../store/userSlice';
-
-const LoginScreen = ({ navigation }) => {
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
+const LoginScreen = ({  }) => {
   const [cpf, setCpf] = useState('');
+  const [formattedCpf, setFormattedCpf] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setPasswordVisible] = useState(false);
   const dispatch = useDispatch();
   const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
   const { loading: userLoading, error: userError } = useSelector((state) => state.user);
+    const navigation = useNavigation();
   
   const logo1 = require('../assets/logo1.png');
   const logo2 = require('../assets/logo2.png');
   const dermaAlert = require('../assets/dermaalert.png');
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('InitialScreen');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
+
+  // Animation values
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const slideAnim = useRef(new Animated.Value(30)).current;
+  const buttonScale = useRef(new Animated.Value(1)).current;
+
+  // Start entrance animations
+  useEffect(() => {
+    Animated.parallel([
+      Animated.timing(fadeAnim, {
+        toValue: 1,
+        duration: 600,
+        useNativeDriver: true,
+      }),
+      Animated.timing(slideAnim, {
+        toValue: 0,
+        duration: 600,
+        easing: Easing.out(Easing.cubic),
+        useNativeDriver: true,
+      })
+    ]).start();
+  }, []);
+
+  // Format CPF as user types (XXX.XXX.XXX-XX)
+  const formatCPF = (text) => {
+    // Remove all non-digit characters
+    const cleanedText = text.replace(/\D/g, '');
+    setCpf(cleanedText);
+    
+    // Format with dots and dash
+    let formatted = cleanedText;
+    if (cleanedText.length > 3) {
+      formatted = cleanedText.substring(0, 3) + '.' + formatted.substring(3);
+    }
+    if (cleanedText.length > 6) {
+      formatted = formatted.substring(0, 7) + '.' + formatted.substring(7);
+    }
+    if (cleanedText.length > 9) {
+      formatted = formatted.substring(0, 11) + '-' + formatted.substring(11);
+    }
+    
+    setFormattedCpf(formatted);
+  };
 
   const showError = (message) => {
     if (Platform.OS === 'web') {
@@ -36,9 +100,32 @@ const LoginScreen = ({ navigation }) => {
     }
   };
 
+  const animateButton = () => {
+    Animated.sequence([
+      Animated.timing(buttonScale, {
+        toValue: 0.95,
+        duration: 100,
+        useNativeDriver: true,
+      }),
+      Animated.timing(buttonScale, {
+        toValue: 1,
+        duration: 100,
+        useNativeDriver: true,
+      })
+    ]).start();
+  };
+
   const handleLogin = async () => {
+    animateButton();
+    Keyboard.dismiss();
+    
     if (!cpf || !password) {
       showError('Preencha todos os campos');
+      return;
+    }
+
+    if (cpf.length < 11) {
+      showError('CPF inválido. Deve conter 11 dígitos.');
       return;
     }
 
@@ -51,8 +138,15 @@ const LoginScreen = ({ navigation }) => {
         const userResult = await dispatch(fetchCurrentUser());
         
         if (fetchCurrentUser.fulfilled.match(userResult)) {
-          // Only navigate if both login and user fetch are successful
-          navigation.navigate('Home');
+          // Success animation before navigation
+          Animated.timing(fadeAnim, {
+            toValue: 0,
+            duration: 300,
+            useNativeDriver: true,
+          }).start(() => {
+            // Only navigate if both login and user fetch are successful
+            navigation.navigate('Home');
+          });
         } else {
           // If user fetch fails, show the error
           showError(userResult.payload || 'Erro ao carregar dados do usuário');
@@ -79,74 +173,111 @@ const LoginScreen = ({ navigation }) => {
           <TouchableOpacity 
             style={styles.backButton} 
             onPress={() => navigation.navigate('InitialScreen')}
+            activeOpacity={0.7}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Login</Text>
         </View>
 
-        <View style={styles.logoContainer}>
+        <Animated.View 
+          style={[
+            styles.logoContainer, 
+            { 
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }] 
+            }
+          ]}
+        >
           <Image source={dermaAlert} style={styles.logo} />
-        </View>
+        </Animated.View>
 
-        <View style={styles.formContainer}>
+        <Animated.View 
+          style={[
+            styles.formContainer,
+            {
+              opacity: fadeAnim,
+              transform: [{ translateY: slideAnim }]
+            }
+          ]}
+        >
           <Text style={styles.formTitle}>Acesse sua conta</Text>
 
           {errorMessage && (
-            <Text style={styles.errorText}>{errorMessage}</Text>
+            <Animated.View 
+              entering={Animated.spring({ velocity: 0.3 })}
+            >
+              <Text style={styles.errorText}>{errorMessage}</Text>
+            </Animated.View>
           )}
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>CPF</Text>
             <TextInput
               style={styles.input}
-              placeholder="Digite seu CPF"
+              placeholder="Digite seu CPF (000.000.000-00)"
               placeholderTextColor="#999"
-              value={cpf}
-              onChangeText={setCpf}
+              value={formattedCpf}
+              onChangeText={formatCPF}
               keyboardType="numeric"
-              maxLength={11}
+              maxLength={14} // Account for formatting characters
               editable={!isLoading}
             />
           </View>
 
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Senha</Text>
-            <TextInput
-              style={styles.input}
-              placeholder="Digite sua senha"
-              placeholderTextColor="#999"
-              secureTextEntry
-              value={password}
-              onChangeText={setPassword}
-              editable={!isLoading}
-            />
+            <View style={styles.passwordContainer}>
+              <TextInput
+                style={[styles.input, styles.passwordInput]}
+                placeholder="Digite sua senha"
+                placeholderTextColor="#999"
+                secureTextEntry={!isPasswordVisible}
+                value={password}
+                onChangeText={setPassword}
+                editable={!isLoading}
+              />
+              <TouchableOpacity 
+                onPress={() => setPasswordVisible(!isPasswordVisible)}
+                style={styles.visibilityToggle}
+              >
+                <Icon 
+                  name={isPasswordVisible ? "visibility-off" : "visibility"} 
+                  size={20} 
+                  color="#666" 
+                />
+              </TouchableOpacity>
+            </View>
           </View>
 
           <TouchableOpacity
             onPress={() => navigation.navigate('EsqueciSenha')}
             disabled={isLoading}
+            activeOpacity={0.7}
           >
             <Text style={styles.forgotPasswordText}>Esqueci minha senha</Text>
           </TouchableOpacity>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={[
-                styles.continueButton,
-                isLoading && styles.disabledButton
-              ]} 
-              onPress={handleLogin}
-              disabled={isLoading}
-            >
-              {isLoading ? (
-                <ActivityIndicator color="#fff" />
-              ) : (
-                <Text style={styles.continueButtonText}>Entrar</Text>
-              )}
-            </TouchableOpacity>
+            <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
+              <TouchableOpacity 
+                style={[
+                  styles.continueButton,
+                  isLoading && styles.disabledButton
+                ]} 
+                onPress={handleLogin}
+                disabled={isLoading}
+                activeOpacity={0.8}
+              >
+                {isLoading ? (
+                  <ActivityIndicator color="#fff" />
+                ) : (
+                  <Text style={styles.continueButtonText}>Entrar</Text>
+                )}
+              </TouchableOpacity>
+            </Animated.View>
           </View>
-        </View>
+        </Animated.View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -217,6 +348,20 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     paddingLeft: 0,
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    position: 'relative',
+  },
+  passwordInput: {
+    flex: 1,
+  },
+  visibilityToggle: {
+    position: 'absolute',
+    right: 0,
+    padding: 10,
+    bottom: 8,
+  },
   forgotPasswordText: {
     color: '#1e3d59',
     fontSize: 14,
@@ -231,20 +376,31 @@ const styles = StyleSheet.create({
   },
   continueButton: {
     backgroundColor: '#1A4568',
-    padding: 10,
+    padding: 12,
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12,
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
   },
   continueButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '500',
   },
   errorText: {
     color: 'red',
     marginBottom: 16,
     textAlign: 'center',
+    padding: 8,
+    backgroundColor: 'rgba(255,0,0,0.05)',
+    borderRadius: 4,
   },
   disabledButton: {
     opacity: 0.7,

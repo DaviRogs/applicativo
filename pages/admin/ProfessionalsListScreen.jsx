@@ -28,8 +28,7 @@ const ProfessionalsListScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
-  const [currentDate, setCurrentDate] = useState('2025-03-24 04:45:52');
-  const [currentUser, setCurrentUser] = useState('hannanhunny01');
+ 
 
   const navigation = useNavigation();
 
@@ -221,22 +220,7 @@ const ProfessionalsListScreen = () => {
     </TouchableOpacity>
   );
 
-  const renderHeader = () => (
-    <View style={styles.headerInfo}>
-      <View style={styles.userInfoRow}>
-        <Icon name="person-outline" size={16} color="#1e3d59" style={styles.infoIcon} />
-        <Text style={styles.userText}>Usuário: {userData?.nome_usuario || currentUser}</Text>
-      </View>
-      <View style={styles.userInfoRow}>
-        <Icon name="email-outline" size={16} color="#1e3d59" style={styles.infoIcon} />
-        <Text style={styles.userText}>Email: {userData?.email || 'hannanhunny01@example.com'}</Text>
-      </View>
-      <View style={styles.userInfoRow}>
-        <Icon name="access-time" size={16} color="#1e3d59" style={styles.infoIcon} />
-        <Text style={styles.dateText}>{currentDate} (UTC)</Text>
-      </View>
-    </View>
-  );
+
 
   return (
     <View style={styles.container}>
@@ -264,7 +248,7 @@ const ProfessionalsListScreen = () => {
           </View>
         </View>
 
-        {renderHeader()}
+        {/* {renderHeader()} */}
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Profissionais cadastrados</Text>

@@ -14,7 +14,6 @@ LogBox.ignoreLogs([
   'ColorPropType will be removed',
 ]);
 
-
 // Import screens
 import LoginScreen from './pages/LoginScreen';
 import RegisterScreen from './pages/RegisterScreen';
@@ -40,12 +39,10 @@ import { InjuryLocationScreen } from './pages/user/lesoes/InjuryLocationScreen';
 import CameraScreen from './pages/user/lesoes/CameraScreen';
 import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 
-
 // admin unidades import
 import HealthUnitListScreen from './pages/unidadeSaude/HealthUnitListScreen'; 
 import RegisterHealthUnitScreen from './pages/unidadeSaude/RegisterHealthUnitScreen';
 import {EditHealthUnitScreen}  from './pages/unidadeSaude/EditHealthUnitScreen';
-
 
 //questionario
 import QuestoesGeraisSaude from './pages/user/questionario/QuestoesGeraisSaude';
@@ -55,13 +52,10 @@ import FatoresRisco from './pages/user/questionario/FatoresRisco';
 import InvestigacaoLesoes from './pages/user/questionario/InvestigacaoLesoes';
 import ResultadoAnamnese from './pages/user/questionario/ResultadoAnamnese';
 
-
 //consent
-
 import ConsentTermScreen from './pages/user/consent/ConsentTermScreen';
 import SignatureCameraScreen from './pages/user/consent/SignatureCameraScreen';
 import SignaturePreviewScreen from './pages/user/consent/SignaturePreviewScreen';
-
 
 const Stack = createNativeStackNavigator();
 const navigationRef = React.createRef(); 
@@ -135,10 +129,11 @@ const AppContent = () => {
       {!isAuthenticated ? (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
+          <Stack.Screen name="InitialScreen" component={InitialScreen} />
+
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="CreatePassword" component={CreatePasswordScreen} />
           <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
-          <Stack.Screen name="InitialScreen" component={InitialScreen} />
           <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />
           <Stack.Screen name="RedefinirSenha" component={RedefinirSenhaScreen} />
         </>
@@ -157,7 +152,6 @@ const AppContent = () => {
           )}
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
-          {/* <Stack.Screen name="Anamnesis" component={AnamnesisScreen} /> */}
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
           <Stack.Screen name="InjuryList" component={InjuryListScreen} />
           <Stack.Screen name="AddInjury" component={AddInjuryScreen} />
@@ -165,19 +159,17 @@ const AppContent = () => {
           <Stack.Screen name="Camera" component={CameraScreen} />
           <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
           {/* questionario */}
-        <Stack.Screen name="QuestoesGeraisSaude" component={QuestoesGeraisSaude} />
-        <Stack.Screen name="AvaliacaoFototipo" component={AvaliacaoFototipo} />
-        <Stack.Screen name="HistoricoCancer" component={HistoricoCancer} />
-        <Stack.Screen name="FatoresRisco" component={FatoresRisco} />
-        <Stack.Screen name="InvestigacaoLesoes" component={InvestigacaoLesoes} />
-        <Stack.Screen name="ResultadoAnamnese" component={ResultadoAnamnese} />
+          <Stack.Screen name="QuestoesGeraisSaude" component={QuestoesGeraisSaude} />
+          <Stack.Screen name="AvaliacaoFototipo" component={AvaliacaoFototipo} />
+          <Stack.Screen name="HistoricoCancer" component={HistoricoCancer} />
+          <Stack.Screen name="FatoresRisco" component={FatoresRisco} />
+          <Stack.Screen name="InvestigacaoLesoes" component={InvestigacaoLesoes} />
+          <Stack.Screen name="ResultadoAnamnese" component={ResultadoAnamnese} />
 
-        {/* consent */}
-        <Stack.Screen name="ConsentTerm" component={ConsentTermScreen} />
-        <Stack.Screen name="SignatureCamera" component={SignatureCameraScreen} />
-        <Stack.Screen name="SignaturePreview" component={SignaturePreviewScreen} />
-
-
+          {/* consent */}
+          <Stack.Screen name="ConsentTerm" component={ConsentTermScreen} />
+          <Stack.Screen name="SignatureCamera" component={SignatureCameraScreen} />
+          <Stack.Screen name="SignaturePreview" component={SignaturePreviewScreen} />
         </>
       )}
     </Stack.Navigator>
@@ -189,6 +181,7 @@ const App = () => {
     prefixes: ['dermalert://', 'https://dermalert.example.com'],
     config: {
       screens: {
+        InitialScreen: '',
         Register: 'register',
         Login: 'login',
         Home: 'home',

@@ -14,8 +14,9 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useRoute } from '@react-navigation/native';
 import { API_URL } from '@env';
-
-const RedefinirSenhaScreen = ({ navigation }) => {
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
+const RedefinirSenhaScreen = ({  }) => {
   const route = useRoute();
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
@@ -29,7 +30,22 @@ const RedefinirSenhaScreen = ({ navigation }) => {
     hasEightChars: false,
     hasLettersAndNumbers: false,
   });
+  const navigation = useNavigation();
 
+
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('Login');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
   useEffect(() => {
     if (route.params?.token) {
       setToken(route.params.token);

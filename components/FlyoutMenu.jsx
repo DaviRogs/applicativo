@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform } from 'react-native';
+import React, { useEffect } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform, Animated } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { logout } from '../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -11,26 +11,76 @@ const FlyoutMenu = ({ visible, onClose }) => {
   const isAdmin = useSelector(selectIsAdmin);
   const navigation = useNavigation();
   const userData = useSelector(state => state.user.userData);
+  
+  // Animation for menu appearance
+  const slideAnim = React.useRef(new Animated.Value(visible ? 0 : -300)).current;
+  const opacityAnim = React.useRef(new Animated.Value(visible ? 1 : 0)).current;
+  
+  useEffect(() => {
+    if (visible) {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    } else {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: -300,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    }
+  }, [visible]);
 
   if (!visible) return null;
 
   const handleLogout = async () => {
-    dispatch(logout());
+    // First close the menu
     onClose();
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Login' }],
-    });
+    
+    // Simply dispatch logout action - let Redux and App.js handle the navigation
+    dispatch(logout());
+    
+    // Don't try to navigate here - let the auth state change trigger navigation in App.js
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <TouchableOpacity 
-        style={styles.overlay} 
-        activeOpacity={1} 
-        onPress={onClose} 
-      />
-      <View style={styles.menu}>
+      <Animated.View 
+        style={[
+          styles.overlay,
+          { opacity: opacityAnim }
+        ]}
+      >
+        <TouchableOpacity 
+          style={styles.overlayTouch} 
+          activeOpacity={1} 
+          onPress={onClose} 
+        />
+      </Animated.View>
+      
+      <Animated.View 
+        style={[
+          styles.menu,
+          { 
+            transform: [{ translateX: slideAnim }],
+          }
+        ]}
+      >
         <View style={styles.menuHeader}>
           <View style={styles.userAvatar}>
             <Icon name="person" size={28} color="#fff" />
@@ -56,7 +106,6 @@ const FlyoutMenu = ({ visible, onClose }) => {
 
           <TouchableOpacity 
             style={styles.menuItem} 
-        
             activeOpacity={0.7}
           >
             <Icon name="history" size={22} color="#1e3d59" />
@@ -93,7 +142,7 @@ const FlyoutMenu = ({ visible, onClose }) => {
             <Text style={[styles.menuText, styles.logoutText]}>Logout</Text>
           </TouchableOpacity>
         </View>
-      </View>
+      </Animated.View>
     </SafeAreaView>
   );
 };
@@ -106,10 +155,13 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
     zIndex: 1000,
   },
   overlay: {
+    ...StyleSheet.absoluteFillObject,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  },
+  overlayTouch: {
     flex: 1,
   },
   menu: {

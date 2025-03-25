@@ -13,11 +13,13 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { API_URL } from '@env';
-
-const EsqueciSenhaScreen = ({ navigation }) => {
+import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { BackHandler } from 'react-native';
+const EsqueciSenhaScreen = ({ }) => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const navigation = useNavigation();
   
   const showMessage = (title, message) => {
     if (Platform.OS === 'web') {
@@ -26,7 +28,19 @@ const EsqueciSenhaScreen = ({ navigation }) => {
       Alert.alert(title, message);
     }
   };
-
+    useFocusEffect(
+      React.useCallback(() => {
+        const onBackPress = () => {
+          navigation.navigate('Login');
+          return true; // Prevent default behavior
+        };
+    
+        BackHandler.addEventListener('hardwareBackPress', onBackPress);
+    
+        return () => 
+          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+      }, [navigation])
+    );
   const handleSubmit = async () => {
     if (!email) {
       showMessage('Erro', 'Por favor, informe seu email');
