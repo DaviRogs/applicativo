@@ -28,6 +28,7 @@ const InvestigacaoLesoes = () => {
   const [formData, setFormData] = useState(investigacaoLesoesState);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
+  
 
   useFocusEffect(
     React.useCallback(() => {
@@ -46,19 +47,19 @@ const InvestigacaoLesoes = () => {
   const validateForm = () => {
     let formErrors = {};
     
-    if (!formData.lesoesRecentes) {
-      formErrors.lesoesRecentes = "Por favor, responda sobre mudanças em pintas ou manchas";
+    if (!formData.mudancaPintasManchas) {
+      formErrors.mudancaPintasManchas = "Por favor, responda sobre mudanças em pintas ou manchas";
     }
     
     if (!formData.sintomasLesoes) {
       formErrors.sintomasLesoes = "Por favor, responda se há coceira, sangramento ou dor";
     }
     
-    if (formData.lesoesRecentes === 'sim' && !formData.tempoAlteracoes) {
+    if (formData.mudancaPintasManchas === 'sim' && !formData.tempoAlteracoes) {
       formErrors.tempoAlteracoes = "Por favor, indique há quanto tempo notou as alterações";
     }
     
-    if (formData.lesoesRecentes === 'sim' && !formData.caracteristicasLesoes) {
+    if (formData.mudancaPintasManchas === 'sim' && !formData.caracteristicasLesoes) {
       formErrors.caracteristicasLesoes = "Por favor, responda sobre as características das lesões";
     }
     
@@ -66,8 +67,8 @@ const InvestigacaoLesoes = () => {
       formErrors.consultaMedica = "Por favor, responda se já procurou um médico";
     }
     
-    if (formData.consultaMedica === 'sim' && !formData.diagnosticoMedico) {
-      formErrors.diagnosticoMedico = "Por favor, informe o diagnóstico recebido";
+    if (formData.consultaMedica === 'sim' && !formData.diagnosticoLesoes) {
+      formErrors.diagnosticoLesoes = "Por favor, informe o diagnóstico recebido";
     }
     
     setErrors(formErrors);
@@ -137,8 +138,6 @@ const InvestigacaoLesoes = () => {
     </View>
   );
 
-
-
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
@@ -165,14 +164,15 @@ const InvestigacaoLesoes = () => {
         style={styles.content}
         showsVerticalScrollIndicator={false}
       >
+ 
         
         <Text style={styles.sectionTitle}>Investigação de Câncer de Pele e Lesões Suspeitas</Text>
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Você tem pintas ou manchas que mudaram de cor, tamanho ou formato recentemente?</Text>
-          {renderRadioGroup('lesoesRecentes', 
+          {renderRadioGroup('mudancaPintasManchas', 
             [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'lesoesRecentes'
+            'mudancaPintasManchas'
           )}
         </View>
 
@@ -184,19 +184,19 @@ const InvestigacaoLesoes = () => {
           )}
         </View>
 
-        {formData.lesoesRecentes === 'sim' && (
+        {formData.mudancaPintasManchas === 'sim' && (
           <View style={styles.questionContainer}>
             <Text style={styles.question}>Há quanto tempo você notou essas alterações?</Text>
             {renderRadioGroup('tempoAlteracoes', [
-              { label: 'Menos de 1 mês', value: 'menos_1_mes' },
-              { label: '1-3 meses', value: '1-3_meses' },
-              { label: '3-6 meses', value: '3-6_meses' },
-              { label: 'Mais de 6 meses', value: 'mais_6_meses' }
+              { label: 'Menos de 1 mês', value: 'Menos de 1 mês' },
+              { label: '1-3 meses', value: '1-3 meses' },
+              { label: '3-6 meses', value: '3-6 meses' },
+              { label: 'Mais de 6 meses', value: 'Mais de 6 meses' }
             ], 'tempoAlteracoes')}
           </View>
         )}
 
-        {formData.lesoesRecentes === 'sim' && (
+        {formData.mudancaPintasManchas === 'sim' && (
           <View style={styles.questionContainer}>
             <Text style={styles.question}>Essas lesões têm bordas irregulares, múltiplas cores ou assimetria?</Text>
             {renderRadioGroup('caracteristicasLesoes', 
@@ -223,15 +223,15 @@ const InvestigacaoLesoes = () => {
                   placeholderTextColor="#999"
                   multiline={true}
                   numberOfLines={3}
-                  value={formData.diagnosticoMedico}
+                  value={formData.diagnosticoLesoes}
                   onChangeText={(text) => setFormData(prev => ({
                     ...prev,
-                    diagnosticoMedico: text
+                    diagnosticoLesoes: text
                   }))}
                 />
               </View>
-              {errors.diagnosticoMedico && (
-                <Text style={styles.errorText}>{errors.diagnosticoMedico}</Text>
+              {errors.diagnosticoLesoes && (
+                <Text style={styles.errorText}>{errors.diagnosticoLesoes}</Text>
               )}
             </View>
           )}

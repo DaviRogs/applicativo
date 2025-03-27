@@ -56,10 +56,10 @@ const AvaliacaoFototipo = () => {
         'corPelePontos', 
         'corOlhosPontos', 
         'corCabeloPontos', 
-        'sardasPontos', 
+        'quantidadeSardasPontos', 
         'reacaoSolPontos', 
         'bronzeamentoPontos', 
-        'sensibilidadeFacialPontos'
+        'sensibilidadeSolarPontos'
       ];
       
       let pontosTotal = 0;
@@ -101,17 +101,17 @@ const AvaliacaoFototipo = () => {
     formData.corPelePontos, 
     formData.corOlhosPontos, 
     formData.corCabeloPontos, 
-    formData.sardasPontos, 
+    formData.quantidadeSardasPontos, 
     formData.reacaoSolPontos, 
     formData.bronzeamentoPontos, 
-    formData.sensibilidadeFacialPontos
+    formData.sensibilidadeSolarPontos
   ]);
 
   const validateForm = () => {
     let formErrors = {};
     const requiredFields = [
-      'corPele', 'corOlhos', 'corCabelo', 'sardas', 
-      'reacaoSol', 'bronzeamento', 'sensibilidadeFacial'
+      'corPele', 'corOlhos', 'corCabelo', 'quantidadeSardas', 
+      'reacaoSol', 'bronzeamento', 'sensibilidadeSolar'
     ];
     
     requiredFields.forEach(field => {
@@ -251,7 +251,7 @@ const AvaliacaoFototipo = () => {
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Quantas sardas você tem em áreas não expostas?</Text>
-          {renderOptions('sardas', [
+          {renderOptions('quantidadeSardas', [
             { label: 'Muitas', points: 0 },
             { label: 'Algumas', points: 1 },
             { label: 'Poucas', points: 2 },
@@ -282,7 +282,7 @@ const AvaliacaoFototipo = () => {
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Quão sensível é sua face ao sol?</Text>
-          {renderOptions('sensibilidadeFacial', [
+          {renderOptions('sensibilidadeSolar', [
             { label: 'Muito sensível', points: 0 },
             { label: 'Sensível', points: 1 },
             { label: 'Normal', points: 2 },

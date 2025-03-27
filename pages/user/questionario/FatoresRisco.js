@@ -8,7 +8,8 @@ import {
   ScrollView,
   Alert,
   StatusBar,
-  Platform
+  Platform,
+  TextInput
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -25,8 +26,7 @@ const FatoresRisco = () => {
   
   const [formData, setFormData] = useState(fatoresRiscoState);
   const [errors, setErrors] = useState({});
-  const [currentDate] = useState('2025-03-24 05:49:38');
-  const [currentUser] = useState('hannanhunny01');
+ 
 
   useFocusEffect(
     React.useCallback(() => {
@@ -46,48 +46,48 @@ const FatoresRisco = () => {
     let formErrors = {};
     
     // Validações para todos os campos obrigatórios
-    if (!formData.exposicaoSol) {
-      formErrors.exposicaoSol = "Por favor, responda sobre exposição ao sol";
+    if (!formData.exposicaoSolarProlongada) {
+      formErrors.exposicaoSolarProlongada = "Por favor, responda sobre exposição ao sol";
     }
     
-    if (formData.exposicaoSol === 'sim' && !formData.frequenciaExposicao) {
-      formErrors.frequenciaExposicao = "Por favor, selecione a frequência de exposição";
+    if (formData.exposicaoSolarProlongada === 'sim' && !formData.frequenciaExposicaoSolar) {
+      formErrors.frequenciaExposicaoSolar = "Por favor, selecione a frequência de exposição";
     }
     
     if (!formData.queimadurasGraves) {
       formErrors.queimadurasGraves = "Por favor, responda sobre queimaduras solares graves";
     }
     
-    if (formData.queimadurasGraves === 'sim' && !formData.frequenciaQueimaduras) {
-      formErrors.frequenciaQueimaduras = "Por favor, selecione a frequência de queimaduras";
+    if (formData.queimadurasGraves === 'sim' && !formData.quantidadeQueimaduras) {
+      formErrors.quantidadeQueimaduras = "Por favor, selecione a quantidade de queimaduras";
     }
     
     if (!formData.usoProtetorSolar) {
       formErrors.usoProtetorSolar = "Por favor, responda sobre o uso de protetor solar";
     }
     
-    if (formData.usoProtetorSolar === 'sim' && !formData.fpsUtilizado) {
-      formErrors.fpsUtilizado = "Por favor, selecione o FPS utilizado";
+    if (formData.usoProtetorSolar === 'sim' && !formData.fatorProtecaoSolar) {
+      formErrors.fatorProtecaoSolar = "Por favor, selecione o FPS utilizado";
     }
     
-    if (!formData.roupasProtecao) {
-      formErrors.roupasProtecao = "Por favor, responda sobre o uso de roupas de proteção";
+    if (!formData.usoChapeuRoupaProtecao) {
+      formErrors.usoChapeuRoupaProtecao = "Por favor, responda sobre o uso de roupas de proteção";
     }
     
     if (!formData.bronzeamentoArtificial) {
       formErrors.bronzeamentoArtificial = "Por favor, responda sobre bronzeamento artificial";
     }
     
-    if (!formData.visitasDermatologista) {
-      formErrors.visitasDermatologista = "Por favor, responda sobre visitas ao dermatologista";
+    if (!formData.checkupsDermatologicos) {
+      formErrors.checkupsDermatologicos = "Por favor, responda sobre visitas ao dermatologista";
     }
     
-    if (formData.visitasDermatologista === 'sim' && !formData.frequenciaVisitas) {
-      formErrors.frequenciaVisitas = "Por favor, selecione a frequência de visitas";
+    if (formData.checkupsDermatologicos === 'sim' && !formData.frequenciaCheckups) {
+      formErrors.frequenciaCheckups = "Por favor, selecione a frequência de visitas";
     }
     
-    if (!formData.participacaoCampanhas) {
-      formErrors.participacaoCampanhas = "Por favor, responda sobre participação em campanhas";
+    if (!formData.participacaoCampanhasPrevencao) {
+      formErrors.participacaoCampanhasPrevencao = "Por favor, responda sobre participação em campanhas";
     }
     
     setErrors(formErrors);
@@ -172,19 +172,19 @@ const FatoresRisco = () => {
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Você se expõe ao sol por longos períodos?</Text>
-          {renderRadioGroup('exposicaoSol', 
+          {renderRadioGroup('exposicaoSolarProlongada', 
             [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'exposicaoSol'
+            'exposicaoSolarProlongada'
           )}
 
-          {formData.exposicaoSol === 'sim' && (
+          {formData.exposicaoSolarProlongada === 'sim' && (
             <>
               <Text style={styles.subQuestion}>Se sim, com que frequência?</Text>
-              {renderRadioGroup('frequenciaExposicao', [
-                { label: 'Diariamente', value: 'diariamente' },
-                { label: 'Algumas vezes por semana', value: 'algumas_semana' },
-                { label: 'Ocasionalmente', value: 'ocasionalmente' }
-              ], 'frequenciaExposicao')}
+              {renderRadioGroup('frequenciaExposicaoSolar', [
+                { label: 'Diariamente', value: 'Diariamente' },
+                { label: 'Algumas vezes por semana', value: 'Algumas vezes por semana' },
+                { label: 'Ocasionalmente', value: 'Ocasionalmente' }
+              ], 'frequenciaExposicaoSolar')}
             </>
           )}
         </View>
@@ -199,11 +199,11 @@ const FatoresRisco = () => {
           {formData.queimadurasGraves === 'sim' && (
             <>
               <Text style={styles.subQuestion}>Se sim, quantas vezes ao longo da vida?</Text>
-              {renderRadioGroup('frequenciaQueimaduras', [
+              {renderRadioGroup('quantidadeQueimaduras', [
                 { label: '1-2', value: '1-2' },
                 { label: '3-5', value: '3-5' },
-                { label: 'Mais de 5', value: 'mais_5' }
-              ], 'frequenciaQueimaduras')}
+                { label: 'Mais de 5', value: 'Mais de 5' }
+              ], 'quantidadeQueimaduras')}
             </>
           )}
         </View>
@@ -218,22 +218,22 @@ const FatoresRisco = () => {
           {formData.usoProtetorSolar === 'sim' && (
             <>
               <Text style={styles.subQuestion}>Se sim, qual FPS?</Text>
-              {renderRadioGroup('fpsUtilizado', [
+              {renderRadioGroup('fatorProtecaoSolar', [
                 { label: 'FPS 15', value: '15' },
                 { label: 'FPS 30', value: '30' },
                 { label: 'FPS 50', value: '50' },
                 { label: 'FPS 70', value: '70' },
-                { label: 'FPS 100 ou mais', value: '100' }
-              ], 'fpsUtilizado')}
+                { label: 'FPS 100 ou mais', value: '100 ou mais' }
+              ], 'fatorProtecaoSolar')}
             </>
           )}
         </View>
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Você usa chapéus ou roupas de proteção ao se expor ao sol?</Text>
-          {renderRadioGroup('roupasProtecao', 
+          {renderRadioGroup('usoChapeuRoupaProtecao', 
             [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'roupasProtecao'
+            'usoChapeuRoupaProtecao'
           )}
         </View>
 
@@ -247,28 +247,43 @@ const FatoresRisco = () => {
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Você visita regularmente o dermatologista para check-ups?</Text>
-          {renderRadioGroup('visitasDermatologista', 
+          {renderRadioGroup('checkupsDermatologicos', 
             [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'visitasDermatologista'
+            'checkupsDermatologicos'
           )}
 
-          {formData.visitasDermatologista === 'sim' && (
+          {formData.checkupsDermatologicos === 'sim' && (
             <>
               <Text style={styles.subQuestion}>Se sim, com que frequência?</Text>
-              {renderRadioGroup('frequenciaVisitas', [
-                { label: 'Anualmente', value: 'anualmente' },
-                { label: 'A cada 6 meses', value: 'seis_meses' },
-                { label: 'Outro', value: 'outro' }
-              ], 'frequenciaVisitas')}
+              {renderRadioGroup('frequenciaCheckups', [
+                { label: 'Anualmente', value: 'Anualmente' },
+                { label: 'A cada 6 meses', value: 'A cada 6 meses' },
+                { label: 'Outro', value: 'Outro' }
+              ], 'frequenciaCheckups')}
+              
+              {formData.frequenciaCheckups === 'Outro' && (
+                <View style={styles.inputContainer}>
+                  <TextInput
+                    style={styles.conditionalInput}
+                    placeholder="Especifique a frequência"
+                    placeholderTextColor="#999"
+                    value={formData.frequenciaCheckupsOutro}
+                    onChangeText={(text) => setFormData(prev => ({
+                      ...prev,
+                      frequenciaCheckupsOutro: text
+                    }))}
+                  />
+                </View>
+              )}
             </>
           )}
         </View>
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Você já participou de campanhas de prevenção contra o câncer de pele?</Text>
-          {renderRadioGroup('participacaoCampanhas', 
+          {renderRadioGroup('participacaoCampanhasPrevencao', 
             [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'participacaoCampanhas'
+            'participacaoCampanhasPrevencao'
           )}
         </View>
 
@@ -410,6 +425,19 @@ const styles = StyleSheet.create({
   radioText: {
     fontSize: 16,
     color: '#333',
+  },
+  inputContainer: {
+    marginTop: 8,
+    marginBottom: 12,
+  },
+  conditionalInput: {
+    borderWidth: 1,
+    borderColor: '#ddd',
+    borderRadius: 6,
+    padding: 12,
+    fontSize: 15,
+    color: '#333',
+    backgroundColor: '#f9f9f9',
   },
   navigationButtons: {
     flexDirection: 'row',

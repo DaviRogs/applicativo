@@ -54,7 +54,7 @@ const QuestoesGeraisSaude = () => {
   const handleFrequenciaAtividade = (frequencia) => {
     setFormData(prev => ({
       ...prev,
-      frequenciaAtividade: frequencia
+      frequenciaAtividadeFisica: frequencia
     }));
   };
 
@@ -114,8 +114,8 @@ const QuestoesGeraisSaude = () => {
       formErrors.atividadeFisica = "Por favor, responda se pratica atividade física";
     }
     
-    if (formData.atividadeFisica === 'sim' && !formData.frequenciaAtividade) {
-      formErrors.frequenciaAtividade = "Por favor, selecione a frequência de atividades físicas";
+    if (formData.atividadeFisica === 'sim' && !formData.frequenciaAtividadeFisica) {
+      formErrors.frequenciaAtividadeFisica = "Por favor, selecione a frequência de atividades físicas";
     }
     
     setErrors(formErrors);
@@ -359,45 +359,45 @@ const QuestoesGeraisSaude = () => {
               <Text style={styles.subQuestion}>Se sim, com que frequência?</Text>
               <TouchableOpacity 
                 style={styles.checkboxOption}
-                onPress={() => handleFrequenciaAtividade('Diariamente')}
+                onPress={() => handleFrequenciaAtividade('Diária')}
               >
                 <View style={[
                   styles.radioCircle,
-                  formData.frequenciaAtividade === 'Diariamente' && styles.radioSelected
+                  formData.frequenciaAtividadeFisica === 'Diária' && styles.radioSelected
                 ]} />
-                <Text style={styles.checkboxText}>Diariamente</Text>
+                <Text style={styles.checkboxText}>Diária</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.checkboxOption}
-                onPress={() => handleFrequenciaAtividade('3-5 vezes por semana')}
+                onPress={() => handleFrequenciaAtividade('Frequente')}
               >
                 <View style={[
                   styles.radioCircle,
-                  formData.frequenciaAtividade === '3-5 vezes por semana' && styles.radioSelected
+                  formData.frequenciaAtividadeFisica === 'Frequente' && styles.radioSelected
                 ]} />
-                <Text style={styles.checkboxText}>3-5 vezes por semana</Text>
+                <Text style={styles.checkboxText}>Frequente</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.checkboxOption}
-                onPress={() => handleFrequenciaAtividade('1-2 vezes por semana')}
+                onPress={() => handleFrequenciaAtividade('Moderada')}
               >
                 <View style={[
                   styles.radioCircle,
-                  formData.frequenciaAtividade === '1-2 vezes por semana' && styles.radioSelected
+                  formData.frequenciaAtividadeFisica === 'Moderada' && styles.radioSelected
                 ]} />
-                <Text style={styles.checkboxText}>1-2 vezes por semana</Text>
+                <Text style={styles.checkboxText}>Moderada</Text>
               </TouchableOpacity>
               <TouchableOpacity 
                 style={styles.checkboxOption}
-                onPress={() => handleFrequenciaAtividade('Ocasionalmente')}
+                onPress={() => handleFrequenciaAtividade('Ocasional')}
               >
                 <View style={[
                   styles.radioCircle,
-                  formData.frequenciaAtividade === 'Ocasionalmente' && styles.radioSelected
+                  formData.frequenciaAtividadeFisica === 'Ocasional' && styles.radioSelected
                 ]} />
-                <Text style={styles.checkboxText}>Ocasionalmente</Text>
+                <Text style={styles.checkboxText}>Ocasional</Text>
               </TouchableOpacity>
-              {errors.frequenciaAtividade && <Text style={styles.errorText}>{errors.frequenciaAtividade}</Text>}
+              {errors.frequenciaAtividadeFisica && <Text style={styles.errorText}>{errors.frequenciaAtividadeFisica}</Text>}
             </View>
           )}
         </View>

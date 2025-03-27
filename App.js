@@ -26,6 +26,7 @@ import NovoAtendimentoScreen from './pages/user/NovoAtendimentoScreen';
 import NovoPacienteScreen from './pages/user/NovoPacienteScreen';
 import EsqueciSenhaScreen from './pages/EsqueciSenhaScreen';
 import RedefinirSenhaScreen from './pages/RedefinirSenhaScreen';
+import NoRegistrationScreen from './pages/NoRegistrationScreen';
 
 // Admin imports
 import HomeAdminScreen from './pages/admin/HomeAdminScreen';
@@ -124,32 +125,39 @@ const AppContent = () => {
     return <LoadingScreen />;
   }
 
+  const initialRoute = isAuthenticated 
+    ? (hasAdminAccess ? 'HomeAdmin' : 'Home')
+    : 'Login';
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator 
+      initialRouteName={initialRoute}
+      screenOptions={{ headerShown: false }}
+    >
       {!isAuthenticated ? (
         <>
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="InitialScreen" component={InitialScreen} />
-
           <Stack.Screen name="Register" component={RegisterScreen} />
           <Stack.Screen name="CreatePassword" component={CreatePasswordScreen} />
           <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
           <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />
           <Stack.Screen name="RedefinirSenha" component={RedefinirSenhaScreen} />
+          <Stack.Screen name="NoRegistration" component={NoRegistrationScreen} />
         </>
       ) : (
         <>
-          {hasAdminAccess && (
-            <>
-              <Stack.Screen name="HomeAdmin" component={HomeAdminScreen} />
-              <Stack.Screen name="RegisterProfessional" component={RegisterProfessionalScreen} />
-              <Stack.Screen name="EditProfessional" component={EditProfessionalScreen} />
-              <Stack.Screen name="ProfessionalsList" component={ProfessionalsListScreen} />
-              <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen } />
-              <Stack.Screen name="RegisterHealthUnit" component={RegisterHealthUnitScreen} />
-              <Stack.Screen name="EditHealthUnit" component={EditHealthUnitScreen} />
-            </>
-          )}
+          {/* Include all screens here, regardless of user type */}
+          {/* Admin screens */}
+          <Stack.Screen name="HomeAdmin" component={HomeAdminScreen} />
+          <Stack.Screen name="RegisterProfessional" component={RegisterProfessionalScreen} />
+          <Stack.Screen name="EditProfessional" component={EditProfessionalScreen} />
+          <Stack.Screen name="ProfessionalsList" component={ProfessionalsListScreen} />
+          <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen} />
+          <Stack.Screen name="RegisterHealthUnit" component={RegisterHealthUnitScreen} />
+          <Stack.Screen name="EditHealthUnit" component={EditHealthUnitScreen} />
+          
+          {/* User screens */}
           <Stack.Screen name="Home" component={HomeScreen} />
           <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
           <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
@@ -158,7 +166,8 @@ const AppContent = () => {
           <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
           <Stack.Screen name="Camera" component={CameraScreen} />
           <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
-          {/* questionario */}
+          
+          {/* Questionario screens */}
           <Stack.Screen name="QuestoesGeraisSaude" component={QuestoesGeraisSaude} />
           <Stack.Screen name="AvaliacaoFototipo" component={AvaliacaoFototipo} />
           <Stack.Screen name="HistoricoCancer" component={HistoricoCancer} />
@@ -166,7 +175,7 @@ const AppContent = () => {
           <Stack.Screen name="InvestigacaoLesoes" component={InvestigacaoLesoes} />
           <Stack.Screen name="ResultadoAnamnese" component={ResultadoAnamnese} />
 
-          {/* consent */}
+          {/* Consent screens */}
           <Stack.Screen name="ConsentTerm" component={ConsentTermScreen} />
           <Stack.Screen name="SignatureCamera" component={SignatureCameraScreen} />
           <Stack.Screen name="SignaturePreview" component={SignaturePreviewScreen} />
@@ -185,6 +194,7 @@ const App = () => {
         Register: 'register',
         Login: 'login',
         Home: 'home',
+        HomeAdmin: 'admin',
         RedefinirSenha: 'redefinir-senha',
       },
     },

@@ -146,6 +146,7 @@ const InitialScreen = () => {
               <TouchableOpacity 
                 style={styles.registerButton}
                 activeOpacity={0.7}
+                onPress={() => navigation.navigate('NoRegistration')} 
               >
                 <Text style={styles.registerButtonText}>Não possuo cadastro</Text>
               </TouchableOpacity>

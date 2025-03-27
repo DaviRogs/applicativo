@@ -109,7 +109,7 @@ const HomeScreen = ({navigation}) => {
               >
                 <Icon name="people" size={24} color="#1e3d59" />
                 <Text style={styles.statLabel}>Usuário Cadastrados</Text>
-                <Text style={styles.statValue}>33</Text>
+                <Text style={styles.statValue}>000</Text>
               </TouchableOpacity>
 
               <TouchableOpacity 
@@ -118,7 +118,7 @@ const HomeScreen = ({navigation}) => {
               >
                 <Icon name="person" size={24} color="#1e3d59" />
                 <Text style={styles.statLabel}>Pacientes</Text>
-                <Text style={styles.statValue}>440</Text>
+                <Text style={styles.statValue}>000</Text>
               </TouchableOpacity>
             </View>
           </View>

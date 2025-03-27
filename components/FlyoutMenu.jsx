@@ -50,11 +50,11 @@ const FlyoutMenu = ({ visible, onClose }) => {
 
   const handleLogout = async () => {
     // First close the menu
-    onClose();
+    // onClose();
     
     // Simply dispatch logout action - let Redux and App.js handle the navigation
     dispatch(logout());
-    
+    // navigation.navigate('login');
     // Don't try to navigate here - let the auth state change trigger navigation in App.js
   };
 

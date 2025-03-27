@@ -24,8 +24,10 @@ const HomeScreen = ({  }) => {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [error, setError] = useState(null);
-  const [currentDateTimeUTC] = useState('2025-02-25 03:05:05');
-
+  const [currentDateTimeUTC] = useState(() => {
+    const now = new Date();
+    return now.toISOString().slice(0, 19).replace('T', ' ');
+  });
   const user = useSelector(state => state.user.userData);
   const authenticated = useSelector(state => state.auth.isAuthenticated);
   const token = useSelector(state => state.auth.accessToken);
