@@ -1,6 +1,5 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
 import {API_URL} from '@env';
 
 const initialState = {
@@ -59,6 +58,18 @@ export const restoreTokens = createAsyncThunk(
   }
 );
 
+export const logoutAsync = createAsyncThunk(
+  'auth/logoutAsync',
+  async (_, { dispatch }) => {
+    await AsyncStorage.removeItem('accessToken');
+    await AsyncStorage.removeItem('refreshToken');
+    
+    dispatch(logout());
+    
+    return true;
+  }
+);
+
 const authSlice = createSlice({
   name: 'auth',
   initialState,
@@ -68,8 +79,13 @@ const authSlice = createSlice({
       state.refreshToken = null;
       state.isAuthenticated = false;
       state.user = null;
-      AsyncStorage.removeItem('accessToken');
-      AsyncStorage.removeItem('refreshToken');
+    },
+    loginSuccess: (state, action) => {
+      state.loading = false;
+      state.isAuthenticated = true;
+      state.accessToken = action.payload.access_token;
+      state.refreshToken = action.payload.refresh_token;
+      state.error = null;
     },
   },
   extraReducers: (builder) => {
@@ -97,5 +113,5 @@ const authSlice = createSlice({
   },
 });
 
-export const { logout } = authSlice.actions;
+export const { logout, loginSuccess } = authSlice.actions;
 export default authSlice.reducer;

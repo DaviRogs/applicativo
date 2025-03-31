@@ -17,37 +17,40 @@ import {
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { login } from '../store/authSlice';
 import { fetchCurrentUser } from '../store/userSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-const LoginScreen = ({  }) => {
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {API_URL} from '@env';
+const LoginScreen = () => {
   const [cpf, setCpf] = useState('');
   const [formattedCpf, setFormattedCpf] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setPasswordVisible] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  
   const dispatch = useDispatch();
-  const { loading: authLoading, error: authError } = useSelector((state) => state.auth);
   const { loading: userLoading, error: userError } = useSelector((state) => state.user);
-    const navigation = useNavigation();
+  const navigation = useNavigation();
   
   const logo1 = require('../assets/logo1.png');
   const logo2 = require('../assets/logo2.png');
   const dermaAlert = require('../assets/dermaalert.png');
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('InitialScreen');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('InitialScreen');
+        return true; // Prevent default behavior
+      };
+  
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+  
+      return () => 
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation])
+  );
 
   // Animation values
   const fadeAnim = useRef(new Animated.Value(0)).current;
@@ -115,6 +118,56 @@ const LoginScreen = ({  }) => {
     ]).start();
   };
 
+  // Direct API login function
+  const performLogin = async (username, password) => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      const formData = new URLSearchParams();
+      formData.append('grant_type', 'password');
+      formData.append('username', username);
+      formData.append('password', password);
+      formData.append('scope', '');
+      formData.append('client_id', 'string');
+      formData.append('client_secret', 'string');
+
+      const response = await fetch(`${API_URL}/token`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: formData.toString(),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || 'Login failed');
+      }
+
+      // Store tokens in AsyncStorage
+      await AsyncStorage.setItem('accessToken', data.access_token);
+      await AsyncStorage.setItem('refreshToken', data.refresh_token);
+
+      // Update the Redux store with authentication state
+      dispatch({
+        type: 'auth/loginSuccess',
+        payload: {
+          access_token: data.access_token,
+          refresh_token: data.refresh_token
+        }
+      });
+
+      return data;
+    } catch (error) {
+      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleLogin = async () => {
     animateButton();
     Keyboard.dismiss();
@@ -130,41 +183,31 @@ const LoginScreen = ({  }) => {
     }
 
     try {
-      // First attempt login
-      const loginResult = await dispatch(login({ username: cpf, password }));
+      const loginData = await performLogin(cpf, password);
       
-      if (login.fulfilled.match(loginResult)) {
-        // If login successful, fetch user data
-        const userResult = await dispatch(fetchCurrentUser());
-        
-        if (fetchCurrentUser.fulfilled.match(userResult)) {
-          // Success animation before navigation
-          Animated.timing(fadeAnim, {
-            toValue: 0,
-            duration: 300,
-            useNativeDriver: true,
-          }).start(() => {
-            // Only navigate if both login and user fetch are successful
-            navigation.navigate('Home');
-          });
-        } else {
-          // If user fetch fails, show the error
-          showError(userResult.payload || 'Erro ao carregar dados do usuário');
-        }
+      const userResult = await dispatch(fetchCurrentUser());
+      
+      if (fetchCurrentUser.fulfilled.match(userResult)) {
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }).start(() => {
+          navigation.navigate('Home');
+        });
       } else {
-        // Show login error
-        showError(loginResult.payload || 'Credenciais inválidas');
+        setError(userResult.payload || 'Erro ao carregar dados do usuário');
+        showError(userResult.payload || 'Erro ao carregar dados do usuário');
       }
     } catch (err) {
-      showError('Erro ao fazer login. Tente novamente.');
+      setError(err.message || 'Credenciais inválidas');
+      showError(err.message || 'Credenciais inválidas');
     }
   };
 
-  // Determine if loading state is active
-  const isLoading = authLoading || userLoading;
+  const isLoading = loading || userLoading;
 
-  // Combine errors for display
-  const errorMessage = authError || userError;
+  const errorMessage = error || userError;
 
   return (
     <SafeAreaView style={styles.container}>

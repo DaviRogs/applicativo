@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform, Animated, Alert } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { logout } from '../store/authSlice';
+import { logoutAsync } from '../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectIsAdmin } from '../store/userSlice';
-import { useNavigation } from '@react-navigation/native';
+import { useNavigation, CommonActions } from '@react-navigation/native';
 
 const FlyoutMenu = ({ visible, onClose }) => {
   const dispatch = useDispatch();
@@ -49,13 +49,36 @@ const FlyoutMenu = ({ visible, onClose }) => {
   if (!visible) return null;
 
   const handleLogout = async () => {
-    // First close the menu
-    // onClose();
-    
-    // Simply dispatch logout action - let Redux and App.js handle the navigation
-    dispatch(logout());
-    // navigation.navigate('login');
-    // Don't try to navigate here - let the auth state change trigger navigation in App.js
+    Alert.alert(
+      'Logout',
+      'Tem certeza que deseja sair?',
+      [
+        {
+          text: 'Cancelar',
+          style: 'cancel'
+        },
+        {
+          text: 'Sair',
+          onPress: async () => {
+            try {
+              onClose();
+              
+              // Dispatch the async logout action
+              await dispatch(logoutAsync());
+              
+              navigation.dispatch(
+                CommonActions.reset({
+                  index: 0,
+                  routes: [{ name: 'InitialScreen' }],
+                })
+              );
+            } catch (error) {
+              console.error('Erro ao fazer logout:', error);
+            }
+          }
+        }
+      ]
+    );
   };
 
   return (

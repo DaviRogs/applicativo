@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from 'react';
 import { SafeAreaView } from 'react-native';
-import { NavigationContainer } from '@react-navigation/native';
+import { NavigationContainer, CommonActions } from '@react-navigation/native';
 import { Provider, useSelector, useDispatch } from 'react-redux';
 import store from './store/store';
 import { restoreTokens } from './store/authSlice';
@@ -72,6 +72,31 @@ const AppContent = () => {
   const { loading: userLoading } = useSelector(state => state.user);
   const hasAdminAccess = useSelector(selectHasAdminAccess);
   const initialLinkProcessed = useRef(false);
+  const prevAuthState = useRef(isAuthenticated);
+
+  useEffect(() => {
+    if (prevAuthState.current !== isAuthenticated) {
+      prevAuthState.current = isAuthenticated;
+      
+      if (navigationRef.current) {
+        if (isAuthenticated) {
+          navigationRef.current.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: hasAdminAccess ? 'HomeAdmin' : 'Home' }],
+            })
+          );
+        } else {
+          navigationRef.current.dispatch(
+            CommonActions.reset({
+              index: 0,
+              routes: [{ name: 'InitialScreen' }],
+            })
+          );
+        }
+      }
+    }
+  }, [isAuthenticated, hasAdminAccess]);
 
   useEffect(() => {
     const initializeApp = async () => {
@@ -99,11 +124,9 @@ const AppContent = () => {
           console.log("Token found in deep link:", token);
           initialLinkProcessed.current = true;
           
-          // Check if it's a password reset link
           if (url.includes('reset-password') || url.includes('redefinir-senha')) {
             navigationRef.current?.navigate('RedefinirSenha', { token });
           } 
-          // Otherwise, assume it's a registration link
           else {
             navigationRef.current?.navigate('Register', { token });
           }
@@ -125,62 +148,52 @@ const AppContent = () => {
     return <LoadingScreen />;
   }
 
-  const initialRoute = isAuthenticated 
-    ? (hasAdminAccess ? 'HomeAdmin' : 'Home')
-    : 'Login';
-
   return (
     <Stack.Navigator 
-      initialRouteName={initialRoute}
+      initialRouteName={isAuthenticated ? (hasAdminAccess ? 'HomeAdmin' : 'Home') : 'InitialScreen'}
       screenOptions={{ headerShown: false }}
     >
-      {!isAuthenticated ? (
-        <>
-          <Stack.Screen name="Login" component={LoginScreen} />
-          <Stack.Screen name="InitialScreen" component={InitialScreen} />
-          <Stack.Screen name="Register" component={RegisterScreen} />
-          <Stack.Screen name="CreatePassword" component={CreatePasswordScreen} />
-          <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
-          <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />
-          <Stack.Screen name="RedefinirSenha" component={RedefinirSenhaScreen} />
-          <Stack.Screen name="NoRegistration" component={NoRegistrationScreen} />
-        </>
-      ) : (
-        <>
-          {/* Include all screens here, regardless of user type */}
-          {/* Admin screens */}
-          <Stack.Screen name="HomeAdmin" component={HomeAdminScreen} />
-          <Stack.Screen name="RegisterProfessional" component={RegisterProfessionalScreen} />
-          <Stack.Screen name="EditProfessional" component={EditProfessionalScreen} />
-          <Stack.Screen name="ProfessionalsList" component={ProfessionalsListScreen} />
-          <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen} />
-          <Stack.Screen name="RegisterHealthUnit" component={RegisterHealthUnitScreen} />
-          <Stack.Screen name="EditHealthUnit" component={EditHealthUnitScreen} />
-          
-          {/* User screens */}
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
-          <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
-          <Stack.Screen name="InjuryList" component={InjuryListScreen} />
-          <Stack.Screen name="AddInjury" component={AddInjuryScreen} />
-          <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
-          <Stack.Screen name="Camera" component={CameraScreen} />
-          <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
-          
-          {/* Questionario screens */}
-          <Stack.Screen name="QuestoesGeraisSaude" component={QuestoesGeraisSaude} />
-          <Stack.Screen name="AvaliacaoFototipo" component={AvaliacaoFototipo} />
-          <Stack.Screen name="HistoricoCancer" component={HistoricoCancer} />
-          <Stack.Screen name="FatoresRisco" component={FatoresRisco} />
-          <Stack.Screen name="InvestigacaoLesoes" component={InvestigacaoLesoes} />
-          <Stack.Screen name="ResultadoAnamnese" component={ResultadoAnamnese} />
+      {/* Auth screens - always available */}
+      <Stack.Screen name="Login" component={LoginScreen} />
+      <Stack.Screen name="InitialScreen" component={InitialScreen} />
+      <Stack.Screen name="Register" component={RegisterScreen} />
+      <Stack.Screen name="CreatePassword" component={CreatePasswordScreen} />
+      <Stack.Screen name="SuccessScreen" component={SuccessScreen} />
+      <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />
+      <Stack.Screen name="RedefinirSenha" component={RedefinirSenhaScreen} />
+      <Stack.Screen name="NoRegistration" component={NoRegistrationScreen} />
+      
+      {/* Admin screens */}
+      <Stack.Screen name="HomeAdmin" component={HomeAdminScreen} />
+      <Stack.Screen name="RegisterProfessional" component={RegisterProfessionalScreen} />
+      <Stack.Screen name="EditProfessional" component={EditProfessionalScreen} />
+      <Stack.Screen name="ProfessionalsList" component={ProfessionalsListScreen} />
+      <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen} />
+      <Stack.Screen name="RegisterHealthUnit" component={RegisterHealthUnitScreen} />
+      <Stack.Screen name="EditHealthUnit" component={EditHealthUnitScreen} />
+      
+      {/* User screens */}
+      <Stack.Screen name="Home" component={HomeScreen} />
+      <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
+      <Stack.Screen name="NovoPaciente" component={NovoPacienteScreen} />
+      <Stack.Screen name="InjuryList" component={InjuryListScreen} />
+      <Stack.Screen name="AddInjury" component={AddInjuryScreen} />
+      <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
+      <Stack.Screen name="Camera" component={CameraScreen} />
+      <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
+      
+      {/* Questionario screens */}
+      <Stack.Screen name="QuestoesGeraisSaude" component={QuestoesGeraisSaude} />
+      <Stack.Screen name="AvaliacaoFototipo" component={AvaliacaoFototipo} />
+      <Stack.Screen name="HistoricoCancer" component={HistoricoCancer} />
+      <Stack.Screen name="FatoresRisco" component={FatoresRisco} />
+      <Stack.Screen name="InvestigacaoLesoes" component={InvestigacaoLesoes} />
+      <Stack.Screen name="ResultadoAnamnese" component={ResultadoAnamnese} />
 
-          {/* Consent screens */}
-          <Stack.Screen name="ConsentTerm" component={ConsentTermScreen} />
-          <Stack.Screen name="SignatureCamera" component={SignatureCameraScreen} />
-          <Stack.Screen name="SignaturePreview" component={SignaturePreviewScreen} />
-        </>
-      )}
+      {/* Consent screens */}
+      <Stack.Screen name="ConsentTerm" component={ConsentTermScreen} />
+      <Stack.Screen name="SignatureCamera" component={SignatureCameraScreen} />
+      <Stack.Screen name="SignaturePreview" component={SignaturePreviewScreen} />
     </Stack.Navigator>
   );
 };
