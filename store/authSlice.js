@@ -61,12 +61,17 @@ export const restoreTokens = createAsyncThunk(
 export const logoutAsync = createAsyncThunk(
   'auth/logoutAsync',
   async (_, { dispatch }) => {
-    await AsyncStorage.removeItem('accessToken');
-    await AsyncStorage.removeItem('refreshToken');
-    
-    dispatch(logout());
-    
-    return true;
+    try {
+      await AsyncStorage.removeItem('accessToken');
+      await AsyncStorage.removeItem('refreshToken');
+      await new Promise(resolve => setTimeout(resolve, 100));   
+      dispatch(logout());
+      
+      return true;
+    } catch (error) {
+      console.error('Error during logout:', error);
+      return false;
+    }
   }
 );
 

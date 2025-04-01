@@ -34,7 +34,7 @@ const ProfessionalsListScreen = () => {
 
   // Get user role and unit from Redux
   const isAdmin = useSelector(selectIsAdmin);
-  const userUnit = useSelector(state => state.user.userData.unidadeSaude[0]);
+  const userUnit = useSelector(state => state.user.userData?.unidadeSaude[0]);
   const userData = useSelector(state => state.user.userData);
   const token = useSelector(state => state.auth.accessToken);
   const roles = [

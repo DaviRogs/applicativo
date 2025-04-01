@@ -66,12 +66,12 @@ const FlyoutMenu = ({ visible, onClose }) => {
               // Dispatch the async logout action
               await dispatch(logoutAsync());
               
-              navigation.dispatch(
-                CommonActions.reset({
-                  index: 0,
-                  routes: [{ name: 'InitialScreen' }],
-                })
-              );
+              // navigation.dispatch(
+              //   CommonActions.reset({
+              //     index: 0,
+              //     routes: [{ name: 'InitialScreen' }],
+              //   })
+              // );
             } catch (error) {
               console.error('Erro ao fazer logout:', error);
             }

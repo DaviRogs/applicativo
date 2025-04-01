@@ -23,7 +23,7 @@ const EditProfessionalScreen = ({ route }) => {
   const { professional } = route.params || {};
   
   const isAdmin = useSelector(selectIsAdmin);
-  const userUnit = useSelector(state => state.user.userData.unidadeSaude[0]);
+  const userUnit = useSelector(state => state.user.userData?.unidadeSaude[0]);
   const userData = useSelector(state => state.user.userData);
   const token = useSelector(state => state.auth.accessToken);
   

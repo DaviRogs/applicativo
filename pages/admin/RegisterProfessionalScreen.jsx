@@ -32,7 +32,7 @@ const RegisterProfessionalScreen = () => {
   const navigation = useNavigation();
 
   const isAdmin = useSelector(selectIsAdmin);
-  const userUnit = useSelector(state => state.user.userData.unidadeSaude[0]);
+  const userUnit = useSelector(state => state.user.userData?.unidadeSaude[0]);
   const token = useSelector(state => state.auth.accessToken);
 
   const roles = [
