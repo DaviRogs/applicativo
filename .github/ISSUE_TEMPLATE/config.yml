@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 💬 RFC - Request for Comments
+    url: https://github.com/SEU-USUARIO/SEU-REPO/discussions
+    about: Use esta seção para propor grandes mudanças ou iniciar discussões que não se encaixam como issues comuns.
