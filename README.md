@@ -46,6 +46,6 @@ Para isso, você deve seguir o tutorial detalhado disponível na [documentação
 
 | Versão | Data | Descrição | Autor | Revisor |
 | :----: | ---- | --------- | ----- | ------- |
-| `1.0`  |10/04/2025| Adiciona descrição, link para gitpage e como rodar aplicação | Izabella Alves |  |
+| `1.0`  |10/04/2025| Adiciona descrição, link para gitpage e como rodar aplicação | Izabella Alves | [Esther Sena](https://github.com/esmsena)  |
 
 
