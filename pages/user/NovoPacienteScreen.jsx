@@ -10,6 +10,7 @@ import {
   ActivityIndicator,
   Modal,
   StatusBar,
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -33,6 +34,8 @@ import {  useNavigation } from '@react-navigation/native';
 const NovoPacienteScreen = ({  route }) => {
   const [injuries, setInjuries] = useState([]);
   const [showDiscardModal, setShowDiscardModal] = useState(false);
+  const [showResultsModal, setShowResultsModal] = useState(false);
+  const [lesionsResults, setLesionsResults] = useState([]);
   
   const dispatch = useDispatch();
 
@@ -161,13 +164,17 @@ const NovoPacienteScreen = ({  route }) => {
       const resultAction = await dispatch(submitPatientData());
       
       if (submitPatientData.fulfilled.match(resultAction)) {
-        // The submission was successful
-        resetAllStates();
-        Alert.alert('Sucesso', 'Atendimento registrado com sucesso!', [
-          { text: 'OK', onPress: () => navigation.navigate('Home') }
-        ]);
+        const results = [];
+        for (let i = 1; i <= reduxInjuries.length; i++) {
+          const storedResult = localStorage.getItem(`injuryResult-${i}`);
+          if (storedResult) {
+            results.push(JSON.parse(storedResult));
+          }
+        }
+        
+        setLesionsResults(results);
+        setShowResultsModal(true);
       } else {
-        // The submission failed
         Alert.alert('Erro', resultAction.error?.message || 'Ocorreu um erro ao salvar os dados. Por favor, tente novamente.');
       }
     } catch (error) {
@@ -215,6 +222,68 @@ const NovoPacienteScreen = ({  route }) => {
                 <Text style={styles.modalConfirmButtonText}>Sim, descartar</Text>
               </TouchableOpacity>
             </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Modal para exibir os resultados das lesões */}
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={showResultsModal}
+        onRequestClose={() => {
+          setShowResultsModal(false);
+          resetAllStates();
+          navigation.navigate('Home');
+        }}
+      >
+        <View style={styles.modalContainer}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Resultados da Análise</Text>
+            
+            <ScrollView style={styles.resultsContainer}>
+              {lesionsResults.map((lesao, index) => (
+                <View key={index} style={styles.lesaoItem}>
+                  <Text style={styles.tipo}>
+                    Tipo: {lesao.tipos ? lesao.tipos.join(', ') : 'Não disponível'}
+                  </Text>
+                  <Text style={styles.preDiagnostico}>
+                    Pré-diagnóstico: {lesao.prediagnosticos ? lesao.prediagnosticos.join(', ') : 'Não disponível'}
+                  </Text>
+                  <Text style={styles.lesaoDescription}>
+                    Descrição da Lesão: {lesao.description ? lesao.description : 'Não disponível'}
+                  </Text>
+                  <Text style={styles.detalhesLesao}>
+                    Detalhes: {lesao.descricoes_lesao ? lesao.descricoes_lesao.join('\n') : 'Não disponível'}
+                  </Text>
+                  <Text style={styles.detalhesLesao}>
+                    Data do pré-diagnóstico: {new Date().toLocaleDateString('pt-BR', {
+                      day: '2-digit',
+                      month: '2-digit',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    })}
+                  </Text>
+                  {lesao.imagens && lesao.imagens.length > 0 && (
+                    <Text style={styles.imagens}>
+                      Imagens registradas: {lesao.imagens.length}
+                    </Text>
+                  )}
+                </View>
+              ))}
+            </ScrollView>
+
+            <TouchableOpacity
+              style={styles.closeButton}
+              onPress={() => {
+                setShowResultsModal(false);
+                resetAllStates();
+                navigation.navigate('Home');
+              }}
+            >
+              <Text style={styles.closeButtonText}>Fechar</Text>
+            </TouchableOpacity>
           </View>
         </View>
       </Modal>
@@ -691,31 +760,105 @@ const styles = StyleSheet.create({
   // Modal styles
   modalContainer: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.5)',
     justifyContent: 'center',
     alignItems: 'center',
-    paddingHorizontal: 20,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
   },
   modalContent: {
     backgroundColor: 'white',
+    borderRadius: 20,
+    padding: 20,
+    width: '90%',
+    maxHeight: '80%',
+  },
+  modalTitle: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    textAlign: 'center',
+    marginBottom: 20,
+    color: '#1e3d59',
+  },
+  resultsContainer: {
+    maxHeight: '70%',
+    backgroundColor: '#f7f9fc',
+  },
+  lesaoItem: {
+    backgroundColor: '#ffffff',
     borderRadius: 12,
-    padding: 24,
-    width: '100%',
-    maxWidth: 400,
+    padding: 16,
+    marginBottom: 15,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.25,
+    shadowOpacity: 0.1,
     shadowRadius: 3.84,
-    elevation: 5,
+    elevation: 3,
+    borderWidth: 1,
+    borderColor: '#e8edf3',
   },
-  modalTitle: {
-    fontSize: 20,
+  localLesao: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#1e3d59',
+    marginBottom: 10,
+  },
+  tipo: {
+    fontSize: 16,
+    color: '#1e3d59',
+    fontWeight: '600',
+    marginBottom: 8,
+  },
+  preDiagnostico: {
+    fontSize: 16,
+    color: '#1e3d59',
     fontWeight: '700',
-    marginBottom: 16,
-    color: '#333',
+    marginBottom: 8,
+    backgroundColor: '#e8f4ff',
+    padding: 8,
+    borderRadius: 6,
+    borderLeftWidth: 4,
+    borderLeftColor: '#1e3d59'
+  },
+  lesaoDescription: {
+    fontSize: 16,
+    color: '#666',
+    marginBottom: 8,
+    fontStyle: 'italic'
+  },
+  detalhesLesao: {
+    fontSize: 15,
+    color: '#666',
+    lineHeight: 22,
+    marginBottom: 8,
+    fontStyle: 'italic'
+  },
+  imagens: {
+    fontSize: 15,
+    color: '#1e3d59',
+    fontWeight: '500',
+    marginTop: 5,
+  },
+  closeButton: {
+    backgroundColor: '#1e3d59',
+    padding: 15,
+    borderRadius: 12,
+    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+    elevation: 3,
+  },
+  closeButtonText: {
+    color: 'white',
+    textAlign: 'center',
+    fontSize: 16,
+    fontWeight: '600',
   },
   modalMessage: {
     fontSize: 16,
