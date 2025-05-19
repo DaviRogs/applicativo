@@ -153,7 +153,7 @@ export const submitPatientData = createAsyncThunk(
         console.error('Error uploading consent term:', consentError);
         return rejectWithValue(`Failed to upload consent term: ${consentError.message}`);
       }
-      
+        
       // Step 3: Submit 
       try {
         console.log('Preparing anamnesis data for submission...');
@@ -234,27 +234,45 @@ export const submitPatientData = createAsyncThunk(
       
       // Step 4: 
       const injuriesData = injury?.injuries || [];
-      if (injuriesData.length > 0) {
-        try {
-          console.log(`Processing ${injuriesData.length} injuries...`);
-          for (const injuryItem of injuriesData) {
-            console.log(`Registering injury at location: ${injuryItem.id || injuryItem.location}`);
-            await apiService.registerLesion(
-              attendanceId, 
-              {
-                location: injuryItem.id || injuryItem.location,
-                description: injuryItem.description || ''
-              },
-              injuryItem.photos || [],
-              auth.accessToken
-            );
-          }
-          console.log('All injuries registered successfully');
-        } catch (injuryError) {
-          console.error('Error registering injuries:', injuryError);
-          console.warn('Continuing submission despite injury registration error');
-        }
-      }
+      const lesoesRegistradas = [];
+
+if (injuriesData.length > 0) {
+  try {
+    console.log(`Processing ${injuriesData.length} injuries...`);
+    for (let index = 0; index < injuriesData.length; index++) {
+      const injuryItem = injuriesData[index];
+      const lesionId = index + 1; 
+      
+      console.log(`Registering injury number: ${lesionId}`);
+      const resultLesao = await apiService.registerLesion(
+        attendanceId, 
+        {
+          location: injuryItem.id || injuryItem.location,
+          description: injuryItem.description || ''
+        },
+        injuryItem.photos || [],
+        auth.accessToken
+      );
+
+      console.log('Injury registration result:', resultLesao);
+
+      localStorage.setItem(`injuryResult-${lesionId}`, JSON.stringify({
+        ...resultLesao,
+        lesionId,
+        description: injuryItem.description || ''
+      }));
+
+      lesoesRegistradas.push({
+        ...resultLesao,
+        lesionId,
+        description: injuryItem.description || ''
+      });
+    }
+  } catch (injuryError) {
+    console.error('Error registering injuries:', injuryError);
+    console.warn('Continuing submission despite injury registration error');
+  }
+}
       
       // Store submission timestamp
       const timestamp = new Date().toISOString();
@@ -264,8 +282,9 @@ export const submitPatientData = createAsyncThunk(
       return { 
         success: true, 
         timestamp,
-        attendanceId
-      };
+        attendanceId,
+        lesoesRegistradas
+        };
     } catch (error) {
       console.error('Unhandled error in submitPatientData:', error);
       return rejectWithValue(error.message || 'An unexpected error occurred during submission');

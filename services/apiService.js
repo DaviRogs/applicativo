@@ -137,69 +137,66 @@ export const apiService = {
       formData.append('atendimento_id', attendanceId);
       formData.append('local_lesao_id', lesionData.location);
       formData.append('descricao_lesao', lesionData.description);
-      
+
       // Append all images to form data
       if (lesionImages && lesionImages.length > 0) {
         for (let i = 0; i < lesionImages.length; i++) {
           const image = lesionImages[i];
+          if (!image) continue;
+
           try {
-            if (!image) continue; // Skip undefined images
-            
-            // Process image based on its format
-            let fileUri;
-            let fileType = 'image/jpeg';
-            let fileName = `lesion_image_${i}.jpg`;
-            
-            if (typeof image === 'string') {
-              // It's a string - could be a base64 or a file URI
-              if (image.startsWith('data:image')) {
-                // It's a base64 image
-                fileUri = await createFileFromBase64(image, fileName);
-              } else {
-                // It's a file URI
-                fileUri = image;
-              }
-            } else if (image.uri) {
-              // It's an object with a URI
-              fileUri = image.uri;
-              fileType = image.type || fileType;
-              fileName = image.name || fileName;
+            let blob;
+            if (typeof image === 'string' && image.startsWith('data:image')) {
+              const base64Response = await fetch(image);
+              blob = await base64Response.blob();
+            } else if (typeof image === 'object' && image.uri) {
+              const response = await fetch(image.uri);
+              blob = await response.blob();
             } else {
-              console.warn('Skipping invalid image format', image);
+              console.warn(`Skipping image ${i} - unsupported format`);
               continue;
             }
-            
-            formData.append('files', {
-              uri: fileUri,
-              name: fileName,
-              type: fileType
-            });
+
+            const file = new File([blob], `lesion_image_${i}.jpg`, { type: 'image/jpeg' });
+            formData.append('files', file);
+            console.log(`Added image ${i} to form data`);
           } catch (error) {
-            console.error('Error processing image:', error);
-            // Continue with other images even if one fails
+            console.error(`Error processing image ${i}:`, error);
           }
         }
       }
 
-      const response = await fetch(
-        `${API_URL}/cadastrar-lesao`,
-        {
-          method: 'POST',
-          headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
-          },
-          body: formData
-        }
-      );
+      const response = await fetch(`${API_URL}/cadastrar-lesao`, {
+        method: 'POST',
+        headers: {
+          'accept': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: formData
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
         throw new Error(errorData.message || 'Failed to register lesion');
       }
 
-      return await response.json();
+      const responseData = await response.json();
+      
+      return {
+        message: responseData.message,
+        lesao: {
+          id: responseData.lesao.id,
+          local_lesao_id: responseData.lesao.local_lesao_id,
+          local_lesao_nome: responseData.lesao.local_lesao_nome,
+          descricao_lesao: responseData.lesao.descricao_lesao
+        },
+        imagens: responseData.imagens || [],
+        tipos: responseData.tipos || [],
+        prediagnosticos: responseData.prediagnosticos || [],
+        descricoes_lesao: responseData['descricoes-lesao'] || [],
+        location: undefined,
+        description: undefined
+      };
     } catch (error) {
       console.error('Error in registerLesion:', error);
       throw error;
