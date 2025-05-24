@@ -11,7 +11,7 @@ on:
 
 jobs:
   sonarcloud:
-    name: Analisando código com SonarCloud
+    name: Análise do código com SonarCloud
     runs-on: ubuntu-latest
 
     steps:
@@ -29,7 +29,7 @@ jobs:
         uses: SonarSource/sonarcloud-github-action@master
         with:
           args: >
-            -Dsonar.projectKey=davirogs-1
+            -Dsonar.projectKey=DaviRogs_applicativo
             -Dsonar.organization=DaviRogs
             -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
         env:
