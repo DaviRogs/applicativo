@@ -33,3 +33,13 @@ jobs:
 
       - name: 📦 Verificar arquivos de build
         run: ls -la dist
+
+      - name: 🔍 Analisar usando o SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectKey=DaviRogs_applicativo
+            -Dsonar.organization=davirogs-1
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
