@@ -58,13 +58,15 @@ export const injuryStorage = {
   updateInjury: async (updatedInjury) => {
     try {
       const injuries = await injuryStorage.getInjuries();
-      const index = injuries.findIndex(injury => injury.id === updatedInjury.id);
-      
+      const index = injuries.findIndex(
+        (injury) => injury.id === updatedInjury.id,
+      );
+
       if (index !== -1) {
         injuries[index] = updatedInjury;
         await injuryStorage.saveInjuries(injuries);
       }
-      
+
       return injuries;
     } catch (error) {
       console.error('Error updating injury:', error);
@@ -73,13 +75,15 @@ export const injuryStorage = {
   },
 
   /**
-   * @param {string|number} injuryId 
+   * @param {string|number} injuryId
    * @returns {Promise<Array>} - Promise resolving to updated array of injury objects
    */
   deleteInjury: async (injuryId) => {
     try {
       const injuries = await injuryStorage.getInjuries();
-      const updatedInjuries = injuries.filter(injury => injury.id !== injuryId);
+      const updatedInjuries = injuries.filter(
+        (injury) => injury.id !== injuryId,
+      );
       await injuryStorage.saveInjuries(updatedInjuries);
       return updatedInjuries;
     } catch (error) {
@@ -98,5 +102,5 @@ export const injuryStorage = {
       console.error('Error clearing injuries:', error);
       throw error;
     }
-  }
+  },
 };

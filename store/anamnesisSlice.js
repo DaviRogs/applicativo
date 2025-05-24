@@ -22,7 +22,7 @@ const initialState = {
     atividadeFisica: '',
     frequenciaAtividade: '',
   },
-  
+
   // Questionário 2: Avaliação de Fototipo
   avaliacaoFototipo: {
     corPele: '',
@@ -35,7 +35,7 @@ const initialState = {
     pontosTotal: 0,
     fototipo: '',
   },
-  
+
   // Questionário 3: Histórico Familiar e Pessoal de Câncer de Pele
   historicoCancer: {
     historicoFamiliar: '',
@@ -47,7 +47,7 @@ const initialState = {
     tratamentoLesoes: '',
     tipoTratamento: '',
   },
-  
+
   // Questionário 4: Fatores de Risco e Proteção
   fatoresRisco: {
     exposicaoSol: '',
@@ -62,7 +62,7 @@ const initialState = {
     frequenciaVisitas: '',
     participacaoCampanhas: '',
   },
-  
+
   // Questionário 5: Investigação de Câncer de Pele
   investigacaoLesoes: {
     lesoesRecentes: '',
@@ -72,13 +72,13 @@ const initialState = {
     consultaMedica: '',
     diagnosticoMedico: '',
   },
-  
+
   // Controle de Progresso
   progressoQuestionario: {
     etapaAtual: 1,
     totalEtapas: 5,
     concluido: false,
-  }
+  },
 };
 
 const anamnesisSlice = createSlice({
@@ -86,49 +86,61 @@ const anamnesisSlice = createSlice({
   initialState,
   reducers: {
     atualizarQuestoesGerais: (state, action) => {
-      state.questoesGerais = {...state.questoesGerais, ...action.payload};
+      state.questoesGerais = { ...state.questoesGerais, ...action.payload };
     },
-    
+
     atualizarAvaliacaoFototipo: (state, action) => {
-      state.avaliacaoFototipo = {...state.avaliacaoFototipo, ...action.payload};
+      state.avaliacaoFototipo = {
+        ...state.avaliacaoFototipo,
+        ...action.payload,
+      };
     },
-    
+
     atualizarHistoricoCancer: (state, action) => {
-      state.historicoCancer = {...state.historicoCancer, ...action.payload};
+      state.historicoCancer = { ...state.historicoCancer, ...action.payload };
     },
-    
+
     atualizarFatoresRisco: (state, action) => {
-      state.fatoresRisco = {...state.fatoresRisco, ...action.payload};
+      state.fatoresRisco = { ...state.fatoresRisco, ...action.payload };
     },
-    
+
     atualizarInvestigacaoLesoes: (state, action) => {
-      state.investigacaoLesoes = {...state.investigacaoLesoes, ...action.payload};
+      state.investigacaoLesoes = {
+        ...state.investigacaoLesoes,
+        ...action.payload,
+      };
     },
-    
+
     avancarEtapa: (state) => {
-      if (state.progressoQuestionario.etapaAtual < state.progressoQuestionario.totalEtapas) {
+      if (
+        state.progressoQuestionario.etapaAtual <
+        state.progressoQuestionario.totalEtapas
+      ) {
         state.progressoQuestionario.etapaAtual += 1;
       }
-      
-      if (state.progressoQuestionario.etapaAtual === state.progressoQuestionario.totalEtapas) {
+
+      if (
+        state.progressoQuestionario.etapaAtual ===
+        state.progressoQuestionario.totalEtapas
+      ) {
         state.progressoQuestionario.concluido = true;
       }
     },
-    
+
     voltarEtapa: (state) => {
       if (state.progressoQuestionario.etapaAtual > 1) {
         state.progressoQuestionario.etapaAtual -= 1;
         state.progressoQuestionario.concluido = false;
       }
     },
-    
-    resetarQuestionario: (state) => {
+
+    resetarQuestionario: (/*state*/) => {
       return initialState;
-    }
-  }
+    },
+  },
 });
 
-export const { 
+export const {
   atualizarQuestoesGerais,
   atualizarAvaliacaoFototipo,
   atualizarHistoricoCancer,
@@ -136,7 +148,7 @@ export const {
   atualizarInvestigacaoLesoes,
   avancarEtapa,
   voltarEtapa,
-  resetarQuestionario
+  resetarQuestionario,
 } = anamnesisSlice.actions;
 
 export default anamnesisSlice.reducer;

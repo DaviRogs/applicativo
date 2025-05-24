@@ -31,8 +31,9 @@ const SignatureCameraScreen = ({ navigation }) => {
       };
 
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [])
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, []),
   );
 
   const handleSafeGoBack = () => {
@@ -53,7 +54,7 @@ const SignatureCameraScreen = ({ navigation }) => {
           quality: 0.8,
         });
         setLoading(false);
-        
+
         // Navigate to the preview screen
         if (navigation) {
           navigation.navigate('SignaturePreview', { photo });
@@ -91,7 +92,7 @@ const SignatureCameraScreen = ({ navigation }) => {
   };
 
   const toggleCameraFacing = () => {
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
+    setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
   if (!cameraPermission) {
@@ -111,7 +112,7 @@ const SignatureCameraScreen = ({ navigation }) => {
       <SafeAreaView style={[styles.container, { backgroundColor: '#f5f8fa' }]}>
         <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={handleSafeGoBack}
           >
@@ -123,39 +124,55 @@ const SignatureCameraScreen = ({ navigation }) => {
         <View style={styles.centerContent}>
           <View style={styles.permissionCard}>
             <Icon name="no-photography" size={64} color="#e74c3c" />
-            <Text style={styles.permissionTitle}>Acesso à câmera necessário</Text>
+            <Text style={styles.permissionTitle}>
+              Acesso à câmera necessário
+            </Text>
             <Text style={styles.permissionText}>
-              Para capturar a assinatura, permita o acesso à câmera do dispositivo.
+              Para capturar a assinatura, permita o acesso à câmera do
+              dispositivo.
             </Text>
 
-            <TouchableOpacity 
-              style={styles.permissionButton} 
+            <TouchableOpacity
+              style={styles.permissionButton}
               onPress={requestCameraPermission}
             >
-              <Icon name="camera-alt" size={20} color="#fff" style={styles.buttonIcon} />
+              <Icon
+                name="camera-alt"
+                size={20}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.permissionButtonText}>
                 Permitir acesso à câmera
               </Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.permissionButton, styles.galleryButton]} 
+
+            <TouchableOpacity
+              style={[styles.permissionButton, styles.galleryButton]}
               onPress={handlePickImage}
             >
-              <Icon name="photo-library" size={20} color="#fff" style={styles.buttonIcon} />
+              <Icon
+                name="photo-library"
+                size={20}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.permissionButtonText}>
                 Selecionar da galeria
               </Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
-              style={[styles.permissionButton, styles.cancelButton]} 
+
+            <TouchableOpacity
+              style={[styles.permissionButton, styles.cancelButton]}
               onPress={handleSafeGoBack}
             >
-              <Icon name="arrow-back" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.permissionButtonText}>
-                Voltar
-              </Text>
+              <Icon
+                name="arrow-back"
+                size={20}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.permissionButtonText}>Voltar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -166,11 +183,7 @@ const SignatureCameraScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#000" />
-      <CameraView
-        style={styles.camera}
-        ref={cameraRef}
-        facing={facing}
-      >
+      <CameraView style={styles.camera} ref={cameraRef} facing={facing}>
         <SafeAreaView style={styles.overlay}>
           <View style={styles.header}>
             <TouchableOpacity

@@ -12,12 +12,12 @@ import {
   Image,
   SafeAreaView,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
@@ -32,18 +32,18 @@ const RegisterProfessionalScreen = () => {
   const navigation = useNavigation();
 
   const isAdmin = useSelector(selectIsAdmin);
-  const userUnit = useSelector(state => state.user.userData?.unidadeSaude[0]);
-  const token = useSelector(state => state.auth.accessToken);
+  const userUnit = useSelector((state) => state.user.userData?.unidadeSaude[0]);
+  const token = useSelector((state) => state.auth.accessToken);
 
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 3, icon: "science" },
-    { id: 2, name: "Supervisor", nivel_acesso: 2, icon: "supervisor-account" },
-    { id: 3, name: "Admin", nivel_acesso: 1, icon: "admin-panel-settings" }
+    { id: 1, name: 'Pesquisador', nivel_acesso: 3, icon: 'science' },
+    { id: 2, name: 'Supervisor', nivel_acesso: 2, icon: 'supervisor-account' },
+    { id: 3, name: 'Admin', nivel_acesso: 1, icon: 'admin-panel-settings' },
   ];
 
-  const availableRoles = isAdmin 
-    ? roles 
-    : roles.filter(role => role.id !== 3); 
+  const availableRoles = isAdmin
+    ? roles
+    : roles.filter((role) => role.id !== 3);
 
   const resetForm = () => {
     setCpf('');
@@ -58,12 +58,12 @@ const RegisterProfessionalScreen = () => {
         navigation.navigate('ProfessionalsList');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   const handleRegister = async () => {
@@ -86,35 +86,35 @@ const RegisterProfessionalScreen = () => {
     setError(null);
 
     try {
-      const endpoint = isAdmin 
-        ? `${API_URL}/admin/convidar-usuario` 
+      const endpoint = isAdmin
+        ? `${API_URL}/admin/convidar-usuario`
         : `${API_URL}/supervisor/convidar-usuario`;
 
-      const requestBody = isAdmin 
+      const requestBody = isAdmin
         ? {
-            cpf: cpf.replace(/\D/g, ''), 
+            cpf: cpf.replace(/\D/g, ''),
             email,
             unidade_saude_id: userUnit.id,
-            role_id: selectedRole.nivel_acesso
+            role_id: selectedRole.nivel_acesso,
           }
         : {
-            cpf: cpf.replace(/\D/g, ''), 
+            cpf: cpf.replace(/\D/g, ''),
             email,
-            role_id: selectedRole.nivel_acesso
+            role_id: selectedRole.nivel_acesso,
           };
 
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.detail || 'Erro ao cadastrar profissional');
       }
@@ -122,7 +122,9 @@ const RegisterProfessionalScreen = () => {
       setSuccessModalVisible(true);
       resetForm();
     } catch (error) {
-      setError(error.message || 'Ocorreu um erro ao tentar cadastrar o profissional');
+      setError(
+        error.message || 'Ocorreu um erro ao tentar cadastrar o profissional',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -140,7 +142,7 @@ const RegisterProfessionalScreen = () => {
 
   const formatCPF = (text) => {
     const cleaned = text.replace(/\D/g, '');
-    
+
     let formatted = cleaned;
     if (cleaned.length > 3) {
       formatted = cleaned.replace(/^(\d{3})/, '$1.');
@@ -151,7 +153,7 @@ const RegisterProfessionalScreen = () => {
     if (cleaned.length > 9) {
       formatted = formatted.replace(/^(\d{3})\.(\d{3})\.(\d{3})/, '$1.$2.$3-');
     }
-    
+
     return formatted;
   };
 
@@ -167,9 +169,9 @@ const RegisterProfessionalScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.navigate('ProfessionalsList')}
         >
@@ -178,7 +180,7 @@ const RegisterProfessionalScreen = () => {
         <Text style={styles.headerTitle}>Cadastrar Profissional</Text>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
@@ -191,7 +193,12 @@ const RegisterProfessionalScreen = () => {
 
           {error && (
             <View style={styles.errorContainer}>
-              <Icon name="error-outline" size={20} color="#B71C1C" style={styles.errorIcon} />
+              <Icon
+                name="error-outline"
+                size={20}
+                color="#B71C1C"
+                style={styles.errorIcon}
+              />
               <Text style={styles.errorText}>{error}</Text>
             </View>
           )}
@@ -199,7 +206,12 @@ const RegisterProfessionalScreen = () => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>CPF</Text>
             <View style={styles.inputContainer}>
-              <Icon name="badge" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="badge"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={cpf}
@@ -215,7 +227,12 @@ const RegisterProfessionalScreen = () => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Email</Text>
             <View style={styles.inputContainer}>
-              <Icon name="email" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="email"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={email}
@@ -230,14 +247,21 @@ const RegisterProfessionalScreen = () => {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Permissão</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.selectButton}
               onPress={() => setRoleMenuVisible(true)}
             >
               {selectedRole ? (
                 <View style={styles.selectedRoleContainer}>
-                  <Icon name={selectedRole.icon} size={20} color="#1e3d59" style={styles.roleIcon} />
-                  <Text style={styles.selectButtonTextSelected}>{selectedRole.name}</Text>
+                  <Icon
+                    name={selectedRole.icon}
+                    size={20}
+                    color="#1e3d59"
+                    style={styles.roleIcon}
+                  />
+                  <Text style={styles.selectButtonTextSelected}>
+                    {selectedRole.name}
+                  </Text>
                 </View>
               ) : (
                 <Text style={styles.selectButtonText}>Escolher opção</Text>
@@ -252,16 +276,25 @@ const RegisterProfessionalScreen = () => {
             <Icon name="business" size={24} color="#1e3d59" />
             <Text style={styles.unitCardTitle}>Unidade de Saúde</Text>
           </View>
-          
+
           <View style={styles.unitContent}>
             <Text style={styles.unitName}>{userUnit?.nome_unidade_saude}</Text>
             <View style={styles.unitAddressRow}>
-              <Icon name="location-on" size={16} color="#666" style={styles.locationIcon} />
-              <Text style={styles.unitAddress}>{userUnit?.nome_localizacao}</Text>
+              <Icon
+                name="location-on"
+                size={16}
+                color="#666"
+                style={styles.locationIcon}
+              />
+              <Text style={styles.unitAddress}>
+                {userUnit?.nome_localizacao}
+              </Text>
             </View>
             {userUnit?.codigo_unidade_saude && (
               <View style={styles.unitCodeBadge}>
-                <Text style={styles.unitCode}>{userUnit.codigo_unidade_saude}</Text>
+                <Text style={styles.unitCode}>
+                  {userUnit.codigo_unidade_saude}
+                </Text>
               </View>
             )}
           </View>
@@ -269,8 +302,11 @@ const RegisterProfessionalScreen = () => {
       </ScrollView>
 
       <View style={styles.fixedButtonContainer}>
-        <TouchableOpacity 
-          style={[styles.primaryButton, (!cpf || !email || !selectedRole) && styles.disabledButton]}
+        <TouchableOpacity
+          style={[
+            styles.primaryButton,
+            (!cpf || !email || !selectedRole) && styles.disabledButton,
+          ]}
           onPress={handleRegister}
           disabled={isLoading || !cpf || !email || !selectedRole}
         >
@@ -278,43 +314,51 @@ const RegisterProfessionalScreen = () => {
             <ActivityIndicator color="#fff" size="small" />
           ) : (
             <View style={styles.buttonContent}>
-              <Icon name="person-add" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.primaryButtonText}>Cadastrar Profissional</Text>
+              <Icon
+                name="person-add"
+                size={20}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.primaryButtonText}>
+                Cadastrar Profissional
+              </Text>
             </View>
           )}
         </TouchableOpacity>
-        
-        <TouchableOpacity 
+
+        <TouchableOpacity
           style={styles.secondaryButton}
           onPress={() => navigation.navigate('ProfessionalsList')}
           disabled={isLoading}
         >
           <View style={styles.buttonContent}>
-            <Icon name="close" size={20} color="#666" style={styles.buttonIcon} />
+            <Icon
+              name="close"
+              size={20}
+              color="#666"
+              style={styles.buttonIcon}
+            />
             <Text style={styles.secondaryButtonText}>Cancelar</Text>
           </View>
         </TouchableOpacity>
       </View>
 
       {/* Role Selection Modal */}
-      <Modal
-        visible={roleMenuVisible}
-        transparent={true}
-        animationType="fade"
-      >
+      <Modal visible={roleMenuVisible} transparent={true} animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Selecionar Permissão</Text>
             </View>
-            
+
             <View style={styles.modalBody}>
-              {availableRoles.map(role => (
-                <TouchableOpacity 
+              {availableRoles.map((role) => (
+                <TouchableOpacity
                   key={role.id}
                   style={[
                     styles.roleOption,
-                    selectedRole?.id === role.id && styles.roleOptionSelected
+                    selectedRole?.id === role.id && styles.roleOptionSelected,
                   ]}
                   onPress={() => {
                     setSelectedRole(role);
@@ -322,16 +366,16 @@ const RegisterProfessionalScreen = () => {
                   }}
                 >
                   <View style={styles.roleOptionContent}>
-                    <Icon 
-                      name={role.icon} 
-                      size={24} 
-                      color={selectedRole?.id === role.id ? "#1e3d59" : "#666"} 
+                    <Icon
+                      name={role.icon}
+                      size={24}
+                      color={selectedRole?.id === role.id ? '#1e3d59' : '#666'}
                       style={styles.roleOptionIcon}
                     />
-                    <Text 
+                    <Text
                       style={[
                         styles.roleText,
-                        selectedRole?.id === role.id && styles.roleTextSelected
+                        selectedRole?.id === role.id && styles.roleTextSelected,
                       ]}
                     >
                       {role.name}
@@ -343,8 +387,8 @@ const RegisterProfessionalScreen = () => {
                 </TouchableOpacity>
               ))}
             </View>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.modalCloseButton}
               onPress={() => setRoleMenuVisible(false)}
             >
@@ -365,13 +409,13 @@ const RegisterProfessionalScreen = () => {
             <View style={styles.successIconContainer}>
               <Icon name="check-circle" size={80} color="#4CAF50" />
             </View>
-            
+
             <Text style={styles.successModalTitle}>Convite Enviado!</Text>
             <Text style={styles.successModalText}>
               O convite foi enviado com sucesso para o email do profissional.
             </Text>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.successModalButton}
               onPress={handleCloseSuccessModal}
             >
@@ -417,7 +461,7 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     padding: 16,
-    paddingBottom: 140, 
+    paddingBottom: 140,
   },
   formCard: {
     backgroundColor: '#fff',
@@ -751,7 +795,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  }
+  },
 });
 
 export default RegisterProfessionalScreen;

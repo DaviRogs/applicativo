@@ -1,0 +1,19 @@
+echo "\n Rodando Prietter para formatar o seu código ao padrão..."
+
+sleep 3
+npm run format || (echo "Erro ao formatar o código" && exit 1)
+
+modified_files=$(git diff --name-only --diff-filter=M)
+if [ -n "$modified_files" ]; then
+  echo "Os seguintes arquivos foram modificados após a formatação: $modified_files"
+  echo "Adicionando arquivos modificados ao commit..."
+  echo "$modified_files" | xargs git add
+fi
+
+echo "\n\n Rodando ESLint para verificar se o código está de acordo com as regras estabelecidas..."
+
+sleep 3
+npm run lint || (echo "Erro ao rodar o ESLint, resolva os problemas acima" && exit 1)
+
+echo "\n\n Tudo certo com as análises do PRE-COMMIT!\n Continuando com o seu commit...\n\n"
+sleep 3

@@ -14,9 +14,8 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useDispatch } from 'react-redux';
 import { addPhoto } from '../../../store/injurySlice';
 
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-
 
 export const PhotoPreviewScreen = ({ route, navigation }) => {
   const dispatch = useDispatch();
@@ -24,7 +23,7 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
 
   if (!photo || !photo.uri) {
     Alert.alert('Erro', 'Imagem inválida', [
-      { text: 'OK', onPress: () => navigation.navigate('AddInjury') }
+      { text: 'OK', onPress: () => navigation.navigate('AddInjury') },
     ]);
     return null;
   }
@@ -35,39 +34,37 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
         navigation.navigate('AddInjury');
         return true;
       };
-      
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
   );
 
   const handleSavePhoto = () => {
     // Add photo to Redux store
     dispatch(addPhoto(photo));
-    
+
     // Navigate back to form
     navigation.navigate('AddInjury');
   };
-  
+
   const handleDeletePhoto = () => {
     if (onDelete) {
-      Alert.alert(
-        "Excluir foto",
-        "Tem certeza que deseja excluir esta foto?",
-        [
-          {
-            text: "Cancelar",
-            style: "cancel"
+      Alert.alert('Excluir foto', 'Tem certeza que deseja excluir esta foto?', [
+        {
+          text: 'Cancelar',
+          style: 'cancel',
+        },
+        {
+          text: 'Excluir',
+          onPress: () => {
+            onDelete();
+            navigation.navigate('AddInjury');
           },
-          {
-            text: "Excluir",
-            onPress: () => {
-              onDelete();
-              navigation.navigate('AddInjury');            },
-            style: "destructive"
-          }
-        ]
-      );
+          style: 'destructive',
+        },
+      ]);
     }
   };
 
@@ -75,17 +72,17 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('AddInjury')}
-            >
+          >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>
             {viewOnly ? `Foto ${index + 1}` : 'Pré-visualização'}
           </Text>
           {viewOnly && (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.deleteHeaderButton}
               onPress={handleDeletePhoto}
             >
@@ -104,15 +101,15 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
 
         {!viewOnly && (
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.discardButton}
               onPress={() => navigation.navigate('AddInjury')}
-              >
+            >
               <Icon name="close" size={20} color="#1e3d59" />
               <Text style={styles.discardButtonText}>Descartar</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.saveButton}
               onPress={handleSavePhoto}
             >
@@ -121,13 +118,13 @@ export const PhotoPreviewScreen = ({ route, navigation }) => {
             </TouchableOpacity>
           </View>
         )}
-        
+
         {viewOnly && (
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backFullButton}
               onPress={() => navigation.navigate('AddInjury')}
-              >
+            >
               <Icon name="arrow-back" size={20} color="#fff" />
               <Text style={styles.backButtonText}>Voltar</Text>
             </TouchableOpacity>

@@ -14,7 +14,7 @@
 - [ ] 📚 Atualização de documentação
 - [ ] 🔧 Configuração ou infraestrutura
 - [ ] 🧪 Testes adicionados ou atualizados
-- [ ] Outro: _______
+- [ ] Outro: **\_\_\_**
 
 ---
 

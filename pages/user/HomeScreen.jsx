@@ -17,8 +17,7 @@ import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
-
-const HomeScreen = ({  }) => {
+const HomeScreen = ({}) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -28,26 +27,25 @@ const HomeScreen = ({  }) => {
     const now = new Date();
     return now.toISOString().slice(0, 19).replace('T', ' ');
   });
-  const user = useSelector(state => state.user.userData);
-  const authenticated = useSelector(state => state.auth.isAuthenticated);
-  const token = useSelector(state => state.auth.accessToken);
+  const user = useSelector((state) => state.user.userData);
+  const authenticated = useSelector((state) => state.auth.isAuthenticated);
+  const token = useSelector((state) => state.auth.accessToken);
 
-      const navigation = useNavigation();
-    
-      useFocusEffect(
-        React.useCallback(() => {
-          const onBackPress = () => {
-            navigation.navigate('Home');
-            return true; // Prevent default behavior
-          };
-      
-          BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      
-          return () => 
-            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-        }, [navigation])
-      );
-    
+  const navigation = useNavigation();
+
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('Home');
+        return true; // Prevent default behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -63,13 +61,16 @@ const HomeScreen = ({  }) => {
   const fetchAtendimentos = async () => {
     try {
       setError(null);
-      const response = await fetch(`${API_URL}/listar-atendimentos-usuario-logado`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      const response = await fetch(
+        `${API_URL}/listar-atendimentos-usuario-logado`,
+        {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
 
       if (!response.ok) {
         throw new Error('Erro na requisição');
@@ -80,11 +81,9 @@ const HomeScreen = ({  }) => {
     } catch (error) {
       console.error('Error fetching data:', error);
       setError('Erro ao carregar os atendimentos');
-      Alert.alert(
-        'Erro',
-        'Não foi possível carregar os atendimentos',
-        [{ text: 'OK' }]
-      );
+      Alert.alert('Erro', 'Não foi possível carregar os atendimentos', [
+        { text: 'OK' },
+      ]);
     } finally {
       setLoading(false);
     }
@@ -96,22 +95,26 @@ const HomeScreen = ({  }) => {
     }
   }, [authenticated, token]);
 
-  const filteredAttendances = attendanceData.filter(attendance => 
-    attendance.nome_paciente.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    attendance.cpf_paciente.includes(searchQuery)
+  const filteredAttendances = attendanceData.filter(
+    (attendance) =>
+      attendance.nome_paciente
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
+      attendance.cpf_paciente.includes(searchQuery),
   );
 
   const getDailySummary = () => {
     const today = currentDateTimeUTC.split(' ')[0];
-    return attendanceData.filter(attendance => 
-      attendance.data_atendimento.startsWith(today)
+    return attendanceData.filter((attendance) =>
+      attendance.data_atendimento.startsWith(today),
     ).length;
   };
 
   const getMonthlySummary = () => {
     const [year, month] = currentDateTimeUTC.split('-');
-    return attendanceData.filter(attendance => {
-      const [attendanceYear, attendanceMonth] = attendance.data_atendimento.split('-');
+    return attendanceData.filter((attendance) => {
+      const [attendanceYear, attendanceMonth] =
+        attendance.data_atendimento.split('-');
       return attendanceYear === year && attendanceMonth === month;
     }).length;
   };
@@ -140,11 +143,8 @@ const HomeScreen = ({  }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
-      <FlyoutMenu 
-        visible={menuVisible} 
-        onClose={() => setMenuVisible(false)} 
-      />
+
+      <FlyoutMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Home</Text>
@@ -170,9 +170,14 @@ const HomeScreen = ({  }) => {
           </View>
 
           <Text style={styles.sectionTitle}>Atendimentos em aberto</Text>
-          
+
           <View style={styles.searchInputContainer}>
-            <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+            <Icon
+              name="search"
+              size={20}
+              color="#999"
+              style={styles.searchIcon}
+            />
             <TextInput
               style={styles.searchInput}
               placeholder="Pesquisar por nome ou CPF"
@@ -190,7 +195,9 @@ const HomeScreen = ({  }) => {
           {filteredAttendances.length === 0 ? (
             <View style={styles.emptyContainer}>
               <Icon name="info-outline" size={40} color="#ccc" />
-              <Text style={styles.emptyText}>Nenhum atendimento encontrado</Text>
+              <Text style={styles.emptyText}>
+                Nenhum atendimento encontrado
+              </Text>
             </View>
           ) : (
             <FlatList
@@ -205,9 +212,11 @@ const HomeScreen = ({  }) => {
       </View>
 
       <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.newAttendanceButton} 
-          onPress={() => { navigation.navigate('NovoAtendimento') }}
+        <TouchableOpacity
+          style={styles.newAttendanceButton}
+          onPress={() => {
+            navigation.navigate('NovoAtendimento');
+          }}
         >
           <Text style={styles.newAttendanceText}>Novo Atendimento</Text>
           <Icon name="add" size={24} color="#fff" />

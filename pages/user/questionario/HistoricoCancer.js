@@ -9,60 +9,75 @@ import {
   Alert,
   TextInput,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressSteps from '../../../components/ProgressBar';
-import { atualizarHistoricoCancer, avancarEtapa, voltarEtapa } from '../../../store/anamnesisSlice';
+import {
+  atualizarHistoricoCancer,
+  avancarEtapa,
+  voltarEtapa,
+} from '../../../store/anamnesisSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 const HistoricoCancer = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const historicoCancerState = useSelector(state => state.anamnesis.historicoCancer);
-  const progressoQuestionario = useSelector(state => state.anamnesis.progressoQuestionario);
-  
+  const historicoCancerState = useSelector(
+    (state) => state.anamnesis.historicoCancer,
+  );
+  /*
+  const progressoQuestionario = useSelector(
+    (state) => state.anamnesis.progressoQuestionario,
+  );
+  */
+
   const [formData, setFormData] = useState(historicoCancerState);
   const [errors, setErrors] = useState({});
 
   const validateForm = () => {
     let formErrors = {};
-    
+
     if (!formData.historicoFamiliar) {
-      formErrors.historicoFamiliar = "Por favor, responda se há histórico familiar";
+      formErrors.historicoFamiliar =
+        'Por favor, responda se há histórico familiar';
     }
-    
+
     if (formData.historicoFamiliar === 'sim') {
       if (!formData.grauParentesco) {
-        formErrors.grauParentesco = "Por favor, informe o grau de parentesco";
+        formErrors.grauParentesco = 'Por favor, informe o grau de parentesco';
       }
       if (!formData.tipoCancerFamiliar) {
-        formErrors.tipoCancerFamiliar = "Por favor, selecione o tipo de câncer familiar";
+        formErrors.tipoCancerFamiliar =
+          'Por favor, selecione o tipo de câncer familiar';
       }
     }
-    
+
     if (!formData.diagnosticoPessoal) {
-      formErrors.diagnosticoPessoal = "Por favor, responda se já foi diagnosticado com câncer de pele";
+      formErrors.diagnosticoPessoal =
+        'Por favor, responda se já foi diagnosticado com câncer de pele';
     }
-    
+
     if (formData.diagnosticoPessoal === 'sim' && !formData.tipoCancerPessoal) {
-      formErrors.tipoCancerPessoal = "Por favor, informe o tipo de câncer";
+      formErrors.tipoCancerPessoal = 'Por favor, informe o tipo de câncer';
     }
-    
+
     if (!formData.lesoesPrecancerigenas) {
-      formErrors.lesoesPrecancerigenas = "Por favor, responda sobre lesões pré-cancerígenas";
+      formErrors.lesoesPrecancerigenas =
+        'Por favor, responda sobre lesões pré-cancerígenas';
     }
-    
+
     if (!formData.tratamentoLesoes) {
-      formErrors.tratamentoLesoes = "Por favor, responda se já passou por tratamento";
+      formErrors.tratamentoLesoes =
+        'Por favor, responda se já passou por tratamento';
     }
-    
+
     if (formData.tratamentoLesoes === 'sim' && !formData.tipoTratamento) {
-      formErrors.tipoTratamento = "Por favor, informe o tipo de tratamento";
+      formErrors.tipoTratamento = 'Por favor, informe o tipo de tratamento';
     }
-    
+
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
   };
@@ -78,12 +93,12 @@ const HistoricoCancer = () => {
         handleBack();
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   const handleAdvance = () => {
@@ -93,151 +108,196 @@ const HistoricoCancer = () => {
       navigation.navigate('FatoresRisco');
     } else {
       Alert.alert(
-        "Campos incompletos",
-        "Por favor, preencha todos os campos obrigatórios antes de avançar.",
-        [{ text: "OK" }]
+        'Campos incompletos',
+        'Por favor, preencha todos os campos obrigatórios antes de avançar.',
+        [{ text: 'OK' }],
       );
     }
   };
 
   const handleRadioChange = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const handleTipoCancerFamiliar = (tipo) => {
-    setFormData(prev => ({ ...prev, tipoCancerFamiliar: tipo }));
+    setFormData((prev) => ({ ...prev, tipoCancerFamiliar: tipo }));
   };
 
   const handleTipoTratamento = (tipo) => {
-    setFormData(prev => ({ ...prev, tipoTratamento: tipo }));
+    setFormData((prev) => ({ ...prev, tipoTratamento: tipo }));
   };
 
   const renderRadioGroup = (field, options, label, errorKey) => (
     <View style={styles.radioGroupContainer}>
       <View style={styles.radioGroup}>
         {options.map((option, index) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={index}
             style={styles.radioOption}
             onPress={() => handleRadioChange(field, option.value)}
             activeOpacity={0.7}
           >
-            <View style={[
-              styles.radioCircle,
-              formData[field] === option.value && styles.radioSelected
-            ]}>
-              {formData[field] === option.value && <View style={styles.radioInner} />}
+            <View
+              style={[
+                styles.radioCircle,
+                formData[field] === option.value && styles.radioSelected,
+              ]}
+            >
+              {formData[field] === option.value && (
+                <View style={styles.radioInner} />
+              )}
             </View>
             <Text style={styles.radioText}>{option.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
-      {errors[errorKey] && <Text style={styles.errorText}>{errors[errorKey]}</Text>}
+      {errors[errorKey] && (
+        <Text style={styles.errorText}>{errors[errorKey]}</Text>
+      )}
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={handleBack}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
       <View style={styles.progressContainer}>
-        <ProgressSteps 
-          currentStep={3} 
+        <ProgressSteps
+          currentStep={3}
           totalSteps={5}
-          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+          stepLabels={[
+            'Questões Gerais',
+            'Avaliação Fototipo',
+            'Histórico Câncer',
+            'Fatores de Risco',
+            'Revisão',
+          ]}
         />
       </View>
 
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.sectionTitle}>Histórico Familiar e Pessoal de Câncer de Pele</Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.sectionTitle}>
+          Histórico Familiar e Pessoal de Câncer de Pele
+        </Text>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você tem histórico familiar de câncer de pele?</Text>
-          {renderRadioGroup('historicoFamiliar', 
-            [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
+          <Text style={styles.question}>
+            Você tem histórico familiar de câncer de pele?
+          </Text>
+          {renderRadioGroup(
+            'historicoFamiliar',
+            [
+              { label: 'Sim', value: 'sim' },
+              { label: 'Não', value: 'não' },
+            ],
             'Histórico familiar',
-            'historicoFamiliar'
+            'historicoFamiliar',
           )}
 
           {formData.historicoFamiliar === 'sim' && (
             <>
-              <Text style={styles.subQuestion}>Se sim, qual grau de parentesco?</Text>
-              {renderRadioGroup('grauParentesco', 
+              <Text style={styles.subQuestion}>
+                Se sim, qual grau de parentesco?
+              </Text>
+              {renderRadioGroup(
+                'grauParentesco',
                 [
-                  { label: 'Pai', value: 'Pai' }, 
+                  { label: 'Pai', value: 'Pai' },
                   { label: 'Mãe', value: 'Mãe' },
                   { label: 'Avô/Avó', value: 'Avô/Avó' },
                   { label: 'Irmão/Irmã', value: 'Irmão/Irmã' },
-                  { label: 'Outro', value: 'Outro' }
+                  { label: 'Outro', value: 'Outro' },
                 ],
                 'Grau de parentesco',
-                'grauParentesco'
+                'grauParentesco',
               )}
 
-              <Text style={styles.subQuestion}>Qual tipo de câncer de pele?</Text>
+              <Text style={styles.subQuestion}>
+                Qual tipo de câncer de pele?
+              </Text>
               <View style={styles.radioGroupContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoCancerFamiliar('Melanoma')}
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerFamiliar === 'Melanoma' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerFamiliar === 'Melanoma' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerFamiliar === 'Melanoma' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerFamiliar === 'Melanoma' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Melanoma</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
-                  onPress={() => handleTipoCancerFamiliar('Carcinoma Basocelular')}
+                  onPress={() =>
+                    handleTipoCancerFamiliar('Carcinoma Basocelular')
+                  }
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerFamiliar === 'Carcinoma Basocelular' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerFamiliar === 'Carcinoma Basocelular' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerFamiliar === 'Carcinoma Basocelular' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerFamiliar ===
+                      'Carcinoma Basocelular' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Carcinoma Basocelular</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
-                  onPress={() => handleTipoCancerFamiliar('Carcinoma Espinocelular')}
+                  onPress={() =>
+                    handleTipoCancerFamiliar('Carcinoma Espinocelular')
+                  }
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerFamiliar === 'Carcinoma Espinocelular' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerFamiliar === 'Carcinoma Espinocelular' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerFamiliar ===
+                        'Carcinoma Espinocelular' && styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerFamiliar ===
+                      'Carcinoma Espinocelular' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Carcinoma Espinocelular</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoCancerFamiliar('Outro')}
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerFamiliar === 'Outro' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerFamiliar === 'Outro' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerFamiliar === 'Outro' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerFamiliar === 'Outro' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Outro</Text>
                 </TouchableOpacity>
@@ -248,82 +308,135 @@ const HistoricoCancer = () => {
                       placeholder="Especifique o tipo de câncer"
                       placeholderTextColor="#999"
                       value={formData.tipoCancerFamiliarOutro}
-                      onChangeText={(text) => setFormData(prev => ({
-                        ...prev,
-                        tipoCancerFamiliarOutro: text
-                      }))}
+                      onChangeText={(text) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          tipoCancerFamiliarOutro: text,
+                        }))
+                      }
                     />
                   </View>
                 )}
               </View>
               {errors.tipoCancerFamiliar && (
-                <Text style={styles.errorText}>{errors.tipoCancerFamiliar}</Text>
+                <Text style={styles.errorText}>
+                  {errors.tipoCancerFamiliar}
+                </Text>
               )}
             </>
           )}
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você já foi diagnosticado com câncer de pele?</Text>
-          {renderRadioGroup('diagnosticoPessoal', 
-            [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
+          <Text style={styles.question}>
+            Você já foi diagnosticado com câncer de pele?
+          </Text>
+          {renderRadioGroup(
+            'diagnosticoPessoal',
+            [
+              { label: 'Sim', value: 'sim' },
+              { label: 'Não', value: 'não' },
+            ],
             'Diagnóstico de câncer',
-            'diagnosticoPessoal'
+            'diagnosticoPessoal',
           )}
 
           {formData.diagnosticoPessoal === 'sim' && (
             <>
-              <Text style={styles.subQuestion}>Se sim, qual tipo de câncer?</Text>
+              <Text style={styles.subQuestion}>
+                Se sim, qual tipo de câncer?
+              </Text>
               <View style={styles.radioGroupContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
-                  onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'Melanoma' }))}
+                  onPress={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      tipoCancerPessoal: 'Melanoma',
+                    }))
+                  }
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerPessoal === 'Melanoma' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerPessoal === 'Melanoma' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerPessoal === 'Melanoma' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerPessoal === 'Melanoma' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Melanoma</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
-                  onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'Carcinoma Basocelular' }))}
+                  onPress={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      tipoCancerPessoal: 'Carcinoma Basocelular',
+                    }))
+                  }
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerPessoal === 'Carcinoma Basocelular' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerPessoal === 'Carcinoma Basocelular' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerPessoal === 'Carcinoma Basocelular' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerPessoal === 'Carcinoma Basocelular' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Carcinoma Basocelular</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
-                  onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'Carcinoma Espinocelular' }))}
+                  onPress={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      tipoCancerPessoal: 'Carcinoma Espinocelular',
+                    }))
+                  }
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerPessoal === 'Carcinoma Espinocelular' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerPessoal === 'Carcinoma Espinocelular' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerPessoal ===
+                        'Carcinoma Espinocelular' && styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerPessoal ===
+                      'Carcinoma Espinocelular' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Carcinoma Espinocelular</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
-                  onPress={() => setFormData(prev => ({ ...prev, tipoCancerPessoal: 'Outro' }))}
+                  onPress={() =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      tipoCancerPessoal: 'Outro',
+                    }))
+                  }
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoCancerPessoal === 'Outro' && styles.radioSelected
-                  ]}>
-                    {formData.tipoCancerPessoal === 'Outro' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoCancerPessoal === 'Outro' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoCancerPessoal === 'Outro' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Outro</Text>
                 </TouchableOpacity>
@@ -334,10 +447,12 @@ const HistoricoCancer = () => {
                       placeholder="Especifique o tipo de câncer"
                       placeholderTextColor="#999"
                       value={formData.tipoCancerPessoalOutro}
-                      onChangeText={(text) => setFormData(prev => ({
-                        ...prev,
-                        tipoCancerPessoalOutro: text
-                      }))}
+                      onChangeText={(text) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          tipoCancerPessoalOutro: text,
+                        }))
+                      }
                     />
                   </View>
                 )}
@@ -350,75 +465,110 @@ const HistoricoCancer = () => {
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você já teve lesões removidas que foram identificadas como pré-cancerígenas?</Text>
-          {renderRadioGroup('lesoesPrecancerigenas', 
-            [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
+          <Text style={styles.question}>
+            Você já teve lesões removidas que foram identificadas como
+            pré-cancerígenas?
+          </Text>
+          {renderRadioGroup(
+            'lesoesPrecancerigenas',
+            [
+              { label: 'Sim', value: 'sim' },
+              { label: 'Não', value: 'não' },
+            ],
             'Lesões pré-cancerígenas',
-            'lesoesPrecancerigenas'
+            'lesoesPrecancerigenas',
           )}
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você já passou por tratamento para lesões na pele?</Text>
-          {renderRadioGroup('tratamentoLesoes', 
-            [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
+          <Text style={styles.question}>
+            Você já passou por tratamento para lesões na pele?
+          </Text>
+          {renderRadioGroup(
+            'tratamentoLesoes',
+            [
+              { label: 'Sim', value: 'sim' },
+              { label: 'Não', value: 'não' },
+            ],
             'Tratamento de lesões',
-            'tratamentoLesoes'
+            'tratamentoLesoes',
           )}
 
           {formData.tratamentoLesoes === 'sim' && (
             <>
-              <Text style={styles.subQuestion}>Se sim, qual foi o tratamento?</Text>
+              <Text style={styles.subQuestion}>
+                Se sim, qual foi o tratamento?
+              </Text>
               <View style={styles.radioGroupContainer}>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('Cirurgia')}
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoTratamento === 'Cirurgia' && styles.radioSelected
-                  ]}>
-                    {formData.tipoTratamento === 'Cirurgia' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoTratamento === 'Cirurgia' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoTratamento === 'Cirurgia' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Cirurgia</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('Crioterapia')}
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoTratamento === 'Crioterapia' && styles.radioSelected
-                  ]}>
-                    {formData.tipoTratamento === 'Crioterapia' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoTratamento === 'Crioterapia' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoTratamento === 'Crioterapia' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Crioterapia</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('Radioterapia')}
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoTratamento === 'Radioterapia' && styles.radioSelected
-                  ]}>
-                    {formData.tipoTratamento === 'Radioterapia' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoTratamento === 'Radioterapia' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoTratamento === 'Radioterapia' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Radioterapia</Text>
                 </TouchableOpacity>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.fullWidthOption}
                   onPress={() => handleTipoTratamento('Outro')}
                   activeOpacity={0.7}
                 >
-                  <View style={[
-                    styles.radioCircle,
-                    formData.tipoTratamento === 'Outro' && styles.radioSelected
-                  ]}>
-                    {formData.tipoTratamento === 'Outro' && <View style={styles.radioInner} />}
+                  <View
+                    style={[
+                      styles.radioCircle,
+                      formData.tipoTratamento === 'Outro' &&
+                        styles.radioSelected,
+                    ]}
+                  >
+                    {formData.tipoTratamento === 'Outro' && (
+                      <View style={styles.radioInner} />
+                    )}
                   </View>
                   <Text style={styles.radioText}>Outro</Text>
                 </TouchableOpacity>
@@ -429,10 +579,12 @@ const HistoricoCancer = () => {
                       placeholder="Especifique o tratamento"
                       placeholderTextColor="#999"
                       value={formData.tipoTratamentoOutro}
-                      onChangeText={(text) => setFormData(prev => ({
-                        ...prev,
-                        tipoTratamentoOutro: text
-                      }))}
+                      onChangeText={(text) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          tipoTratamentoOutro: text,
+                        }))
+                      }
                     />
                   </View>
                 )}
@@ -445,22 +597,32 @@ const HistoricoCancer = () => {
         </View>
 
         <View style={styles.navigationButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.navigationButton, styles.backBtn]}
             onPress={handleBack}
             activeOpacity={0.7}
           >
-            <Icon name="arrow-back" size={18} color="#1e3d59" style={styles.buttonIcon} />
+            <Icon
+              name="arrow-back"
+              size={18}
+              color="#1e3d59"
+              style={styles.buttonIcon}
+            />
             <Text style={styles.backButtonText}>Voltar</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.navigationButton, styles.advanceButton]}
             onPress={handleAdvance}
             activeOpacity={0.7}
           >
             <Text style={styles.advanceButtonText}>Avançar</Text>
-            <Icon name="arrow-forward" size={18} color="#fff" style={styles.buttonIcon} />
+            <Icon
+              name="arrow-forward"
+              size={18}
+              color="#fff"
+              style={styles.buttonIcon}
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>

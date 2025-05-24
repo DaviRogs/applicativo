@@ -26,7 +26,7 @@ const InjuryRegistrationScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
@@ -37,7 +37,7 @@ const InjuryRegistrationScreen = ({ navigation }) => {
 
       <ScrollView style={styles.content}>
         {injuries.map((injury, index) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={index}
             style={styles.injuryCard}
             onPress={() => navigation.navigate('EditInjury', { injury, index })}
@@ -52,10 +52,7 @@ const InjuryRegistrationScreen = ({ navigation }) => {
         ))}
       </ScrollView>
 
-      <TouchableOpacity 
-        style={styles.floatingButton}
-        onPress={addNewInjury}
-      >
+      <TouchableOpacity style={styles.floatingButton} onPress={addNewInjury}>
         <Icon name="add" size={24} color="#fff" />
       </TouchableOpacity>
     </SafeAreaView>
@@ -68,14 +65,17 @@ const AddInjuryScreen = ({ route, navigation }) => {
   const [photos, setPhotos] = useState([]);
 
   const handleTakePhoto = () => {
-    ImagePicker.launchCamera({
-      mediaType: 'photo',
-      quality: 0.8,
-    }, (response) => {
-      if (!response.didCancel && !response.error) {
-        setPhotos([...photos, response]);
-      }
-    });
+    ImagePicker.launchCamera(
+      {
+        mediaType: 'photo',
+        quality: 0.8,
+      },
+      (response) => {
+        if (!response.didCancel && !response.error) {
+          setPhotos([...photos, response]);
+        }
+      },
+    );
   };
 
   const handleSave = () => {
@@ -91,7 +91,7 @@ const AddInjuryScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
@@ -154,10 +154,7 @@ const AddInjuryScreen = ({ route, navigation }) => {
         </View>
       </ScrollView>
 
-      <TouchableOpacity 
-        style={styles.saveButton}
-        onPress={handleSave}
-      >
+      <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
         <Text style={styles.saveButtonText}>Salvar alterações</Text>
       </TouchableOpacity>
     </SafeAreaView>

@@ -6,23 +6,26 @@ export const checkPatientByCpf = createAsyncThunk(
   'patient/checkByCpf',
   async ({ cpf, token }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/cadastrar-atendimento?cpf_paciente=${cpf}`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
+      const response = await fetch(
+        `${API_URL}/cadastrar-atendimento?cpf_paciente=${cpf}`,
+        {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
       if (response.ok) {
         return await response.json();
       }
-      
+
       return null; // No patient found but not an error
     } catch (error) {
       return rejectWithValue(error.message || 'Failed to check patient');
     }
-  }
+  },
 );
 
 // Async thunk to register a new patient
@@ -33,47 +36,54 @@ export const registerNewPatient = createAsyncThunk(
       const response = await fetch(`${API_URL}/cadastrar-paciente`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          accept: 'application/json',
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
+          Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify(formData)
+        body: JSON.stringify(formData),
       });
-      
+
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.message || 'Error registering patient');
+        return rejectWithValue(
+          errorData.message || 'Error registering patient',
+        );
       }
-      
+
       return await response.json();
     } catch (error) {
       return rejectWithValue(error.message || 'Failed to register patient');
     }
-  }
+  },
 );
 
 export const registerAttendance = createAsyncThunk(
   'patient/registerAttendance',
   async ({ patientId, token }, { rejectWithValue }) => {
     try {
-      const response = await fetch(`${API_URL}/cadastrar-atendimento?paciente_id=${patientId}`, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
+      const response = await fetch(
+        `${API_URL}/cadastrar-atendimento?paciente_id=${patientId}`,
+        {
+          method: 'POST',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
       if (!response.ok) {
         const errorData = await response.json();
-        return rejectWithValue(errorData.message || 'Error registering attendance');
+        return rejectWithValue(
+          errorData.message || 'Error registering attendance',
+        );
       }
-      
+
       return await response.json();
     } catch (error) {
       return rejectWithValue(error.message || 'Failed to register attendance');
     }
-  }
+  },
 );
 
 const initialState = {
@@ -82,20 +92,20 @@ const initialState = {
   loading: false,
   checkingCpf: false,
   error: null,
-  patientFound: false
+  patientFound: false,
 };
 
 const patientSlice = createSlice({
   name: 'patient',
   initialState,
   reducers: {
-    resetPatientState: (state) => {
+    resetPatientState: (/*state*/) => {
       return initialState;
     },
     clearPatientFound: (state) => {
       state.patientFound = false;
       state.patientData = null;
-    }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -118,7 +128,7 @@ const patientSlice = createSlice({
         state.checkingCpf = false;
         state.error = action.payload;
       })
-      
+
       // Register Patient
       .addCase(registerNewPatient.pending, (state) => {
         state.loading = true;
@@ -133,7 +143,7 @@ const patientSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       })
-      
+
       // Register Attendance
       .addCase(registerAttendance.pending, (state) => {
         state.loading = true;
@@ -147,7 +157,7 @@ const patientSlice = createSlice({
         state.loading = false;
         state.error = action.payload;
       });
-  }
+  },
 });
 
 export const { resetPatientState, clearPatientFound } = patientSlice.actions;

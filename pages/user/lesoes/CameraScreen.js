@@ -14,8 +14,8 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as ImagePicker from 'expo-image-picker';
 import { CameraView, useCameraPermissions } from 'expo-camera';
-import { useSelector } from 'react-redux';
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+// import { useSelector } from 'react-redux';
+import { useFocusEffect /*useNavigation*/ } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 const CameraScreen = ({ navigation }) => {
@@ -31,25 +31,29 @@ const CameraScreen = ({ navigation }) => {
       Animated.timing(flipAnimation, {
         toValue: 1,
         duration: 200,
-        useNativeDriver: true
+        useNativeDriver: true,
       }),
       Animated.timing(flipAnimation, {
         toValue: 0,
         duration: 200,
-        useNativeDriver: true
-      })
+        useNativeDriver: true,
+      }),
     ]).start();
-    
-    setFacing(current => (current === 'back' ? 'front' : 'back'));
+
+    setFacing((current) => (current === 'back' ? 'front' : 'back'));
   };
 
   const toggleFlash = () => {
-    setFlashMode(current => {
+    setFlashMode((current) => {
       switch (current) {
-        case 'off': return 'on';
-        case 'on': return 'auto';
-        case 'auto': return 'off';
-        default: return 'off';
+        case 'off':
+          return 'on';
+        case 'on':
+          return 'auto';
+        case 'auto':
+          return 'off';
+        default:
+          return 'off';
       }
     });
   };
@@ -60,32 +64,34 @@ const CameraScreen = ({ navigation }) => {
         navigation.navigate('AddInjury');
         return true;
       };
-      
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
   );
 
   const selectImage = async () => {
     try {
       setLoading(true);
-      const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
-      
+      const { status } =
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+
       if (status !== 'granted') {
         Alert.alert('Permissão negada para acessar a galeria');
         setLoading(false);
         return;
       }
-      
+
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: ImagePicker.MediaTypeOptions.Images,
         allowsEditing: true,
         aspect: [4, 3],
         quality: 0.8,
       });
-      
+
       setLoading(false);
-      
+
       if (!result.canceled && result.assets && result.assets.length > 0) {
         navigation.navigate('PhotoPreview', { photo: result.assets[0] });
       }
@@ -101,13 +107,13 @@ const CameraScreen = ({ navigation }) => {
       Alert.alert('Erro', 'Câmera não inicializada');
       return;
     }
-    
+
     try {
       setLoading(true);
       const photo = await cameraRef.current.takePictureAsync({
         quality: 0.8,
       });
-      
+
       setLoading(false);
       navigation.navigate('PhotoPreview', { photo });
     } catch (error) {
@@ -119,7 +125,7 @@ const CameraScreen = ({ navigation }) => {
 
   const flipInterpolation = flipAnimation.interpolate({
     inputRange: [0, 0.5, 1],
-    outputRange: ['0deg', '90deg', '0deg']
+    outputRange: ['0deg', '90deg', '0deg'],
   });
 
   if (!cameraPermission) {
@@ -128,7 +134,7 @@ const CameraScreen = ({ navigation }) => {
         <StatusBar barStyle="light-content" backgroundColor="#000" />
         <View style={styles.container}>
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.navigate('AddInjury')}
               activeOpacity={0.7}
@@ -142,7 +148,9 @@ const CameraScreen = ({ navigation }) => {
               <ActivityIndicator size="large" color="#1e3d59" />
             </View>
             <Text style={styles.titleText}>Verificando câmera</Text>
-            <Text style={styles.messageText}>Aguarde enquanto verificamos as permissões da câmera...</Text>
+            <Text style={styles.messageText}>
+              Aguarde enquanto verificamos as permissões da câmera...
+            </Text>
           </View>
         </View>
       </SafeAreaView>
@@ -155,7 +163,7 @@ const CameraScreen = ({ navigation }) => {
         <StatusBar barStyle="light-content" backgroundColor="#000" />
         <View style={styles.container}>
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.navigate('AddInjury')}
               activeOpacity={0.7}
@@ -170,40 +178,50 @@ const CameraScreen = ({ navigation }) => {
             </View>
             <Text style={styles.titleText}>Acesso à câmera negado</Text>
             <Text style={styles.messageText}>
-              Para tirar fotos, permita o acesso à câmera nas configurações do dispositivo.
+              Para tirar fotos, permita o acesso à câmera nas configurações do
+              dispositivo.
             </Text>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.primaryButton}
               onPress={requestPermission}
               activeOpacity={0.8}
             >
-              <Icon name="camera-alt" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.buttonText}>
-                Permitir acesso à câmera
-              </Text>
+              <Icon
+                name="camera-alt"
+                size={20}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.buttonText}>Permitir acesso à câmera</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.secondaryButton}
               onPress={selectImage}
               activeOpacity={0.8}
             >
-              <Icon name="photo-library" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.buttonText}>
-                Selecionar da galeria
-              </Text>
+              <Icon
+                name="photo-library"
+                size={20}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.buttonText}>Selecionar da galeria</Text>
             </TouchableOpacity>
-            
+
             <TouchableOpacity
               style={styles.tertiaryButton}
               onPress={() => navigation.navigate('AddInjury')}
               activeOpacity={0.8}
             >
-              <Icon name="arrow-back" size={20} color="#fff" style={styles.buttonIcon} />
-              <Text style={styles.buttonText}>
-                Voltar
-              </Text>
+              <Icon
+                name="arrow-back"
+                size={20}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
+              <Text style={styles.buttonText}>Voltar</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -213,7 +231,11 @@ const CameraScreen = ({ navigation }) => {
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
+      <StatusBar
+        barStyle="light-content"
+        backgroundColor="transparent"
+        translucent
+      />
       <CameraView
         style={styles.camera}
         facing={facing}
@@ -229,31 +251,49 @@ const CameraScreen = ({ navigation }) => {
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Capturar foto</Text>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.flashButton}
             onPress={toggleFlash}
             activeOpacity={0.7}
           >
-            <Icon 
+            <Icon
               name={
-                flashMode === 'on' ? 'flash-on' : 
-                flashMode === 'auto' ? 'flash-auto' : 'flash-off'
-              } 
-              size={24} 
-              color="#fff" 
+                flashMode === 'on'
+                  ? 'flash-on'
+                  : flashMode === 'auto'
+                    ? 'flash-auto'
+                    : 'flash-off'
+              }
+              size={24}
+              color="#fff"
             />
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.focusFrame}>
           <View style={styles.focusCorner} />
-          <View style={[styles.focusCorner, { top: 0, right: 0, transform: [{ rotate: '90deg' }] }]} />
-          <View style={[styles.focusCorner, { bottom: 0, left: 0, transform: [{ rotate: '-90deg' }] }]} />
-          <View style={[styles.focusCorner, { bottom: 0, right: 0, transform: [{ rotate: '180deg' }] }]} />
+          <View
+            style={[
+              styles.focusCorner,
+              { top: 0, right: 0, transform: [{ rotate: '90deg' }] },
+            ]}
+          />
+          <View
+            style={[
+              styles.focusCorner,
+              { bottom: 0, left: 0, transform: [{ rotate: '-90deg' }] },
+            ]}
+          />
+          <View
+            style={[
+              styles.focusCorner,
+              { bottom: 0, right: 0, transform: [{ rotate: '180deg' }] },
+            ]}
+          />
         </View>
-        
+
         <View style={styles.controlsContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.galleryButton}
             onPress={selectImage}
             activeOpacity={0.7}
@@ -262,9 +302,12 @@ const CameraScreen = ({ navigation }) => {
               <Icon name="photo-library" size={24} color="#fff" />
             </View>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
-            style={[styles.captureButton, loading && styles.captureButtonDisabled]}
+
+          <TouchableOpacity
+            style={[
+              styles.captureButton,
+              loading && styles.captureButtonDisabled,
+            ]}
             onPress={takePicture}
             disabled={loading}
             activeOpacity={0.8}
@@ -275,13 +318,13 @@ const CameraScreen = ({ navigation }) => {
               <View style={styles.captureButtonInner} />
             )}
           </TouchableOpacity>
-          
+
           <Animated.View
             style={{
-              transform: [{ rotateY: flipInterpolation }]
+              transform: [{ rotateY: flipInterpolation }],
             }}
           >
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.flipButton}
               onPress={toggleCameraFacing}
               activeOpacity={0.7}
@@ -292,10 +335,11 @@ const CameraScreen = ({ navigation }) => {
             </TouchableOpacity>
           </Animated.View>
         </View>
-        
+
         <View style={styles.tipContainer}>
           <Text style={styles.tipText}>
-            Posicione a lesão no centro do quadro e toque no botão para fotografar
+            Posicione a lesão no centro do quadro e toque no botão para
+            fotografar
           </Text>
         </View>
       </CameraView>
@@ -556,7 +600,7 @@ const styles = StyleSheet.create({
     textShadowColor: 'rgba(0, 0, 0, 0.8)',
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 2,
-  }
+  },
 });
 
 export default CameraScreen;

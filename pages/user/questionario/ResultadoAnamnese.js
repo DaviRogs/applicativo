@@ -7,16 +7,16 @@ import {
   SafeAreaView,
   ScrollView,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
-import { useSelector } from 'react-redux';
+// import { useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 const ResultadoAnamnese = () => {
   const navigation = useNavigation();
-  const anamnesisData = useSelector(state => state.anamnesis);
+  // const anamnesisData = useSelector((state) => state.anamnesis);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -24,20 +24,20 @@ const ResultadoAnamnese = () => {
         navigation.navigate('InvestigacaoLesoes');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
-  
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.navigate('Home')}
           activeOpacity={0.7}
@@ -47,24 +47,21 @@ const ResultadoAnamnese = () => {
         <Text style={styles.headerTitle}>Anamnese Concluída</Text>
       </View>
 
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         <View style={styles.successCard}>
           <View style={styles.iconContainer}>
             <Icon name="check-circle" size={70} color="#1e8e3e" />
           </View>
           <Text style={styles.successTitle}>Coleta de Dados Concluída</Text>
           <Text style={styles.successText}>
-            As informações foram registradas com sucesso e serão analisadas para aprimorar o atendimento e 
-            auxiliar em futuras avaliações médicas.
+            As informações foram registradas com sucesso e serão analisadas para
+            aprimorar o atendimento e auxiliar em futuras avaliações médicas.
           </Text>
         </View>
 
         <View style={styles.infoCard}>
           <Text style={styles.infoTitle}>Próximos Passos</Text>
-          
+
           <View style={styles.infoItem}>
             <View style={styles.iconCircle}>
               <Icon name="event" size={20} color="#fff" />
@@ -72,14 +69,14 @@ const ResultadoAnamnese = () => {
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoTextHeading}>Avaliação de Dados</Text>
               <Text style={styles.infoText}>
-                Os dados coletados serão avaliados e utilizados para melhorar a qualidade do atendimento e 
-                acompanhamento dos pacientes.
+                Os dados coletados serão avaliados e utilizados para melhorar a
+                qualidade do atendimento e acompanhamento dos pacientes.
               </Text>
             </View>
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <View style={styles.infoItem}>
             <View style={styles.iconCircle}>
               <Icon name="description" size={20} color="#fff" />
@@ -87,14 +84,14 @@ const ResultadoAnamnese = () => {
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoTextHeading}>Suporte Clínico</Text>
               <Text style={styles.infoText}>
-                As informações preenchidas poderão auxiliar profissionais de saúde na tomada de decisões 
-                futuras.
+                As informações preenchidas poderão auxiliar profissionais de
+                saúde na tomada de decisões futuras.
               </Text>
             </View>
           </View>
-          
+
           <View style={styles.divider} />
-          
+
           <View style={styles.infoItem}>
             <View style={styles.iconCircle}>
               <Icon name="photo-camera" size={20} color="#fff" />
@@ -102,30 +99,40 @@ const ResultadoAnamnese = () => {
             <View style={styles.infoTextContainer}>
               <Text style={styles.infoTextHeading}>Documentação Visual</Text>
               <Text style={styles.infoText}>
-                Se possível, registre imagens de lesões ou manchas para contribuir com a avaliação médica e 
-                acompanhamento adequado.
+                Se possível, registre imagens de lesões ou manchas para
+                contribuir com a avaliação médica e acompanhamento adequado.
               </Text>
             </View>
           </View>
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => navigation.navigate('InvestigacaoLesoes')}
             activeOpacity={0.7}
           >
-            <Icon name="arrow-back" size={20} color="#1e3d59" style={styles.buttonIcon} />
+            <Icon
+              name="arrow-back"
+              size={20}
+              color="#1e3d59"
+              style={styles.buttonIcon}
+            />
             <Text style={styles.secondaryButtonText}>Voltar</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.primaryButton}
             onPress={() => navigation.navigate('NovoPaciente')}
             activeOpacity={0.7}
           >
             <Text style={styles.primaryButtonText}>Concluir</Text>
-            <Icon name="check" size={20} color="#fff" style={styles.buttonIcon} />
+            <Icon
+              name="check"
+              size={20}
+              color="#fff"
+              style={styles.buttonIcon}
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>

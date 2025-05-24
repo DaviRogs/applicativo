@@ -1,15 +1,15 @@
 import React, { useEffect, useRef } from 'react';
-import { 
-  StyleSheet, 
-  View, 
-  TouchableOpacity, 
-  Text, 
-  ImageBackground, 
-  Image, 
-  SafeAreaView, 
+import {
+  StyleSheet,
+  View,
+  TouchableOpacity,
+  Text,
+  ImageBackground,
+  Image,
+  SafeAreaView,
   StatusBar,
   Animated,
-  Easing
+  Easing,
 } from 'react-native';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
@@ -28,18 +28,18 @@ const InitialScreen = () => {
   const buttonScale = useRef(new Animated.Value(1)).current;
   const navigation = useNavigation();
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          return true; 
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        return true;
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   useEffect(() => {
     // Sequence of animations
@@ -50,7 +50,7 @@ const InitialScreen = () => {
         duration: 800,
         useNativeDriver: true,
       }),
-      
+
       // Animate logos one by one
       Animated.stagger(150, [
         Animated.spring(logoScale1, {
@@ -72,7 +72,7 @@ const InitialScreen = () => {
           useNativeDriver: true,
         }),
       ]),
-      
+
       // Animate buttons
       Animated.timing(buttonSlideUp, {
         toValue: 0,
@@ -114,28 +114,28 @@ const InitialScreen = () => {
               <Animated.View style={{ transform: [{ scale: logoScale1 }] }}>
                 <Image source={logo1} style={styles.logo} />
               </Animated.View>
-              
+
               <Animated.View style={{ transform: [{ scale: logoScale2 }] }}>
                 <Image source={logo2} style={styles.logo} />
               </Animated.View>
-              
+
               <Animated.View style={{ transform: [{ scale: logoScale3 }] }}>
                 <Image source={logo3} style={styles.logo} />
               </Animated.View>
             </View>
 
-            <Animated.View 
+            <Animated.View
               style={[
                 styles.buttonContainer,
-                { 
+                {
                   opacity: fadeAnim,
-                  transform: [{ translateY: buttonSlideUp }] 
-                }
+                  transform: [{ translateY: buttonSlideUp }],
+                },
               ]}
             >
               <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-                <TouchableOpacity 
-                  style={styles.startButton} 
+                <TouchableOpacity
+                  style={styles.startButton}
                   onPress={animateButton}
                   activeOpacity={0.8}
                 >
@@ -143,12 +143,14 @@ const InitialScreen = () => {
                 </TouchableOpacity>
               </Animated.View>
 
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.registerButton}
                 activeOpacity={0.7}
-                onPress={() => navigation.navigate('NoRegistration')} 
+                onPress={() => navigation.navigate('NoRegistration')}
               >
-                <Text style={styles.registerButtonText}>Não possuo cadastro</Text>
+                <Text style={styles.registerButtonText}>
+                  Não possuo cadastro
+                </Text>
               </TouchableOpacity>
             </Animated.View>
           </View>
@@ -162,7 +164,7 @@ const styles = StyleSheet.create({
   container: {
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: "flex-end",
+    justifyContent: 'flex-end',
     height: '100%',
   },
   backgroundImage: {
@@ -198,7 +200,7 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     borderRadius: 8,
     alignItems: 'center',
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,

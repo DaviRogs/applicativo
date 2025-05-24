@@ -1,13 +1,13 @@
 import React from 'react';
-import { 
-  View, 
-  Text, 
-  StyleSheet, 
-  ScrollView, 
-  TouchableOpacity, 
-  Image, 
-  Linking, 
-  SafeAreaView 
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Image,
+  Linking,
+  SafeAreaView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
@@ -15,7 +15,7 @@ import { BackHandler } from 'react-native';
 
 const NoRegistrationScreen = () => {
   const navigation = useNavigation();
-  
+
   const openYoutubeVideo = () => {
     Linking.openURL('https://www.youtube.com/watch?v=ApXoWvfEYVU');
   };
@@ -24,25 +24,26 @@ const NoRegistrationScreen = () => {
     navigation.navigate('Login');
   };
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('InitialScreen');
+        return true;
+      };
 
-      useFocusEffect(
-        React.useCallback(() => {
-          const onBackPress = () => {
-            navigation.navigate('InitialScreen');
-            return true; 
-          };
-      
-          BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      
-          return () => 
-            BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-        }, [navigation])
-      );
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
 
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView style={styles.container} contentContainerStyle={styles.contentContainer}>
+      <ScrollView
+        style={styles.container}
+        contentContainerStyle={styles.contentContainer}
+      >
         <View style={styles.header}>
           <TouchableOpacity onPress={goToLogin} style={styles.backButton}>
             <Icon name="arrow-back" size={24} color="#1e3d59" />
@@ -51,65 +52,88 @@ const NoRegistrationScreen = () => {
         </View>
 
         <View style={styles.logoContainer}>
-          <Image 
-            source={require('../assets/dermaalert.png')} 
+          <Image
+            source={require('../assets/dermaalert.png')}
             style={styles.logo}
             resizeMode="contain"
           />
-         
         </View>
 
         <View style={styles.infoCard}>
-          <Text style={styles.sectionTitle}>Como obter acesso ao DermAlert?</Text>
-          
-          <Text style={styles.infoText}>
-            O DermAlert é um sistema exclusivo para profissionais de saúde autorizados.
-            Para solicitar seu cadastro, entre em contato com:
+          <Text style={styles.sectionTitle}>
+            Como obter acesso ao DermAlert?
           </Text>
-          
+
+          <Text style={styles.infoText}>
+            O DermAlert é um sistema exclusivo para profissionais de saúde
+            autorizados. Para solicitar seu cadastro, entre em contato com:
+          </Text>
+
           <View style={styles.contactItem}>
-            <Icon name="business" size={22} color="#1e3d59" style={styles.contactIcon} />
+            <Icon
+              name="business"
+              size={22}
+              color="#1e3d59"
+              style={styles.contactIcon}
+            />
             <Text style={styles.contactText}>Assistência DermAlert</Text>
           </View>
-          
+
           <View style={styles.contactItem}>
-            <Icon name="email" size={22} color="#1e3d59" style={styles.contactIcon} />
+            <Icon
+              name="email"
+              size={22}
+              color="#1e3d59"
+              style={styles.contactIcon}
+            />
             <Text style={styles.contactText}>dermalert@lappis.com.br</Text>
           </View>
-          
+
           <View style={styles.contactItem}>
-            <Icon name="phone" size={22} color="#1e3d59" style={styles.contactIcon} />
+            <Icon
+              name="phone"
+              size={22}
+              color="#1e3d59"
+              style={styles.contactIcon}
+            />
             <Text style={styles.contactText}>(12) 3456-7890</Text>
           </View>
-          
+
           <Text style={styles.infoExtraText}>
-            Forneça suas credenciais profissionais e informações da unidade de saúde onde atua.
+            Forneça suas credenciais profissionais e informações da unidade de
+            saúde onde atua.
           </Text>
         </View>
 
         <View style={styles.videoSection}>
           <Text style={styles.sectionTitle}>Conheça o DermAlert</Text>
           <Text style={styles.videoDescription}>
-            Assista ao nosso vídeo introdutório para conhecer as funcionalidades do sistema:
+            Assista ao nosso vídeo introdutório para conhecer as funcionalidades
+            do sistema:
           </Text>
-          
-          <TouchableOpacity onPress={openYoutubeVideo} style={styles.videoContainer}>
-            <Image 
-              source={require('../assets/logo1.png')} 
+
+          <TouchableOpacity
+            onPress={openYoutubeVideo}
+            style={styles.videoContainer}
+          >
+            <Image
+              source={require('../assets/logo1.png')}
               style={styles.videoThumbnail}
             />
             <View style={styles.playButtonOverlay}>
               <Icon name="play-circle-filled" size={60} color="#f5f5f5" />
             </View>
             <View style={styles.videoTitleContainer}>
-              <Text style={styles.videoTitle}>Tutorial DermAlert - Introdução ao Sistema</Text>
+              <Text style={styles.videoTitle}>
+                Tutorial DermAlert - Introdução ao Sistema
+              </Text>
             </View>
           </TouchableOpacity>
         </View>
-        
+
         <View style={styles.additionalInfo}>
           <Text style={styles.additionalInfoText}>
-          dermalert@lappis.com.br | Versão: 1.0.0
+            dermalert@lappis.com.br | Versão: 1.0.0
           </Text>
         </View>
       </ScrollView>

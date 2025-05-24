@@ -1,5 +1,14 @@
 import React, { useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, SafeAreaView, Platform, Animated, Alert } from 'react-native';
+import {
+  View,
+  Text,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  Animated,
+  Alert,
+} from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { logoutAsync } from '../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
@@ -10,12 +19,14 @@ const FlyoutMenu = ({ visible, onClose }) => {
   const dispatch = useDispatch();
   const isAdmin = useSelector(selectIsAdmin);
   const navigation = useNavigation();
-  const userData = useSelector(state => state.user.userData);
-  
+  const userData = useSelector((state) => state.user.userData);
+
   // Animation for menu appearance
-  const slideAnim = React.useRef(new Animated.Value(visible ? 0 : -300)).current;
+  const slideAnim = React.useRef(
+    new Animated.Value(visible ? 0 : -300),
+  ).current;
   const opacityAnim = React.useRef(new Animated.Value(visible ? 1 : 0)).current;
-  
+
   useEffect(() => {
     if (visible) {
       Animated.parallel([
@@ -49,59 +60,50 @@ const FlyoutMenu = ({ visible, onClose }) => {
   if (!visible) return null;
 
   const handleLogout = async () => {
-    Alert.alert(
-      'Logout',
-      'Tem certeza que deseja sair?',
-      [
-        {
-          text: 'Cancelar',
-          style: 'cancel'
-        },
-        {
-          text: 'Sair',
-          onPress: async () => {
-            try {
-              onClose();
-              
-              // Dispatch the async logout action
-              await dispatch(logoutAsync());
-              
-              // navigation.dispatch(
-              //   CommonActions.reset({
-              //     index: 0,
-              //     routes: [{ name: 'InitialScreen' }],
-              //   })
-              // );
-            } catch (error) {
-              console.error('Erro ao fazer logout:', error);
-            }
+    Alert.alert('Logout', 'Tem certeza que deseja sair?', [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Sair',
+        onPress: async () => {
+          try {
+            onClose();
+
+            // Dispatch the async logout action
+            await dispatch(logoutAsync());
+
+            // navigation.dispatch(
+            //   CommonActions.reset({
+            //     index: 0,
+            //     routes: [{ name: 'InitialScreen' }],
+            //   })
+            // );
+          } catch (error) {
+            console.error('Erro ao fazer logout:', error);
           }
-        }
-      ]
-    );
+        },
+      },
+    ]);
   };
 
   return (
     <SafeAreaView style={styles.container}>
-      <Animated.View 
-        style={[
-          styles.overlay,
-          { opacity: opacityAnim }
-        ]}
-      >
-        <TouchableOpacity 
-          style={styles.overlayTouch} 
-          activeOpacity={1} 
-          onPress={onClose} 
+      <Animated.View style={[styles.overlay, { opacity: opacityAnim }]}>
+        <TouchableOpacity
+          style={styles.overlayTouch}
+          activeOpacity={1}
+          onPress={onClose}
         />
       </Animated.View>
-      
-      <Animated.View 
+
+      <Animated.View
         style={[
           styles.menu,
-          { 
+          {
             transform: [{ translateX: slideAnim }],
-          }
+          },
         ]}
       >
         <View style={styles.menuHeader}>
@@ -109,11 +111,15 @@ const FlyoutMenu = ({ visible, onClose }) => {
             <Icon name="person" size={28} color="#fff" />
           </View>
           <View style={styles.userInfo}>
-            <Text style={styles.userName}>{userData?.nome_usuario || "Usuário"}</Text>
-            <Text style={styles.userRole}>{isAdmin ? "Administrador" : "Profissional"}</Text>
+            <Text style={styles.userName}>
+              {userData?.nome_usuario || 'Usuário'}
+            </Text>
+            <Text style={styles.userRole}>
+              {isAdmin ? 'Administrador' : 'Profissional'}
+            </Text>
           </View>
-          <TouchableOpacity 
-            style={styles.closeButton} 
+          <TouchableOpacity
+            style={styles.closeButton}
             onPress={onClose}
             hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
           >
@@ -127,10 +133,7 @@ const FlyoutMenu = ({ visible, onClose }) => {
             <Text style={styles.menuText}>Perfil</Text>
           </TouchableOpacity>
 
-          <TouchableOpacity 
-            style={styles.menuItem} 
-            activeOpacity={0.7}
-          >
+          <TouchableOpacity style={styles.menuItem} activeOpacity={0.7}>
             <Icon name="history" size={22} color="#1e3d59" />
             <Text style={styles.menuText}>Histórico de atendimentos</Text>
           </TouchableOpacity>
@@ -139,10 +142,10 @@ const FlyoutMenu = ({ visible, onClose }) => {
             <Icon name="menu-book" size={22} color="#1e3d59" />
             <Text style={styles.menuText}>Guia</Text>
           </TouchableOpacity>
-          
+
           {isAdmin && (
-            <TouchableOpacity 
-              style={styles.menuItem}   
+            <TouchableOpacity
+              style={styles.menuItem}
               onPress={() => {
                 onClose();
                 navigation.navigate('HealthUnitList');
@@ -153,11 +156,11 @@ const FlyoutMenu = ({ visible, onClose }) => {
               <Text style={styles.menuText}>Unidades</Text>
             </TouchableOpacity>
           )}
-          
+
           <View style={styles.divider} />
-          
-          <TouchableOpacity 
-            style={[styles.menuItem, styles.logoutItem]} 
+
+          <TouchableOpacity
+            style={[styles.menuItem, styles.logoutItem]}
             onPress={handleLogout}
             activeOpacity={0.7}
           >

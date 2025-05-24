@@ -9,18 +9,18 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-const EsqueciSenhaScreen = ({ }) => {
+const EsqueciSenhaScreen = () => {
   const [email, setEmail] = useState('');
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
   const navigation = useNavigation();
-  
+
   const showMessage = (title, message) => {
     if (Platform.OS === 'web') {
       window.alert(message);
@@ -28,55 +28,64 @@ const EsqueciSenhaScreen = ({ }) => {
       Alert.alert(title, message);
     }
   };
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('Login');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('Login');
+        return true; // Prevent default behavior
+      };
+
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
   const handleSubmit = async () => {
     if (!email) {
       showMessage('Erro', 'Por favor, informe seu email');
       return;
     }
-    
+
     // Basic email validation
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(email)) {
       showMessage('Erro', 'Por favor, informe um email válido');
       return;
     }
-    
+
     setLoading(true);
-    
+
     try {
       const response = await fetch(
         `${API_URL}/esqueci-minha-senha?email=${encodeURIComponent(email)}`,
         {
           method: 'POST',
           headers: {
-            'accept': 'application/json'
-          }
-        }
+            accept: 'application/json',
+          },
+        },
       );
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         setSuccess(true);
-        showMessage('Sucesso', 'Email de redefinição enviado! Verifique sua caixa de entrada.');
+        showMessage(
+          'Sucesso',
+          'Email de redefinição enviado! Verifique sua caixa de entrada.',
+        );
       } else {
-        showMessage('Erro', data.message || 'Não foi possível enviar o email de redefinição');
+        showMessage(
+          'Erro',
+          data.message || 'Não foi possível enviar o email de redefinição',
+        );
       }
-    } catch (error) {
-      showMessage('Erro', 'Ocorreu um erro. Verifique sua conexão e tente novamente.');
+    } catch {
+      showMessage(
+        'Erro',
+        'Ocorreu um erro. Verifique sua conexão e tente novamente.',
+      );
     } finally {
       setLoading(false);
     }
@@ -86,8 +95,8 @@ const EsqueciSenhaScreen = ({ }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => navigation.navigate('Login')}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
@@ -97,9 +106,10 @@ const EsqueciSenhaScreen = ({ }) => {
 
         <View style={styles.formContainer}>
           <Text style={styles.formTitle}>Esqueci minha senha</Text>
-          
+
           <Text style={styles.instruction}>
-            Digite o email associado à sua conta para receber um link de redefinição de senha.
+            Digite o email associado à sua conta para receber um link de
+            redefinição de senha.
           </Text>
 
           <View style={styles.inputGroup}>
@@ -117,11 +127,8 @@ const EsqueciSenhaScreen = ({ }) => {
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
-              style={[
-                styles.continueButton,
-                loading && styles.disabledButton
-              ]} 
+            <TouchableOpacity
+              style={[styles.continueButton, loading && styles.disabledButton]}
               onPress={handleSubmit}
               disabled={loading}
             >
@@ -132,18 +139,19 @@ const EsqueciSenhaScreen = ({ }) => {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+            <TouchableOpacity
+              style={styles.cancelButton}
               onPress={() => navigation.navigate('Login')}
               disabled={loading}
             >
               <Text style={styles.cancelButtonText}>Voltar para Login</Text>
             </TouchableOpacity>
           </View>
-          
+
           {success && (
             <Text style={styles.successText}>
-              Um email foi enviado para você com instruções para redefinir sua senha.
+              Um email foi enviado para você com instruções para redefinir sua
+              senha.
             </Text>
           )}
         </View>

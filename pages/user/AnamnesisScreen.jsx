@@ -33,12 +33,12 @@ const AnamnesisScreen = ({ navigation }) => {
   });
 
   const handleDoencaCronicaChange = (doenca) => {
-    setDadosFormulario(prev => ({
+    setDadosFormulario((prev) => ({
       ...prev,
       listaDoencasCronicas: {
         ...prev.listaDoencasCronicas,
-        [doenca]: !prev.listaDoencasCronicas[doenca]
-      }
+        [doenca]: !prev.listaDoencasCronicas[doenca],
+      },
     }));
   };
 
@@ -50,10 +50,12 @@ const AnamnesisScreen = ({ navigation }) => {
           placeholder={placeholder}
           placeholderTextColor="#999"
           value={value}
-          onChangeText={(text) => setDadosFormulario(prev => ({
-            ...prev,
-            [field + 'List']: text
-          }))}
+          onChangeText={(text) =>
+            setDadosFormulario((prev) => ({
+              ...prev,
+              [field + 'List']: text,
+            }))
+          }
         />
       );
     }
@@ -62,24 +64,32 @@ const AnamnesisScreen = ({ navigation }) => {
 
   const renderRadioGroup = (field, label) => (
     <View style={styles.radioGroup}>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.radioOption}
-        onPress={() => setDadosFormulario(prev => ({ ...prev, [field]: 'sim' }))}
+        onPress={() =>
+          setDadosFormulario((prev) => ({ ...prev, [field]: 'sim' }))
+        }
       >
-        <View style={[
-          styles.radioCircle,
-          dadosFormulario[field] === 'sim' && styles.radioSelected
-        ]} />
+        <View
+          style={[
+            styles.radioCircle,
+            dadosFormulario[field] === 'sim' && styles.radioSelected,
+          ]}
+        />
         <Text style={styles.radioText}>Sim</Text>
       </TouchableOpacity>
-      <TouchableOpacity 
+      <TouchableOpacity
         style={styles.radioOption}
-        onPress={() => setDadosFormulario(prev => ({ ...prev, [field]: 'não' }))}
+        onPress={() =>
+          setDadosFormulario((prev) => ({ ...prev, [field]: 'não' }))
+        }
       >
-        <View style={[
-          styles.radioCircle,
-          dadosFormulario[field] === 'não' && styles.radioSelected
-        ]} />
+        <View
+          style={[
+            styles.radioCircle,
+            dadosFormulario[field] === 'não' && styles.radioSelected,
+          ]}
+        />
         <Text style={styles.radioText}>Não</Text>
       </TouchableOpacity>
     </View>
@@ -88,7 +98,7 @@ const AnamnesisScreen = ({ navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
@@ -100,8 +110,12 @@ const AnamnesisScreen = ({ navigation }) => {
       <View style={styles.progressBar}>
         {[1, 2, 3, 4, 5].map((step) => (
           <React.Fragment key={step}>
-            <View style={[styles.progressStep, step === 1 && styles.activeStep]}>
-              <Text style={[styles.stepText, step === 1 && styles.activeStepText]}>
+            <View
+              style={[styles.progressStep, step === 1 && styles.activeStep]}
+            >
+              <Text
+                style={[styles.stepText, step === 1 && styles.activeStepText]}
+              >
                 {step}
               </Text>
             </View>
@@ -114,50 +128,64 @@ const AnamnesisScreen = ({ navigation }) => {
         <Text style={styles.sectionTitle}>Questões gerais de saúde</Text>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você tem histórico de doenças crônicas?</Text>
+          <Text style={styles.question}>
+            Você tem histórico de doenças crônicas?
+          </Text>
           {renderRadioGroup('doencasCronicas')}
 
           {dadosFormulario.doencasCronicas === 'sim' && (
             <View style={styles.checkboxGroup}>
               <Text style={styles.subQuestion}>Se sim, quais?</Text>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.checkboxOption}
                 onPress={() => handleDoencaCronicaChange('hipertensao')}
               >
-                <View style={[
-                  styles.checkbox,
-                  dadosFormulario.listaDoencasCronicas.hipertensao && styles.checkboxSelected
-                ]} />
+                <View
+                  style={[
+                    styles.checkbox,
+                    dadosFormulario.listaDoencasCronicas.hipertensao &&
+                      styles.checkboxSelected,
+                  ]}
+                />
                 <Text style={styles.checkboxText}>Hipertensão</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.checkboxOption}
                 onPress={() => handleDoencaCronicaChange('diabetes')}
               >
-                <View style={[
-                  styles.checkbox,
-                  dadosFormulario.listaDoencasCronicas.diabetes && styles.checkboxSelected
-                ]} />
+                <View
+                  style={[
+                    styles.checkbox,
+                    dadosFormulario.listaDoencasCronicas.diabetes &&
+                      styles.checkboxSelected,
+                  ]}
+                />
                 <Text style={styles.checkboxText}>Diabetes</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.checkboxOption}
                 onPress={() => handleDoencaCronicaChange('cardiopatia')}
               >
-                <View style={[
-                  styles.checkbox,
-                  dadosFormulario.listaDoencasCronicas.cardiopatia && styles.checkboxSelected
-                ]} />
+                <View
+                  style={[
+                    styles.checkbox,
+                    dadosFormulario.listaDoencasCronicas.cardiopatia &&
+                      styles.checkboxSelected,
+                  ]}
+                />
                 <Text style={styles.checkboxText}>Cardiopatias</Text>
               </TouchableOpacity>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.checkboxOption}
                 onPress={() => handleDoencaCronicaChange('outras')}
               >
-                <View style={[
-                  styles.checkbox,
-                  dadosFormulario.listaDoencasCronicas.outras && styles.checkboxSelected
-                ]} />
+                <View
+                  style={[
+                    styles.checkbox,
+                    dadosFormulario.listaDoencasCronicas.outras &&
+                      styles.checkboxSelected,
+                  ]}
+                />
                 <Text style={styles.checkboxText}>Outras</Text>
               </TouchableOpacity>
               {dadosFormulario.listaDoencasCronicas.outras && (
@@ -166,13 +194,15 @@ const AnamnesisScreen = ({ navigation }) => {
                   placeholder="ex.: Colesterol"
                   placeholderTextColor="#999"
                   value={dadosFormulario.listaDoencasCronicas.outrasTexto}
-                  onChangeText={(text) => setDadosFormulario(prev => ({
-                    ...prev,
-                    listaDoencasCronicas: {
-                      ...prev.listaDoencasCronicas,
-                      outrasTexto: text
-                    }
-                  }))}
+                  onChangeText={(text) =>
+                    setDadosFormulario((prev) => ({
+                      ...prev,
+                      listaDoencasCronicas: {
+                        ...prev.listaDoencasCronicas,
+                        outrasTexto: text,
+                      },
+                    }))
+                  }
                 />
               )}
             </View>
@@ -180,35 +210,61 @@ const AnamnesisScreen = ({ navigation }) => {
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você já foi diagnosticado com câncer anteriormente?</Text>
+          <Text style={styles.question}>
+            Você já foi diagnosticado com câncer anteriormente?
+          </Text>
           {renderRadioGroup('cancer')}
-          {renderConditionalInput('cancer', dadosFormulario.tipoCancer, 'ex.: Câncer de colo de útero')}
+          {renderConditionalInput(
+            'cancer',
+            dadosFormulario.tipoCancer,
+            'ex.: Câncer de colo de útero',
+          )}
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você faz uso regular de medicamentos?</Text>
+          <Text style={styles.question}>
+            Você faz uso regular de medicamentos?
+          </Text>
           {renderRadioGroup('medicamentos')}
-          {renderConditionalInput('medicamentos', dadosFormulario.listaMedicamentos, 'ex.: Losartana, Enalapril')}
+          {renderConditionalInput(
+            'medicamentos',
+            dadosFormulario.listaMedicamentos,
+            'ex.: Losartana, Enalapril',
+          )}
         </View>
 
         <View style={styles.questionContainer}>
           <Text style={styles.question}>Você possui alergias?</Text>
           {renderRadioGroup('alergias')}
-          {renderConditionalInput('alergias', dadosFormulario.listaAlergias, 'ex.: Ibuprofeno, Polen, Leite, Ovos')}
+          {renderConditionalInput(
+            'alergias',
+            dadosFormulario.listaAlergias,
+            'ex.: Ibuprofeno, Polen, Leite, Ovos',
+          )}
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você já passou por cirurgias dermatológicas?</Text>
+          <Text style={styles.question}>
+            Você já passou por cirurgias dermatológicas?
+          </Text>
           {renderRadioGroup('cirurgias')}
-          {renderConditionalInput('cirurgias', dadosFormulario.listaCirurgias, 'ex.: Remoção de nevos, Criocirurgia')}
+          {renderConditionalInput(
+            'cirurgias',
+            dadosFormulario.listaCirurgias,
+            'ex.: Remoção de nevos, Criocirurgia',
+          )}
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você pratica atividade física regularmente?</Text>
+          <Text style={styles.question}>
+            Você pratica atividade física regularmente?
+          </Text>
           {renderRadioGroup('atividadeFisica')}
           {dadosFormulario.atividadeFisica === 'sim' && (
             <View style={styles.checkboxGroup}>
-              <Text style={styles.subQuestion}>Se sim, com que frequência?</Text>
+              <Text style={styles.subQuestion}>
+                Se sim, com que frequência?
+              </Text>
               <TouchableOpacity style={styles.checkboxOption}>
                 <View style={styles.checkbox} />
                 <Text style={styles.checkboxText}>Diariamente</Text>

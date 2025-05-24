@@ -1,16 +1,11 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 
 const SuccessScreen = ({ navigation }) => {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.goBack()}
         >
@@ -18,7 +13,7 @@ const SuccessScreen = ({ navigation }) => {
         </TouchableOpacity>
         <Text style={styles.headerText}>Primeiro acesso</Text>
       </View>
-      
+
       <View style={styles.content}>
         <View style={styles.successBox}>
           <Text style={styles.successIcon}>✓</Text>
@@ -26,8 +21,8 @@ const SuccessScreen = ({ navigation }) => {
           <Text style={styles.successText}>
             Agora você já pode efetuar login para acessar o sistema.
           </Text>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.button}
             onPress={() => navigation.navigate('Login')}
           >

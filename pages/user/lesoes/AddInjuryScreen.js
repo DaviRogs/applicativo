@@ -26,7 +26,7 @@ import {
   addPhoto,
 } from '../../../store/injurySlice';
 
-import { useFocusEffect, useNavigation } from '@react-navigation/native';
+import { useFocusEffect /*useNavigation*/ } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 const generateUniqueId = () => {
@@ -35,9 +35,11 @@ const generateUniqueId = () => {
 
 const AddInjuryScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
-  
-  const { location, description, photos, isEditing, injuryId } = useSelector(state => state.injury.formState);
-  const isSaving = useSelector(state => state.injury.isSaving);
+
+  const { location, description, photos, isEditing, injuryId } = useSelector(
+    (state) => state.injury.formState,
+  );
+  const isSaving = useSelector((state) => state.injury.isSaving);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -45,28 +47,30 @@ const AddInjuryScreen = ({ navigation, route }) => {
         handleBackPress();
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   useEffect(() => {
     if (route.params?.injury) {
       const injury = route.params.injury;
-      dispatch(setFormState({
-        location: injury.location || '',
-        description: injury.description || '',
-        photos: injury.photos || [],
-        isEditing: true,
-        injuryId: injury.id,
-      }));
-      
+      dispatch(
+        setFormState({
+          location: injury.location || '',
+          description: injury.description || '',
+          photos: injury.photos || [],
+          isEditing: true,
+          injuryId: injury.id,
+        }),
+      );
+
       navigation.setParams({ injury: undefined });
     }
-    
+
     return () => {
       if (navigation.getState().routes.slice(-1)[0]?.name === 'InjuryList') {
         dispatch(resetForm());
@@ -76,11 +80,13 @@ const AddInjuryScreen = ({ navigation, route }) => {
 
   useEffect(() => {
     if (route.params?.selectedLocation) {
-      dispatch(updateFormField({
-        field: 'location',
-        value: route.params.selectedLocation,
-      }));
-      
+      dispatch(
+        updateFormField({
+          field: 'location',
+          value: route.params.selectedLocation,
+        }),
+      );
+
       navigation.setParams({ selectedLocation: undefined });
     }
   }, [route.params?.selectedLocation, dispatch]);
@@ -88,7 +94,7 @@ const AddInjuryScreen = ({ navigation, route }) => {
   useEffect(() => {
     if (route.params?.photo) {
       dispatch(addPhoto(route.params.photo));
-      
+
       navigation.setParams({ photo: undefined });
     }
   }, [route.params?.photo, dispatch]);
@@ -97,21 +103,21 @@ const AddInjuryScreen = ({ navigation, route }) => {
     // Check if form has unsaved changes
     if (location || description || photos.length > 0) {
       Alert.alert(
-        "Descartar alterações?",
-        "Se voltar agora, as alterações não salvas serão perdidas.",
+        'Descartar alterações?',
+        'Se voltar agora, as alterações não salvas serão perdidas.',
         [
           {
-            text: "Continuar editando",
-            style: "cancel"
+            text: 'Continuar editando',
+            style: 'cancel',
           },
           {
-            text: "Descartar",
+            text: 'Descartar',
             onPress: () => {
               dispatch(resetForm());
               navigation.navigate('InjuryList');
-            }
-          }
-        ]
+            },
+          },
+        ],
       );
     } else {
       navigation.navigate('InjuryList');
@@ -119,49 +125,45 @@ const AddInjuryScreen = ({ navigation, route }) => {
   };
 
   const handleRemovePhoto = (index) => {
-    Alert.alert(
-      "Remover foto",
-      "Tem certeza que deseja remover esta foto?",
-      [
-        {
-          text: "Cancelar",
-          style: "cancel"
-        },
-        {
-          text: "Remover",
-          onPress: () => dispatch(removePhoto(index)),
-          style: "destructive"
-        }
-      ]
-    );
+    Alert.alert('Remover foto', 'Tem certeza que deseja remover esta foto?', [
+      {
+        text: 'Cancelar',
+        style: 'cancel',
+      },
+      {
+        text: 'Remover',
+        onPress: () => dispatch(removePhoto(index)),
+        style: 'destructive',
+      },
+    ]);
   };
 
   const handleSave = () => {
     if (!validateForm()) return;
-    
+
     dispatch(setSaving(true));
-    
+
     const injuryData = {
-      id: isEditing ? injuryId : (injuryId || generateUniqueId()),
+      id: isEditing ? injuryId : injuryId || generateUniqueId(),
       location,
       description,
       photos,
       title: location, // Using location as title
       date: new Date().toISOString(),
     };
-  
+
     setTimeout(() => {
       dispatch(setSaving(false));
-      
+
       if (isEditing) {
         dispatch(updateInjury(injuryData));
       } else {
         dispatch(addInjury(injuryData));
       }
-      
+
       // Navigate without passing injury data - we'll use Redux state instead
       navigation.navigate('InjuryList');
-      
+
       // Reset form after saving
       dispatch(resetForm());
     }, 500);
@@ -172,17 +174,17 @@ const AddInjuryScreen = ({ navigation, route }) => {
       Alert.alert('Erro', 'Por favor, selecione o local da lesão');
       return false;
     }
-    
+
     if (!description) {
       Alert.alert('Erro', 'Por favor, forneça uma descrição da lesão');
       return false;
     }
-    
+
     return true;
   };
 
   const viewPhoto = (photo, index) => {
-    navigation.navigate('PhotoPreview', { 
+    navigation.navigate('PhotoPreview', {
       photo,
       viewOnly: true,
       index,
@@ -195,7 +197,7 @@ const AddInjuryScreen = ({ navigation, route }) => {
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={handleBackPress}
             activeOpacity={0.7}
@@ -207,8 +209,8 @@ const AddInjuryScreen = ({ navigation, route }) => {
           </Text>
         </View>
 
-        <ScrollView 
-          style={styles.content} 
+        <ScrollView
+          style={styles.content}
           keyboardShouldPersistTaps="handled"
           showsVerticalScrollIndicator={false}
         >
@@ -220,13 +222,15 @@ const AddInjuryScreen = ({ navigation, route }) => {
               <TouchableOpacity
                 style={[
                   styles.locationInput,
-                  location ? styles.inputFilled : null
+                  location ? styles.inputFilled : null,
                 ]}
                 onPress={() => navigation.navigate('InjuryLocation')}
                 activeOpacity={0.8}
               >
-                <Text style={location ? styles.inputText : styles.placeholderText}>
-                  {location || "Selecione o local da lesão"}
+                <Text
+                  style={location ? styles.inputText : styles.placeholderText}
+                >
+                  {location || 'Selecione o local da lesão'}
                 </Text>
                 <Icon name="chevron-right" size={22} color="#666" />
               </TouchableOpacity>
@@ -238,13 +242,15 @@ const AddInjuryScreen = ({ navigation, route }) => {
               </Text>
               <TextInput
                 style={[
-                  styles.input, 
+                  styles.input,
                   styles.textArea,
-                  description ? styles.inputFilled : null
+                  description ? styles.inputFilled : null,
                 ]}
                 placeholder="Descreva a lesão em detalhes..."
                 value={description}
-                onChangeText={(value) => dispatch(updateFormField({ field: 'description', value }))}
+                onChangeText={(value) =>
+                  dispatch(updateFormField({ field: 'description', value }))
+                }
                 multiline
                 numberOfLines={4}
                 placeholderTextColor="#999"
@@ -257,27 +263,27 @@ const AddInjuryScreen = ({ navigation, route }) => {
                 <Text style={styles.label}>Fotos</Text>
                 <View style={styles.photoCountBadge}>
                   <Text style={styles.photoCount}>
-                    {photos.length > 0 ? 
-                      `${photos.length} foto${photos.length > 1 ? 's' : ''}` : 
-                      'Nenhuma foto'}
+                    {photos.length > 0
+                      ? `${photos.length} foto${photos.length > 1 ? 's' : ''}`
+                      : 'Nenhuma foto'}
                   </Text>
                 </View>
               </View>
-              
+
               <View style={styles.photoGrid}>
                 {photos.map((photo, index) => (
                   <View key={index} style={styles.photoItem}>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       onPress={() => viewPhoto(photo, index)}
                       activeOpacity={0.9}
                     >
-                      <Image 
-                        source={{ uri: photo.uri }} 
-                        style={styles.photoThumbnail} 
+                      <Image
+                        source={{ uri: photo.uri }}
+                        style={styles.photoThumbnail}
                       />
                       <View style={styles.photoOverlay} />
                     </TouchableOpacity>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.removePhotoButton}
                       onPress={() => handleRemovePhoto(index)}
                       hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -286,7 +292,7 @@ const AddInjuryScreen = ({ navigation, route }) => {
                     </TouchableOpacity>
                   </View>
                 ))}
-                
+
                 <TouchableOpacity
                   style={styles.addPhotoButton}
                   onPress={() => {
@@ -301,11 +307,11 @@ const AddInjuryScreen = ({ navigation, route }) => {
                           const reader = new FileReader();
                           reader.onload = (event) => {
                             const uri = event.target.result;
-                            const newPhoto = { 
+                            const newPhoto = {
                               uri,
                               width: 800,
                               height: 600,
-                              file
+                              file,
                             };
                             dispatch(addPhoto(newPhoto));
                           };
@@ -331,11 +337,8 @@ const AddInjuryScreen = ({ navigation, route }) => {
         </ScrollView>
 
         <View style={styles.footer}>
-          <TouchableOpacity 
-            style={[
-              styles.saveButton,
-              isSaving && styles.saveButtonDisabled
-            ]}
+          <TouchableOpacity
+            style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
             onPress={handleSave}
             disabled={isSaving}
             activeOpacity={0.8}
@@ -347,7 +350,12 @@ const AddInjuryScreen = ({ navigation, route }) => {
               </View>
             ) : (
               <View style={styles.saveButtonContent}>
-                <Icon name="save" size={20} color="#fff" style={styles.saveIcon} />
+                <Icon
+                  name="save"
+                  size={20}
+                  color="#fff"
+                  style={styles.saveIcon}
+                />
                 <Text style={styles.saveButtonText}>
                   {isEditing ? 'Atualizar lesão' : 'Salvar lesão'}
                 </Text>
@@ -591,7 +599,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-    marginLeft:  8 
+    marginLeft: 8,
   },
 });
 

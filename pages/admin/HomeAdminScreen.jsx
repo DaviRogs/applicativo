@@ -14,17 +14,19 @@ import { useSelector, useDispatch } from 'react-redux';
 import { selectIsAdmin, updateUnidadeSaude } from '../../store/userSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-const HomeScreen = ({navigation}) => {
+const HomeScreen = ({ navigation }) => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [unitModalVisible, setUnitModalVisible] = useState(false);
-  
+
   const dispatch = useDispatch();
   const hasAdminAccess = useSelector(selectIsAdmin);
-  const userUnits = useSelector(state => state.user.userData?.unidadeSaude || []);
-  const selectedUnit = useSelector(state => 
-    hasAdminAccess 
-      ? state.user.userData?.selectedUnit 
-      : state.user.userData?.unidadeSaude?.[0]
+  const userUnits = useSelector(
+    (state) => state.user.userData?.unidadeSaude || [],
+  );
+  const selectedUnit = useSelector((state) =>
+    hasAdminAccess
+      ? state.user.userData?.selectedUnit
+      : state.user.userData?.unidadeSaude?.[0],
   );
 
   useEffect(() => {
@@ -32,13 +34,13 @@ const HomeScreen = ({navigation}) => {
       try {
         if (hasAdminAccess) {
           const storedUnit = await AsyncStorage.getItem('selectedAdminUnit');
-          
+
           if (storedUnit && !selectedUnit) {
             const parsedUnit = JSON.parse(storedUnit);
             dispatch(updateUnidadeSaude([parsedUnit]));
             return;
           }
-          
+
           if (!selectedUnit && !storedUnit) {
             setUnitModalVisible(true);
           }
@@ -49,31 +51,28 @@ const HomeScreen = ({navigation}) => {
         console.error('Error getting stored unit:', error);
       }
     };
-    
+
     checkSelectedUnit();
   }, [hasAdminAccess, selectedUnit, userUnits, dispatch]);
 
   const handleUnitSelection = async (unit) => {
     dispatch(updateUnidadeSaude([unit]));
-    
+
     try {
       await AsyncStorage.setItem('selectedAdminUnit', JSON.stringify(unit));
     } catch (error) {
       console.error('Error storing selected unit:', error);
     }
-    
+
     setUnitModalVisible(false);
   };
 
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
-      <FlyoutMenu 
-        visible={menuVisible} 
-        onClose={() => setMenuVisible(false)} 
-      />
-      
+
+      <FlyoutMenu visible={menuVisible} onClose={() => setMenuVisible(false)} />
+
       <UnitSelectionModal
         visible={unitModalVisible}
         onClose={() => setUnitModalVisible(false)}
@@ -82,7 +81,7 @@ const HomeScreen = ({navigation}) => {
 
       <View style={styles.header}>
         <Text style={styles.headerTitle}>Home</Text>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => setMenuVisible(true)}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
         >
@@ -97,12 +96,18 @@ const HomeScreen = ({navigation}) => {
           <View style={styles.unitCard}>
             <View style={styles.unitInfo}>
               <Icon name="business" size={24} color="#1e3d59" />
-              <Text style={styles.unitName}>{selectedUnit.nome_unidade_saude + " - "+ selectedUnit.codigo_unidade_saude}</Text>
-              <Text style={styles.unitAddress}>{selectedUnit.nome_localizacao}</Text>
+              <Text style={styles.unitName}>
+                {selectedUnit.nome_unidade_saude +
+                  ' - ' +
+                  selectedUnit.codigo_unidade_saude}
+              </Text>
+              <Text style={styles.unitAddress}>
+                {selectedUnit.nome_localizacao}
+              </Text>
             </View>
 
             <View style={styles.statsContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.statItem}
                 onPress={() => navigation.navigate('ProfessionalsList')}
                 activeOpacity={0.8}
@@ -112,10 +117,7 @@ const HomeScreen = ({navigation}) => {
                 <Text style={styles.statValue}>000</Text>
               </TouchableOpacity>
 
-              <TouchableOpacity 
-                style={styles.statItem}
-                activeOpacity={0.8}
-              >
+              <TouchableOpacity style={styles.statItem} activeOpacity={0.8}>
                 <Icon name="person" size={24} color="#1e3d59" />
                 <Text style={styles.statLabel}>Pacientes</Text>
                 <Text style={styles.statValue}>000</Text>
@@ -123,9 +125,9 @@ const HomeScreen = ({navigation}) => {
             </View>
           </View>
         )}
-        
+
         {hasAdminAccess && selectedUnit && (
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.changeUnitButton}
             onPress={() => setUnitModalVisible(true)}
             activeOpacity={0.8}

@@ -9,14 +9,14 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  ScrollView
+  ScrollView,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useRoute } from '@react-navigation/native';
 import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-const RedefinirSenhaScreen = ({  }) => {
+const RedefinirSenhaScreen = () => {
   const route = useRoute();
   const [token, setToken] = useState('');
   const [email, setEmail] = useState('');
@@ -25,34 +25,35 @@ const RedefinirSenhaScreen = ({  }) => {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
-  
+
   const [passwordRequirements, setPasswordRequirements] = useState({
     hasEightChars: false,
     hasLettersAndNumbers: false,
   });
   const navigation = useNavigation();
 
+  useFocusEffect(
+    React.useCallback(() => {
+      const onBackPress = () => {
+        navigation.navigate('Login');
+        return true; // Prevent default behavior
+      };
 
-    useFocusEffect(
-      React.useCallback(() => {
-        const onBackPress = () => {
-          navigation.navigate('Login');
-          return true; // Prevent default behavior
-        };
-    
-        BackHandler.addEventListener('hardwareBackPress', onBackPress);
-    
-        return () => 
-          BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-      }, [navigation])
-    );
+      BackHandler.addEventListener('hardwareBackPress', onBackPress);
+
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
+  );
   useEffect(() => {
     if (route.params?.token) {
       setToken(route.params.token);
       fetchUserData(route.params.token);
     } else {
       setLoading(false);
-      setError('Token não encontrado. Solicite novamente a recuperação de senha.');
+      setError(
+        'Token não encontrado. Solicite novamente a recuperação de senha.',
+      );
     }
   }, [route.params]);
 
@@ -62,11 +63,11 @@ const RedefinirSenhaScreen = ({  }) => {
         `${API_URL}/dados-resetar-senha?token=${currentToken}`,
         {
           headers: {
-            'accept': 'application/json',
+            accept: 'application/json',
           },
-        }
+        },
       );
-      
+
       if (response.ok) {
         const data = await response.json();
         setEmail(data.email);
@@ -74,7 +75,7 @@ const RedefinirSenhaScreen = ({  }) => {
         setError('Token inválido ou expirado');
         showMessage('Erro', 'Token inválido ou expirado');
       }
-    } catch (err) {
+    } catch {
       setError('Erro ao carregar dados');
       showMessage('Erro', 'Erro ao carregar dados do usuário');
     } finally {
@@ -112,20 +113,20 @@ const RedefinirSenhaScreen = ({  }) => {
       showMessage('Erro', 'As senhas não coincidem');
       return;
     }
-    
+
     setSubmitting(true);
-    
+
     try {
       const response = await fetch(
         `${API_URL}/resetar-senha?token=${token}&nova_senha=${senha}`,
         {
           method: 'POST',
           headers: {
-            'accept': 'application/json',
-          }
-        }
+            accept: 'application/json',
+          },
+        },
       );
-      
+
       if (response.ok) {
         showMessage('Sucesso', 'Senha redefinida com sucesso!');
         navigation.navigate('Login');
@@ -133,8 +134,11 @@ const RedefinirSenhaScreen = ({  }) => {
         const errorData = await response.json();
         showMessage('Erro', errorData.message || 'Erro ao redefinir senha');
       }
-    } catch (error) {
-      showMessage('Erro', 'Ocorreu um erro. Verifique sua conexão e tente novamente.');
+    } catch {
+      showMessage(
+        'Erro',
+        'Ocorreu um erro. Verifique sua conexão e tente novamente.',
+      );
     } finally {
       setSubmitting(false);
     }
@@ -153,20 +157,20 @@ const RedefinirSenhaScreen = ({  }) => {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => navigation.navigate('EsqueciSenha')}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Redefinir Senha</Text>
         </View>
-        
+
         <View style={styles.errorContainer}>
           <Icon name="error" size={50} color="red" />
           <Text style={styles.errorText}>{error}</Text>
-          <TouchableOpacity 
-            style={styles.continueButton} 
+          <TouchableOpacity
+            style={styles.continueButton}
             onPress={() => navigation.navigate('EsqueciSenha')}
           >
             <Text style={styles.continueButtonText}>Solicitar novo token</Text>
@@ -180,8 +184,8 @@ const RedefinirSenhaScreen = ({  }) => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => navigation.navigate('EsqueciSenha')}
           >
             <Icon name="arrow-back" size={24} color="#fff" />
@@ -191,7 +195,7 @@ const RedefinirSenhaScreen = ({  }) => {
 
         <View style={styles.formContainer}>
           <Text style={styles.formTitle}>Criar nova senha</Text>
-          
+
           <View style={styles.inputGroup}>
             <Text style={styles.label}>Email</Text>
             <TextInput
@@ -234,39 +238,51 @@ const RedefinirSenhaScreen = ({  }) => {
               <Text style={styles.requirementText}>Requisitos para Senha</Text>
             </View>
             <View style={styles.requirementItem}>
-              <Icon 
-                name={passwordRequirements.hasEightChars ? "check" : "close"} 
-                size={16} 
-                color={passwordRequirements.hasEightChars ? "green" : "red"} 
+              <Icon
+                name={passwordRequirements.hasEightChars ? 'check' : 'close'}
+                size={16}
+                color={passwordRequirements.hasEightChars ? 'green' : 'red'}
               />
-              <Text style={[
-                styles.requirementText, 
-                passwordRequirements.hasEightChars ? styles.requirementSuccess : styles.requirementFailed
-              ]}>
+              <Text
+                style={[
+                  styles.requirementText,
+                  passwordRequirements.hasEightChars
+                    ? styles.requirementSuccess
+                    : styles.requirementFailed,
+                ]}
+              >
                 Deve ter 8 dígitos
               </Text>
             </View>
             <View style={styles.requirementItem}>
-              <Icon 
-                name={passwordRequirements.hasLettersAndNumbers ? "check" : "close"} 
-                size={16} 
-                color={passwordRequirements.hasLettersAndNumbers ? "green" : "red"} 
+              <Icon
+                name={
+                  passwordRequirements.hasLettersAndNumbers ? 'check' : 'close'
+                }
+                size={16}
+                color={
+                  passwordRequirements.hasLettersAndNumbers ? 'green' : 'red'
+                }
               />
-              <Text style={[
-                styles.requirementText, 
-                passwordRequirements.hasLettersAndNumbers ? styles.requirementSuccess : styles.requirementFailed
-              ]}>
+              <Text
+                style={[
+                  styles.requirementText,
+                  passwordRequirements.hasLettersAndNumbers
+                    ? styles.requirementSuccess
+                    : styles.requirementFailed,
+                ]}
+              >
                 Deve conter letras e números
               </Text>
             </View>
           </View>
 
           <View style={styles.buttonContainer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.continueButton,
-                submitting && styles.disabledButton
-              ]} 
+                submitting && styles.disabledButton,
+              ]}
               onPress={handleSubmit}
               disabled={submitting}
             >
@@ -277,8 +293,8 @@ const RedefinirSenhaScreen = ({  }) => {
               )}
             </TouchableOpacity>
 
-            <TouchableOpacity 
-              style={styles.cancelButton} 
+            <TouchableOpacity
+              style={styles.cancelButton}
               onPress={() => navigation.navigate('Login')}
               disabled={submitting}
             >

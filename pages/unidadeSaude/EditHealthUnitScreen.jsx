@@ -11,7 +11,7 @@ import {
   ScrollView,
   Switch,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
@@ -22,8 +22,8 @@ import { API_URL } from '@env';
 
 export const EditHealthUnitScreen = ({ route }) => {
   const { unit } = route.params || {};
-  const userData = useSelector(state => state.user.userData);
-  
+  const userData = useSelector((state) => state.user.userData);
+
   const [unitName, setUnitName] = useState('');
   const [location, setLocation] = useState('');
   const [unitCode, setUnitCode] = useState('');
@@ -36,7 +36,7 @@ export const EditHealthUnitScreen = ({ route }) => {
 
   // Get user role from Redux
   const isAdmin = useSelector(selectIsAdmin);
-  const token = useSelector(state => state.auth.accessToken);
+  const token = useSelector((state) => state.auth.accessToken);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -44,19 +44,24 @@ export const EditHealthUnitScreen = ({ route }) => {
         navigation.navigate('HealthUnitList');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   // Load unit data when component mounts
   useEffect(() => {
     // If we don't have the full unit data, fetch it
     if (unit && unit.id) {
-      if (unit.nome_unidade_saude && unit.nome_localizacao && unit.cidade_unidade_saude && unit.codigo_unidade_saude) {
+      if (
+        unit.nome_unidade_saude &&
+        unit.nome_localizacao &&
+        unit.cidade_unidade_saude &&
+        unit.codigo_unidade_saude
+      ) {
         // We already have complete data
         setUnitName(unit.nome_unidade_saude || '');
         setLocation(unit.nome_localizacao || '');
@@ -78,7 +83,7 @@ export const EditHealthUnitScreen = ({ route }) => {
       Alert.alert(
         'Acesso Negado',
         'Você não tem permissão para acessar esta página.',
-        [{ text: 'OK', onPress: () => navigation.navigate('HealthUnitList') }]
+        [{ text: 'OK', onPress: () => navigation.navigate('HealthUnitList') }],
       );
     }
   }, [unit, isAdmin, navigation]);
@@ -86,30 +91,35 @@ export const EditHealthUnitScreen = ({ route }) => {
   const fetchUnitDetails = async (unitId) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_URL}/listar-unidade-saude/${unitId}`, {
-        method: 'GET',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+      const response = await fetch(
+        `${API_URL}/listar-unidade-saude/${unitId}`,
+        {
+          method: 'GET',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
         },
-      });
+      );
 
       if (!response.ok) {
         throw new Error('Falha ao buscar detalhes da unidade.');
       }
 
       const data = await response.json();
-      
+
       // Set form fields with fetched data
       setUnitName(data.nome_unidade_saude || '');
       setLocation(data.nome_localizacao || '');
       setUnitCode(data.codigo_unidade_saude || '');
       setCity(data.cidade_unidade_saude || '');
       setIsActive(data.fl_ativo || false);
-      
     } catch (err) {
       setError(err.message || 'Ocorreu um erro ao buscar detalhes da unidade.');
-      Alert.alert('Erro', err.message || 'Ocorreu um erro ao buscar detalhes da unidade.');
+      Alert.alert(
+        'Erro',
+        err.message || 'Ocorreu um erro ao buscar detalhes da unidade.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -142,24 +152,27 @@ export const EditHealthUnitScreen = ({ route }) => {
     setError(null);
 
     try {
-      const response = await fetch(`${API_URL}/editar-unidade-saude/${unit.id}`, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+      const response = await fetch(
+        `${API_URL}/editar-unidade-saude/${unit.id}`,
+        {
+          method: 'POST',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nome_unidade_saude: unitName,
+            nome_localizacao: location,
+            codigo_unidade_saude: unitCode,
+            cidade_unidade_saude: city,
+            fl_ativo: isActive,
+          }),
         },
-        body: JSON.stringify({
-          nome_unidade_saude: unitName,
-          nome_localizacao: location,
-          codigo_unidade_saude: unitCode,
-          cidade_unidade_saude: city,
-          fl_ativo: isActive
-        })
-      });
+      );
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.detail || 'Erro ao atualizar unidade de saúde');
       }
@@ -167,7 +180,9 @@ export const EditHealthUnitScreen = ({ route }) => {
       // Show success modal
       setSuccessModalVisible(true);
     } catch (err) {
-      setError(err.message || 'Ocorreu um erro ao tentar atualizar a unidade de saúde');
+      setError(
+        err.message || 'Ocorreu um erro ao tentar atualizar a unidade de saúde',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -197,7 +212,7 @@ export const EditHealthUnitScreen = ({ route }) => {
       <View style={styles.container}>
         <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('HealthUnitList')}
           >
@@ -217,7 +232,7 @@ export const EditHealthUnitScreen = ({ route }) => {
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.navigate('HealthUnitList')}
         >
@@ -226,15 +241,17 @@ export const EditHealthUnitScreen = ({ route }) => {
         <Text style={styles.headerTitle}>Editar Unidade de Saúde</Text>
       </View>
 
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {renderHeaderInfo()}
 
         {error && (
           <View style={styles.errorContainer}>
-            <Icon name="error-outline" size={20} color="#B71C1C" style={styles.errorIcon} />
+            <Icon
+              name="error-outline"
+              size={20}
+              color="#B71C1C"
+              style={styles.errorIcon}
+            />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
@@ -253,7 +270,12 @@ export const EditHealthUnitScreen = ({ route }) => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Nome da Unidade</Text>
             <View style={styles.inputContainer}>
-              <Icon name="domain" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="domain"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={unitName}
@@ -267,7 +289,12 @@ export const EditHealthUnitScreen = ({ route }) => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Código</Text>
             <View style={styles.inputContainer}>
-              <Icon name="local-offer" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="local-offer"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={unitCode}
@@ -281,7 +308,12 @@ export const EditHealthUnitScreen = ({ route }) => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Cidade</Text>
             <View style={styles.inputContainer}>
-              <Icon name="location-city" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="location-city"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={city}
@@ -295,7 +327,12 @@ export const EditHealthUnitScreen = ({ route }) => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Endereço Completo</Text>
             <View style={[styles.inputContainer, styles.multilineContainer]}>
-              <Icon name="place" size={20} color="#666" style={[styles.inputIcon, styles.multilineIcon]} />
+              <Icon
+                name="place"
+                size={20}
+                color="#666"
+                style={[styles.inputIcon, styles.multilineIcon]}
+              />
               <TextInput
                 style={[styles.input, styles.multilineInput]}
                 value={location}
@@ -311,7 +348,9 @@ export const EditHealthUnitScreen = ({ route }) => {
           <View style={styles.switchContainer}>
             <Text style={styles.label}>Status da Unidade</Text>
             <View style={styles.switchWrapper}>
-              <Text style={isActive ? styles.inactiveText : styles.activeTextBold}>
+              <Text
+                style={isActive ? styles.inactiveText : styles.activeTextBold}
+              >
                 Inativo
               </Text>
               <Switch
@@ -321,7 +360,9 @@ export const EditHealthUnitScreen = ({ route }) => {
                 thumbColor={isActive ? '#4CAF50' : '#F44336'}
                 style={styles.switch}
               />
-              <Text style={isActive ? styles.activeTextBold : styles.inactiveText}>
+              <Text
+                style={isActive ? styles.activeTextBold : styles.inactiveText}
+              >
                 Ativo
               </Text>
             </View>
@@ -329,7 +370,7 @@ export const EditHealthUnitScreen = ({ route }) => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.primaryButton, isLoading && styles.disabledButton]}
             onPress={handleUpdate}
             disabled={isLoading}
@@ -339,20 +380,30 @@ export const EditHealthUnitScreen = ({ route }) => {
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <View style={styles.buttonContent}>
-                <Icon name="save" size={20} color="#fff" style={styles.buttonIcon} />
+                <Icon
+                  name="save"
+                  size={20}
+                  color="#fff"
+                  style={styles.buttonIcon}
+                />
                 <Text style={styles.primaryButtonText}>Salvar Alterações</Text>
               </View>
             )}
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => navigation.navigate('HealthUnitList')}
             disabled={isLoading}
             activeOpacity={0.8}
           >
             <View style={styles.buttonContent}>
-              <Icon name="close" size={20} color="#666" style={styles.buttonIcon} />
+              <Icon
+                name="close"
+                size={20}
+                color="#666"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.secondaryButtonText}>Cancelar</Text>
             </View>
           </TouchableOpacity>
@@ -370,13 +421,13 @@ export const EditHealthUnitScreen = ({ route }) => {
             <View style={styles.successIconContainer}>
               <Icon name="check-circle" size={80} color="#4CAF50" />
             </View>
-            
+
             <Text style={styles.successModalTitle}>Unidade Atualizada!</Text>
             <Text style={styles.successModalText}>
               As alterações foram salvas com sucesso.
             </Text>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.successModalButton}
               onPress={handleCloseSuccessModal}
               activeOpacity={0.8}
@@ -682,7 +733,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontsize: 14,
     fontWeight: '600',
-  }
+  },
 });
 
 export default EditHealthUnitScreen;

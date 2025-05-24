@@ -1,6 +1,6 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 
 const initialState = {
   accessToken: null,
@@ -26,7 +26,7 @@ export const login = createAsyncThunk(
       const response = await fetch(`${API_URL}/token`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          accept: 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: formData.toString(),
@@ -43,10 +43,10 @@ export const login = createAsyncThunk(
       await AsyncStorage.setItem('refreshToken', data.refresh_token);
 
       return data;
-    } catch (error) {
+    } catch {
       return rejectWithValue('Network error occurred');
     }
-  }
+  },
 );
 
 export const restoreTokens = createAsyncThunk(
@@ -55,7 +55,7 @@ export const restoreTokens = createAsyncThunk(
     const accessToken = await AsyncStorage.getItem('accessToken');
     const refreshToken = await AsyncStorage.getItem('refreshToken');
     return { accessToken, refreshToken };
-  }
+  },
 );
 
 export const logoutAsync = createAsyncThunk(
@@ -64,15 +64,15 @@ export const logoutAsync = createAsyncThunk(
     try {
       await AsyncStorage.removeItem('accessToken');
       await AsyncStorage.removeItem('refreshToken');
-      await new Promise(resolve => setTimeout(resolve, 100));   
+      await new Promise((resolve) => setTimeout(resolve, 100));
       dispatch(logout());
-      
+
       return true;
     } catch (error) {
       console.error('Error during logout:', error);
       return false;
     }
-  }
+  },
 );
 
 const authSlice = createSlice({

@@ -41,9 +41,9 @@ import CameraScreen from './pages/user/lesoes/CameraScreen';
 import { PhotoPreviewScreen } from './pages/user/lesoes/PhotoPreviewScreen';
 
 // admin unidades import
-import HealthUnitListScreen from './pages/unidadeSaude/HealthUnitListScreen'; 
+import HealthUnitListScreen from './pages/unidadeSaude/HealthUnitListScreen';
 import RegisterHealthUnitScreen from './pages/unidadeSaude/RegisterHealthUnitScreen';
-import {EditHealthUnitScreen}  from './pages/unidadeSaude/EditHealthUnitScreen';
+import { EditHealthUnitScreen } from './pages/unidadeSaude/EditHealthUnitScreen';
 
 //questionario
 import QuestoesGeraisSaude from './pages/user/questionario/QuestoesGeraisSaude';
@@ -59,7 +59,7 @@ import SignatureCameraScreen from './pages/user/consent/SignatureCameraScreen';
 import SignaturePreviewScreen from './pages/user/consent/SignaturePreviewScreen';
 
 const Stack = createNativeStackNavigator();
-const navigationRef = React.createRef(); 
+const navigationRef = React.createRef();
 
 const extractTokenFromURL = (url) => {
   const match = url.match(/[?&]token=([^&]+)/);
@@ -68,8 +68,10 @@ const extractTokenFromURL = (url) => {
 
 const AppContent = () => {
   const dispatch = useDispatch();
-  const { isAuthenticated, loading: authLoading } = useSelector(state => state.auth);
-  const { loading: userLoading } = useSelector(state => state.user);
+  const { isAuthenticated, loading: authLoading } = useSelector(
+    (state) => state.auth,
+  );
+  const { loading: userLoading } = useSelector((state) => state.user);
   const hasAdminAccess = useSelector(selectHasAdminAccess);
   const initialLinkProcessed = useRef(false);
   const prevAuthState = useRef(isAuthenticated);
@@ -77,21 +79,21 @@ const AppContent = () => {
   useEffect(() => {
     if (prevAuthState.current !== isAuthenticated) {
       prevAuthState.current = isAuthenticated;
-      
+
       if (navigationRef.current) {
         if (isAuthenticated) {
           navigationRef.current.dispatch(
             CommonActions.reset({
               index: 0,
               routes: [{ name: hasAdminAccess ? 'HomeAdmin' : 'Home' }],
-            })
+            }),
           );
         } else {
           navigationRef.current.dispatch(
             CommonActions.reset({
               index: 0,
               routes: [{ name: 'InitialScreen' }],
-            })
+            }),
           );
         }
       }
@@ -107,7 +109,7 @@ const AppContent = () => {
             await dispatch(fetchCurrentUser());
           }
         } catch (error) {
-          console.error("Error initializing app:", error);
+          console.error('Error initializing app:', error);
         }
       }
     };
@@ -121,20 +123,22 @@ const AppContent = () => {
       if (url) {
         const token = extractTokenFromURL(url);
         if (token) {
-          console.log("Token found in deep link:", token);
+          console.log('Token found in deep link:', token);
           initialLinkProcessed.current = true;
-          
-          if (url.includes('reset-password') || url.includes('redefinir-senha')) {
+
+          if (
+            url.includes('reset-password') ||
+            url.includes('redefinir-senha')
+          ) {
             navigationRef.current?.navigate('RedefinirSenha', { token });
-          } 
-          else {
+          } else {
             navigationRef.current?.navigate('Register', { token });
           }
         }
       }
     };
 
-    Linking.getInitialURL().then(url => {
+    Linking.getInitialURL().then((url) => {
       if (url) {
         handleDeepLink({ url });
       }
@@ -149,8 +153,14 @@ const AppContent = () => {
   }
 
   return (
-    <Stack.Navigator 
-      initialRouteName={isAuthenticated ? (hasAdminAccess ? 'HomeAdmin' : 'Home') : 'InitialScreen'}
+    <Stack.Navigator
+      initialRouteName={
+        isAuthenticated
+          ? hasAdminAccess
+            ? 'HomeAdmin'
+            : 'Home'
+          : 'InitialScreen'
+      }
       screenOptions={{ headerShown: false }}
     >
       {/* Auth screens - always available */}
@@ -162,16 +172,28 @@ const AppContent = () => {
       <Stack.Screen name="EsqueciSenha" component={EsqueciSenhaScreen} />
       <Stack.Screen name="RedefinirSenha" component={RedefinirSenhaScreen} />
       <Stack.Screen name="NoRegistration" component={NoRegistrationScreen} />
-      
+
       {/* Admin screens */}
       <Stack.Screen name="HomeAdmin" component={HomeAdminScreen} />
-      <Stack.Screen name="RegisterProfessional" component={RegisterProfessionalScreen} />
-      <Stack.Screen name="EditProfessional" component={EditProfessionalScreen} />
-      <Stack.Screen name="ProfessionalsList" component={ProfessionalsListScreen} />
+      <Stack.Screen
+        name="RegisterProfessional"
+        component={RegisterProfessionalScreen}
+      />
+      <Stack.Screen
+        name="EditProfessional"
+        component={EditProfessionalScreen}
+      />
+      <Stack.Screen
+        name="ProfessionalsList"
+        component={ProfessionalsListScreen}
+      />
       <Stack.Screen name="HealthUnitList" component={HealthUnitListScreen} />
-      <Stack.Screen name="RegisterHealthUnit" component={RegisterHealthUnitScreen} />
+      <Stack.Screen
+        name="RegisterHealthUnit"
+        component={RegisterHealthUnitScreen}
+      />
       <Stack.Screen name="EditHealthUnit" component={EditHealthUnitScreen} />
-      
+
       {/* User screens */}
       <Stack.Screen name="Home" component={HomeScreen} />
       <Stack.Screen name="NovoAtendimento" component={NovoAtendimentoScreen} />
@@ -181,9 +203,12 @@ const AppContent = () => {
       <Stack.Screen name="InjuryLocation" component={InjuryLocationScreen} />
       <Stack.Screen name="Camera" component={CameraScreen} />
       <Stack.Screen name="PhotoPreview" component={PhotoPreviewScreen} />
-      
+
       {/* Questionario screens */}
-      <Stack.Screen name="QuestoesGeraisSaude" component={QuestoesGeraisSaude} />
+      <Stack.Screen
+        name="QuestoesGeraisSaude"
+        component={QuestoesGeraisSaude}
+      />
       <Stack.Screen name="AvaliacaoFototipo" component={AvaliacaoFototipo} />
       <Stack.Screen name="HistoricoCancer" component={HistoricoCancer} />
       <Stack.Screen name="FatoresRisco" component={FatoresRisco} />
@@ -193,7 +218,10 @@ const AppContent = () => {
       {/* Consent screens */}
       <Stack.Screen name="ConsentTerm" component={ConsentTermScreen} />
       <Stack.Screen name="SignatureCamera" component={SignatureCameraScreen} />
-      <Stack.Screen name="SignaturePreview" component={SignaturePreviewScreen} />
+      <Stack.Screen
+        name="SignaturePreview"
+        component={SignaturePreviewScreen}
+      />
     </Stack.Navigator>
   );
 };
