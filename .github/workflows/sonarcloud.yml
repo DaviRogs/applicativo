@@ -1,0 +1,36 @@
+name: Análise com SonarCloud
+
+on:
+  push:
+    branches:
+      - main
+      - pipeline-FrontEnd
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  sonarcloud:
+    name: 🔎 Analisar código com SonarCloud
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: ⚙️ Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Instalar dependências
+        run: npm ci
+
+      - name: 🔍 Análise com SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectKey='DaviRogs'
+            -Dsonar.organization='Davi Rodrigues da Rocha'
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
