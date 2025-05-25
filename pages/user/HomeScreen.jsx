@@ -17,17 +17,17 @@ import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
-const HomeScreen = ({}) => {
+const HomeScreen = () => {
   const [menuVisible, setMenuVisible] = useState(false);
   const [attendanceData, setAttendanceData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [currentDateTimeUTC] = useState(() => {
     const now = new Date();
     return now.toISOString().slice(0, 19).replace('T', ' ');
   });
-  const user = useSelector((state) => state.user.userData);
+  // const user = useSelector((state) => state.user.userData);
   const authenticated = useSelector((state) => state.auth.isAuthenticated);
   const token = useSelector((state) => state.auth.accessToken);
 

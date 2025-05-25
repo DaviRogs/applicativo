@@ -376,36 +376,6 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  headerInfo: {
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  infoIcon: {
-    marginRight: 8,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
-  },
-  userText: {
-    fontSize: 14,
-    color: '#555',
-  },
   card: {
     backgroundColor: '#fff',
     borderRadius: 10,

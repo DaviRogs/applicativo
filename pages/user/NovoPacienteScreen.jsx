@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
-import { injuryService } from './lesoes/injuryService';
+// import { injuryService } from './lesoes/injuryService';
 import {
   submitPatientData,
   selectIsReadyForSubmission,
@@ -30,6 +30,7 @@ import { resetFormAll } from '../../store/injurySlice';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const NovoPacienteScreen = ({ route }) => {
   const [injuries, setInjuries] = useState([]);
@@ -43,7 +44,7 @@ const NovoPacienteScreen = ({ route }) => {
   const patientData = useSelector((state) => state.patient.patientData);
 
   // Get values from redux state
-  const { signaturePhoto, isConsentAgreed, signatureDate } = useSelector(
+  const { signaturePhoto, isConsentAgreed /*signatureDate*/ } = useSelector(
     (state) => state.consentTerm,
   );
   const reduxInjuries = useSelector((state) => state.injury?.injuries || []);
@@ -54,7 +55,7 @@ const NovoPacienteScreen = ({ route }) => {
   const validationErrors = useSelector(selectValidationErrors);
   const submissionStatus = useSelector(selectSubmissionStatus);
   const isSaving = submissionStatus === 'pending';
-  const accessToken = useSelector((state) => state.auth?.accessToken);
+  // const accessToken = useSelector((state) => state.auth?.accessToken);
   const navigation = useNavigation();
 
   useFocusEffect(
@@ -168,7 +169,7 @@ const NovoPacienteScreen = ({ route }) => {
       if (submitPatientData.fulfilled.match(resultAction)) {
         const results = [];
         for (let i = 1; i <= reduxInjuries.length; i++) {
-          const storedResult = localStorage.getItem(`injuryResult-${i}`);
+          const storedResult = await AsyncStorage.getItem(`injuryResult-${i}`);
           if (storedResult) {
             results.push(JSON.parse(storedResult));
           }
@@ -560,10 +561,12 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#1e3d59',
   },
+  /*
   container: {
     flex: 1,
     backgroundColor: '#f7f9fc',
   },
+  */
   header: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -585,26 +588,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 20,
     fontWeight: '600',
-  },
-  metadataContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 10,
-    backgroundColor: '#f7f9fc',
-    borderBottomWidth: 1,
-    borderBottomColor: '#e8edf3',
-  },
-  metadataItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  metadataIcon: {
-    marginRight: 6,
-  },
-  metadataText: {
-    fontSize: 12,
-    color: '#666',
   },
   content: {
     flex: 1,
@@ -890,12 +873,6 @@ const styles = StyleSheet.create({
     elevation: 3,
     borderWidth: 1,
     borderColor: '#e8edf3',
-  },
-  localLesao: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#1e3d59',
-    marginBottom: 10,
   },
   tipo: {
     fontSize: 16,

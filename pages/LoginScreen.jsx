@@ -20,14 +20,14 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { fetchCurrentUser } from '../store/userSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { API_URL } from '@env';
+// import AsyncStorage from '@react-native-async-storage/async-storage';
+// import { API_URL } from '@env';
 const LoginScreen = () => {
   const [cpf, setCpf] = useState('');
   const [formattedCpf, setFormattedCpf] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setPasswordVisible] = useState(false);
-  const [loading, setLoading] = useState(false);
+  const [loading] = useState(false);
   const [error, setError] = useState(null);
 
   const dispatch = useDispatch();
@@ -36,8 +36,8 @@ const LoginScreen = () => {
   );
   const navigation = useNavigation();
 
-  const logo1 = require('../assets/logo1.png');
-  const logo2 = require('../assets/logo2.png');
+  // const logo1 = require('../assets/logo1.png');
+  // const logo2 = require('../assets/logo2.png');
   const dermaAlert = require('../assets/dermaalert.png');
 
   useFocusEffect(
@@ -121,6 +121,7 @@ const LoginScreen = () => {
   };
 
   // Direct API login function
+  /*
   const performLogin = async (username, password) => {
     try {
       setLoading(true);
@@ -169,7 +170,7 @@ const LoginScreen = () => {
       setLoading(false);
     }
   };
-
+  */
   const handleLogin = async () => {
     animateButton();
     Keyboard.dismiss();
@@ -185,7 +186,7 @@ const LoginScreen = () => {
     }
 
     try {
-      const loginData = await performLogin(cpf, password);
+      // const loginData = await performLogin(cpf, password);
 
       const userResult = await dispatch(fetchCurrentUser());
 

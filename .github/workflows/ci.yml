@@ -2,7 +2,9 @@ name: CI - Aplicativo React Native
 
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - pipeline-FrontEnd
   pull_request:
     branches: [main]
 

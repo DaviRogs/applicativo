@@ -62,7 +62,7 @@ const AnamnesisScreen = ({ navigation }) => {
     return null;
   };
 
-  const renderRadioGroup = (field, label) => (
+  const renderRadioGroup = (field) => (
     <View style={styles.radioGroup}>
       <TouchableOpacity
         style={styles.radioOption}

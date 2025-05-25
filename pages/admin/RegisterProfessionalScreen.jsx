@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState /*useEffect*/ } from 'react';
 import {
   View,
   Text,
@@ -7,10 +7,10 @@ import {
   TextInput,
   ScrollView,
   ActivityIndicator,
-  Alert,
+  //Alert,
   Modal,
-  Image,
-  SafeAreaView,
+  //Image,
+  //SafeAreaView,
   StatusBar,
   Platform,
 } from 'react-native';

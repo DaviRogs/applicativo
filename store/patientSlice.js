@@ -1,5 +1,5 @@
-import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { API_URL } from '@env';
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 
 // Async thunk to check if a patient exists by CPF
 export const checkPatientByCpf = createAsyncThunk(

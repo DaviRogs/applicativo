@@ -360,7 +360,7 @@ export const submitPatientData = createAsyncThunk(
 
             console.log('Injury registration result:', resultLesao);
 
-            localStorage.setItem(
+            await AsyncStorage.setItem(
               `injuryResult-${lesionId}`,
               JSON.stringify({
                 ...resultLesao,

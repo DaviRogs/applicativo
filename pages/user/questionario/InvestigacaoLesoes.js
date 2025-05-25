@@ -390,30 +390,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  headerInfo: {
-    backgroundColor: '#f8f8f8',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
   infoIcon: {
     marginRight: 8,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
-  },
-  userText: {
-    fontSize: 14,
-    color: '#555',
   },
   sectionTitle: {
     fontSize: 18,

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState /*useEffect*/ } from 'react';
 import {
   View,
   Text,
@@ -24,7 +24,7 @@ const EditProfessionalScreen = ({ route }) => {
 
   const isAdmin = useSelector(selectIsAdmin);
   const userUnit = useSelector((state) => state.user.userData?.unidadeSaude[0]);
-  const userData = useSelector((state) => state.user.userData);
+  // const userData = useSelector((state) => state.user.userData);
   const token = useSelector((state) => state.auth.accessToken);
 
   const [isActive, setIsActive] = useState(professional?.fl_ativo || false);
@@ -32,7 +32,7 @@ const EditProfessionalScreen = ({ route }) => {
     professional?.nivel_acesso || 1,
   );
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [roleModalVisible, setRoleModalVisible] = useState(false);
 
   const navigation = useNavigation();
@@ -472,25 +472,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1e3d59',
     marginLeft: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  infoIcon: {
-    marginRight: 8,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#666',
-    width: 60,
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-    flex: 1,
   },
   formGroup: {
     marginBottom: 20,

@@ -86,7 +86,7 @@ const RegisterScreen = () => {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
 
   useEffect(() => {
     if (token) {
@@ -120,7 +120,7 @@ const RegisterScreen = () => {
         setError('Token inválido ou expirado');
         Alert.alert('Erro', 'Token inválido ou expirado');
       }
-    } catch (err) {
+    } catch {
       setError('Erro ao carregar dados');
       Alert.alert('Erro', 'Erro ao carregar dados do usuário');
     } finally {
@@ -191,7 +191,7 @@ const RegisterScreen = () => {
         const errorData = await response.json();
         Alert.alert('Erro', errorData.message || 'Erro ao completar cadastro');
       }
-    } catch (err) {
+    } catch {
       Alert.alert('Erro', 'Erro ao enviar dados');
     } finally {
       setSubmitting(false);

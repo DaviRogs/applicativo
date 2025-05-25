@@ -15,7 +15,7 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
-import { selectIsAdmin } from '../../store/userSlice';
+// import { selectIsAdmin } from '../../store/userSlice';
 import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
@@ -34,7 +34,7 @@ export const HealthUnitListScreen = () => {
   const navigation = useNavigation();
 
   // Get user role from Redux
-  const isAdmin = useSelector(selectIsAdmin);
+  // const isAdmin = useSelector(selectIsAdmin);
   const token = useSelector((state) => state.auth.accessToken);
 
   useFocusEffect(
@@ -453,11 +453,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
   },
   userText: {
     fontSize: 14,

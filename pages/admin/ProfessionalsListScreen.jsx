@@ -34,13 +34,15 @@ const ProfessionalsListScreen = () => {
   // Get user role and unit from Redux
   const isAdmin = useSelector(selectIsAdmin);
   const userUnit = useSelector((state) => state.user.userData?.unidadeSaude[0]);
-  const userData = useSelector((state) => state.user.userData);
+  // const userData = useSelector((state) => state.user.userData);
   const token = useSelector((state) => state.auth.accessToken);
+  /*
   const roles = [
     { id: 1, name: 'Pesquisador', nivel_acesso: 3 },
     { id: 2, name: 'Supervisor', nivel_acesso: 2 },
     { id: 3, name: 'Admin', nivel_acesso: 1 },
   ];
+  */
 
   useFocusEffect(
     React.useCallback(() => {
@@ -457,34 +459,6 @@ const styles = StyleSheet.create({
   unitAddress: {
     fontSize: 14,
     color: '#666',
-  },
-  headerInfo: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  userInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  infoIcon: {
-    marginRight: 8,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
-  },
-  userText: {
-    fontSize: 14,
-    color: '#555',
   },
   sectionHeader: {
     marginBottom: 16,

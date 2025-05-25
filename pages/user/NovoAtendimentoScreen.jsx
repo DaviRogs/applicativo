@@ -16,11 +16,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
 import DateTimePicker from '@react-native-community/datetimepicker';
-import { API_URL } from '@env';
+// import { API_URL } from '@env';
 import {
   checkPatientByCpf,
   registerNewPatient,
-  registerAttendance,
+  // registerAttendance,
   clearPatientFound,
 } from '../../store/patientSlice';
 
@@ -29,8 +29,8 @@ import { BackHandler } from 'react-native';
 
 const NovoAtendimentoScreen = ({ route }) => {
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.user.userData);
-  const authenticated = useSelector((state) => state.auth.isAuthenticated);
+  // const user = useSelector((state) => state.user.userData);
+  // const authenticated = useSelector((state) => state.auth.isAuthenticated);
   const token = useSelector((state) => state.auth.accessToken);
   const navigation = useNavigation();
 
@@ -400,7 +400,7 @@ const NovoAtendimentoScreen = ({ route }) => {
         .map((num) => parseInt(num, 10));
       const date = new Date(year, month - 1, day);
       return isNaN(date.getTime()) ? new Date() : date;
-    } catch (error) {
+    } catch {
       return new Date();
     }
   };

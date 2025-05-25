@@ -13,7 +13,7 @@ import {
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
 import {
-  selectHasAdminAccess,
+  // selectHasAdminAccess,
   updateUnidadeSaude,
   selectIsAdmin,
 } from '../store/userSlice';
@@ -233,7 +233,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
                 <View style={styles.centerContainer}>
                   <Icon name="search-off" size={48} color="#666" />
                   <Text style={styles.emptyText}>
-                    Nenhuma unidade encontrada para "{searchQuery}"
+                    Nenhuma unidade encontrada para &quot;{searchQuery}&quot;
                   </Text>
                 </View>
               ) : (

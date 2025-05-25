@@ -13,7 +13,7 @@ import Icon from 'react-native-vector-icons/MaterialIcons';
 import { logoutAsync } from '../store/authSlice';
 import { useDispatch, useSelector } from 'react-redux';
 import { selectIsAdmin } from '../store/userSlice';
-import { useNavigation, CommonActions } from '@react-navigation/native';
+import { useNavigation /*CommonActions*/ } from '@react-navigation/native';
 
 const FlyoutMenu = ({ visible, onClose }) => {
   const dispatch = useDispatch();
