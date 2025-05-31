@@ -7,7 +7,7 @@ const initialState = {
   patientId: '',
   isConsentAgreed: false,
   loading: false,
-  error: null
+  error: null,
 };
 
 export const consentTermSlice = createSlice({
@@ -39,10 +39,10 @@ export const consentTermSlice = createSlice({
     setError: (state, action) => {
       state.error = action.payload;
     },
-    resetConsentForm: (state) => {
+    resetConsentForm: (/*state*/) => {
       return initialState;
-    }
-  }
+    },
+  },
 });
 
 export const {
@@ -52,7 +52,7 @@ export const {
   setConsentAgreed,
   setLoading,
   setError,
-  resetConsentForm
+  resetConsentForm,
 } = consentTermSlice.actions;
 
 export default consentTermSlice.reducer;

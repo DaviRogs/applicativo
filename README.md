@@ -4,14 +4,14 @@ A aplicação DermAlert é um aplicativo mobile multiplataforma desenvolvido com
 
 ## Documentação Técnica
 
-Toda a documentação técnica do projeto está disponível na [GitHub Pages do projeto](https://www.dermalert.ai/land/dist/index.html).  
+Toda a documentação técnica do projeto está disponível na [GitHub Pages do projeto](https://www.dermalert.ai/land/dist/index.html).
 
 Lá você encontra:
 
-- 📦 Como clonar e rodar o projeto localmente  
-- 🚀 Guia de contribuição para colaboradores  
-- ⚙️ Estrutura e arquitetura da aplicação  
-- 🧪 Boas práticas e padrões adotados  
+- 📦 Como clonar e rodar o projeto localmente
+- 🚀 Guia de contribuição para colaboradores
+- ⚙️ Estrutura e arquitetura da aplicação
+- 🧪 Boas práticas e padrões adotados
 - 📖 Outras informações técnicas relevantes
 
 Acesse e contribua! 😉
@@ -44,8 +44,6 @@ Para isso, você deve seguir o tutorial detalhado disponível na [documentação
 
 ## Histórico de Versões
 
-| Versão | Data | Descrição | Autor | Revisor |
-| :----: | ---- | --------- | ----- | ------- |
-| `1.0`  |10/04/2025| Adiciona descrição, link para gitpage e como rodar aplicação | Izabella Alves | [Esther Sena](https://github.com/esmsena)  |
-
-
+| Versão | Data       | Descrição                                                    | Autor          | Revisor                                   |
+| :----: | ---------- | ------------------------------------------------------------ | -------------- | ----------------------------------------- |
+| `1.0`  | 10/04/2025 | Adiciona descrição, link para gitpage e como rodar aplicação | Izabella Alves | [Esther Sena](https://github.com/esmsena) |

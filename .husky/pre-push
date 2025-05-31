@@ -1,0 +1,7 @@
+echo "Tentando realizar o build de suas aplicação..."
+sleep 3
+
+npm run build || (echo "Erro ao realizar o build de suas aplicações, corrija os erros mencionado" && exit 1)
+
+echo "\n\n Tudo certo com o build de sua aplicação!\n Continue com o seu push...\n\n"
+sleep 3

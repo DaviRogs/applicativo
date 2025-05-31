@@ -1,0 +1,47 @@
+name: CI - Aplicativo React Native
+
+on:
+  push:
+    branches:
+      - main
+      - pipeline-FrontEnd
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 📥 Checkout do código
+        uses: actions/checkout@v3
+
+      - name: ⚙️ Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: 🧪 Instalar dependências
+        run: npm install
+
+      - name: 🧹 Lint do código
+        run: npm run lint
+
+      - name: ✅ Rodar testes
+        run: npm test
+
+      - name: 🚧 Build do projeto (modo dev)
+        run: npx expo export --dev --output-dir=dist
+
+      - name: 📦 Verificar arquivos de build
+        run: ls -la dist
+
+      - name: 🔍 Analisar usando o SonarCloud
+        uses: SonarSource/sonarcloud-github-action@master
+        with:
+          args: >
+            -Dsonar.projectKey=DaviRogs_applicativo
+            -Dsonar.organization=davirogs-1
+            -Dsonar.javascript.lcov.reportPaths=coverage/lcov.info
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

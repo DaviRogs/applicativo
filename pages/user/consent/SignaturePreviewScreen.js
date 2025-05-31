@@ -10,25 +10,28 @@ import {
   StatusBar,
   BackHandler,
   Alert,
-  Dimensions
+  Dimensions,
 } from 'react-native';
 import { useDispatch } from 'react-redux';
-import { setSignaturePhoto, setConsentAgreed } from '../../../store/consentTermSlice';
+import {
+  setSignaturePhoto,
+  setConsentAgreed,
+} from '../../../store/consentTermSlice';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
 
-const { width, height } = Dimensions.get('window');
+const { height } = Dimensions.get('window');
 
 const SignaturePreviewScreen = ({ route, navigation }) => {
   const dispatch = useDispatch();
   const { photo, readOnly } = route.params || {};
-  
+
   useEffect(() => {
     if (!photo || !photo.uri) {
       handleSafeGoBack();
     }
   }, [photo]);
-  
+
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
@@ -37,10 +40,11 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
       };
 
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [])
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, []),
   );
-  
+
   const handleSafeGoBack = () => {
     if (navigation.canGoBack()) {
       navigation.navigate('ConsentTerm');
@@ -52,11 +56,11 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
       }
     }
   };
-  
+
   const handleUseSignature = () => {
     dispatch(setSignaturePhoto(photo));
     dispatch(setConsentAgreed(true));
-    
+
     try {
       if (navigation.canGoBack()) {
         navigation.navigate('ConsentTerm', { signaturePhoto: photo });
@@ -66,15 +70,13 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
     } catch (error) {
       console.error('Navigation error:', error);
       Alert.alert(
-        "Erro de Navegação",
-        "Ocorreu um erro ao retornar para a tela anterior.",
-        [
-          { text: "OK", onPress: () => navigation.navigate('ConsentTerm') }
-        ]
+        'Erro de Navegação',
+        'Ocorreu um erro ao retornar para a tela anterior.',
+        [{ text: 'OK', onPress: () => navigation.navigate('ConsentTerm') }],
       );
     }
   };
-  
+
   const handleRetake = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
@@ -90,9 +92,9 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={handleSafeGoBack}
           activeOpacity={0.7}
@@ -100,10 +102,10 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>
-          {readOnly ? "Visualização da Assinatura" : "Confirmar Assinatura"}
+          {readOnly ? 'Visualização da Assinatura' : 'Confirmar Assinatura'}
         </Text>
       </View>
-      
+
       <View style={styles.contentContainer}>
         <View style={styles.imageWrapper}>
           <View style={styles.imageContainer}>
@@ -113,7 +115,7 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
               resizeMode="contain"
             />
           </View>
-          
+
           {!readOnly && (
             <View style={styles.instructionContainer}>
               <Text style={styles.instructionText}>
@@ -123,10 +125,10 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
           )}
         </View>
       </View>
-      
+
       {!readOnly ? (
         <View style={styles.controlsContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.retakeButton}
             onPress={handleRetake}
             activeOpacity={0.8}
@@ -134,8 +136,8 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
             <Icon name="refresh" size={20} color="#1e3d59" />
             <Text style={styles.retakeButtonText}>Capturar novamente</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.confirmButton}
             onPress={handleUseSignature}
             activeOpacity={0.8}
@@ -146,7 +148,7 @@ const SignaturePreviewScreen = ({ route, navigation }) => {
         </View>
       ) : (
         <View style={styles.singleButtonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backToFormButton}
             onPress={handleSafeGoBack}
             activeOpacity={0.8}
@@ -210,7 +212,7 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    aspectRatio: 4/3,
+    aspectRatio: 4 / 3,
     borderWidth: 2,
     borderColor: 'rgba(255, 255, 255, 0.1)',
     borderRadius: 12,

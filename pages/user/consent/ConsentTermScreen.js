@@ -10,15 +10,15 @@ import {
   Alert,
   ActivityIndicator,
   Platform,
-  StatusBar
+  StatusBar,
 } from 'react-native';
 import { useSelector, useDispatch } from 'react-redux';
-import { 
-  setSignaturePhoto, 
-  removeSignaturePhoto, 
+import {
+  setSignaturePhoto,
+  removeSignaturePhoto,
   setPatientInfo,
   setConsentAgreed,
-  setLoading
+  setLoading,
 } from '../../../store/consentTermSlice';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useFocusEffect } from '@react-navigation/native';
@@ -26,22 +26,19 @@ import { BackHandler } from 'react-native';
 
 const ConsentTermScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
-  const { 
-    signaturePhoto, 
-    signatureDate, 
-    patientName, 
-    patientId,
-    loading 
-  } = useSelector(state => state.consentTerm);
-  
+  const { signaturePhoto, signatureDate, patientName, patientId, loading } =
+    useSelector((state) => state.consentTerm);
+
   // Extract patient data from route params
   useEffect(() => {
     if (route.params?.patientData) {
       const { nome_paciente, cpf_paciente } = route.params.patientData;
-      dispatch(setPatientInfo({
-        name: nome_paciente || '',
-        id: cpf_paciente || ''
-      }));
+      dispatch(
+        setPatientInfo({
+          name: nome_paciente || '',
+          id: cpf_paciente || '',
+        }),
+      );
     }
   }, [route.params?.patientData, dispatch]);
 
@@ -49,12 +46,13 @@ const ConsentTermScreen = ({ navigation, route }) => {
     React.useCallback(() => {
       const onBackPress = () => {
         handleBackPress();
-        return true; 
+        return true;
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [loading, signaturePhoto])
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [loading, signaturePhoto]),
   );
 
   // Handle signature photo from camera
@@ -71,77 +69,74 @@ const ConsentTermScreen = ({ navigation, route }) => {
   };
 
   const handleViewSignature = () => {
-    navigation.navigate('SignaturePreview', { 
+    navigation.navigate('SignaturePreview', {
       photo: signaturePhoto,
-      readOnly: true
+      readOnly: true,
     });
   };
 
   const handleDeleteSignature = () => {
     Alert.alert(
-      "Remover assinatura",
-      "Tem certeza que deseja remover esta assinatura?",
+      'Remover assinatura',
+      'Tem certeza que deseja remover esta assinatura?',
       [
-        { text: "Cancelar", style: "cancel" },
-        { 
-          text: "Remover", 
-          style: "destructive",
+        { text: 'Cancelar', style: 'cancel' },
+        {
+          text: 'Remover',
+          style: 'destructive',
           onPress: () => {
             dispatch(removeSignaturePhoto());
             dispatch(setConsentAgreed(false));
-          }
-        }
-      ]
+          },
+        },
+      ],
     );
   };
 
   const handleSaveConsent = () => {
     if (!signaturePhoto) {
-      Alert.alert("Aviso", "É necessário capturar a assinatura do paciente.");
+      Alert.alert('Aviso', 'É necessário capturar a assinatura do paciente.');
       return;
     }
-    
+
     dispatch(setLoading(true));
     dispatch(setConsentAgreed(true));
-    
+
     // Simulating API call to save consent
     setTimeout(() => {
       dispatch(setLoading(false));
-      Alert.alert(
-        "Sucesso",
-        "Termo de consentimento salvo com sucesso!",
-        [{ 
-          text: "OK", 
+      Alert.alert('Sucesso', 'Termo de consentimento salvo com sucesso!', [
+        {
+          text: 'OK',
           onPress: () => {
             if (navigation.canGoBack()) {
               navigation.navigate('NovoPaciente', { consentSigned: true });
             } else {
               navigation.replace('NovoPaciente', { consentSigned: true });
             }
-          }
-        }]
-      );
+          },
+        },
+      ]);
     }, 1000);
   };
 
   const handleBackPress = () => {
     if (loading) return;
-    
+
     if (signaturePhoto) {
       Alert.alert(
-        "Sair sem salvar?",
-        "Você fez alterações que não foram salvas. Deseja sair sem salvar?",
+        'Sair sem salvar?',
+        'Você fez alterações que não foram salvas. Deseja sair sem salvar?',
         [
-          { text: "Continuar editando", style: "cancel" },
-          { 
-            text: "Sair sem salvar", 
-            style: "destructive",
+          { text: 'Continuar editando', style: 'cancel' },
+          {
+            text: 'Sair sem salvar',
+            style: 'destructive',
             onPress: () => {
-                navigation.navigate('NovoPaciente');
-              
-            }
-          }
-        ]
+              navigation.navigate('NovoPaciente');
+            },
+          },
+        ],
       );
     } else {
       if (navigation.canGoBack()) {
@@ -160,7 +155,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
       month: '2-digit',
       year: 'numeric',
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -168,7 +163,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={handleBackPress}
           disabled={loading}
@@ -178,7 +173,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
         <Text style={styles.headerTitle}>Termo de Consentimento</Text>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
@@ -187,48 +182,51 @@ const ConsentTermScreen = ({ navigation, route }) => {
           <Text style={styles.termTitle}>
             TERMO DE CONSENTIMENTO LIVRE E ESCLARECIDO
           </Text>
-          
+
           <Text style={styles.termParagraph}>
-            Eu, <Text style={styles.highlightText}>{patientName}</Text>, portador(a) do documento 
-            <Text style={styles.highlightText}> {patientId}</Text>, declaro que fui devidamente 
-            informado(a) e esclarecido(a) sobre os procedimentos, riscos e benefícios do 
-            atendimento a ser prestado.
+            Eu, <Text style={styles.highlightText}>{patientName}</Text>,
+            portador(a) do documento
+            <Text style={styles.highlightText}> {patientId}</Text>, declaro que
+            fui devidamente informado(a) e esclarecido(a) sobre os
+            procedimentos, riscos e benefícios do atendimento a ser prestado.
           </Text>
-          
+
           <Text style={styles.termParagraph}>
-            Autorizo a coleta, processamento e armazenamento dos meus dados pessoais e de saúde, 
-            incluindo imagens e registros de lesões, para fins de diagnóstico, tratamento e 
-            acompanhamento médico.
+            Autorizo a coleta, processamento e armazenamento dos meus dados
+            pessoais e de saúde, incluindo imagens e registros de lesões, para
+            fins de diagnóstico, tratamento e acompanhamento médico.
           </Text>
-          
+
           <Text style={styles.termParagraph}>
-            Entendo que estes dados serão utilizados apenas para finalidades relacionadas ao 
-            meu atendimento e serão armazenados de forma segura, em conformidade com a 
-            Lei Geral de Proteção de Dados (LGPD - Lei nº 13.709/2018).
+            Entendo que estes dados serão utilizados apenas para finalidades
+            relacionadas ao meu atendimento e serão armazenados de forma segura,
+            em conformidade com a Lei Geral de Proteção de Dados (LGPD - Lei nº
+            13.709/2018).
           </Text>
-          
+
           <Text style={styles.termParagraph}>
-            Estou ciente de que posso solicitar acesso, retificação ou exclusão dos meus 
-            dados pessoais a qualquer momento, exceto quando a lei exigir a retenção desses dados.
+            Estou ciente de que posso solicitar acesso, retificação ou exclusão
+            dos meus dados pessoais a qualquer momento, exceto quando a lei
+            exigir a retenção desses dados.
           </Text>
-          
+
           <Text style={styles.termParagraph}>
-            Ao assinar este documento, confirmo que li, compreendi e concordo com todas as 
-            informações acima apresentadas.
+            Ao assinar este documento, confirmo que li, compreendi e concordo
+            com todas as informações acima apresentadas.
           </Text>
         </View>
-        
+
         <View style={styles.signatureSection}>
           <Text style={styles.signatureTitle}>Assinatura do Paciente</Text>
-          
+
           {signaturePhoto ? (
             <View style={styles.signatureContainer}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.signaturePreview}
                 onPress={handleViewSignature}
                 activeOpacity={0.8}
               >
-                <Image 
+                <Image
                   source={{ uri: signaturePhoto.uri }}
                   style={styles.signatureImage}
                   resizeMode="contain"
@@ -238,7 +236,7 @@ const ConsentTermScreen = ({ navigation, route }) => {
                   <Text style={styles.previewText}>Visualizar</Text>
                 </View>
               </TouchableOpacity>
-              
+
               <View style={styles.signatureInfo}>
                 {signatureDate && (
                   <View style={styles.dateContainer}>
@@ -248,19 +246,21 @@ const ConsentTermScreen = ({ navigation, route }) => {
                     </Text>
                   </View>
                 )}
-                
-                <TouchableOpacity 
+
+                <TouchableOpacity
                   style={styles.removeSignatureButton}
                   onPress={handleDeleteSignature}
                   disabled={loading}
                 >
                   <Icon name="delete-outline" size={18} color="#e74c3c" />
-                  <Text style={styles.removeSignatureText}>Remover assinatura</Text>
+                  <Text style={styles.removeSignatureText}>
+                    Remover assinatura
+                  </Text>
                 </TouchableOpacity>
               </View>
             </View>
           ) : (
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.captureButton}
               onPress={handleCaptureSignature}
               disabled={loading}
@@ -278,8 +278,8 @@ const ConsentTermScreen = ({ navigation, route }) => {
       <View style={styles.footer}>
         <TouchableOpacity
           style={[
-            styles.saveButton, 
-            (!signaturePhoto || loading) && styles.disabledButton
+            styles.saveButton,
+            (!signaturePhoto || loading) && styles.disabledButton,
           ]}
           onPress={handleSaveConsent}
           disabled={!signaturePhoto || loading}
@@ -287,12 +287,21 @@ const ConsentTermScreen = ({ navigation, route }) => {
         >
           {loading ? (
             <>
-              <ActivityIndicator color="#fff" size="small" style={styles.loader} />
+              <ActivityIndicator
+                color="#fff"
+                size="small"
+                style={styles.loader}
+              />
               <Text style={styles.saveButtonText}>Processando...</Text>
             </>
           ) : (
             <>
-              <Icon name="check-circle" size={22} color="#fff" style={styles.saveIcon} />
+              <Icon
+                name="check-circle"
+                size={22}
+                color="#fff"
+                style={styles.saveIcon}
+              />
               <Text style={styles.saveButtonText}>Confirmar e Salvar</Text>
             </>
           )}

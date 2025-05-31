@@ -10,25 +10,33 @@ import {
   TextInput,
   StatusBar,
   Platform,
-  ActivityIndicator
+  ActivityIndicator,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressSteps from '../../../components/ProgressBar';
-import { atualizarInvestigacaoLesoes, voltarEtapa } from '../../../store/anamnesisSlice';
+import {
+  atualizarInvestigacaoLesoes,
+  voltarEtapa,
+} from '../../../store/anamnesisSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 const InvestigacaoLesoes = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const investigacaoLesoesState = useSelector(state => state.anamnesis.investigacaoLesoes);
-  const progressoQuestionario = useSelector(state => state.anamnesis.progressoQuestionario);
-  
+  const investigacaoLesoesState = useSelector(
+    (state) => state.anamnesis.investigacaoLesoes,
+  );
+  /*
+  const progressoQuestionario = useSelector(
+    (state) => state.anamnesis.progressoQuestionario,
+  );
+  */
+
   const [formData, setFormData] = useState(investigacaoLesoesState);
   const [errors, setErrors] = useState({});
   const [submitting, setSubmitting] = useState(false);
-  
 
   useFocusEffect(
     React.useCallback(() => {
@@ -36,41 +44,50 @@ const InvestigacaoLesoes = () => {
         handleBack();
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   const validateForm = () => {
     let formErrors = {};
-    
+
     if (!formData.mudancaPintasManchas) {
-      formErrors.mudancaPintasManchas = "Por favor, responda sobre mudanças em pintas ou manchas";
+      formErrors.mudancaPintasManchas =
+        'Por favor, responda sobre mudanças em pintas ou manchas';
     }
-    
+
     if (!formData.sintomasLesoes) {
-      formErrors.sintomasLesoes = "Por favor, responda se há coceira, sangramento ou dor";
+      formErrors.sintomasLesoes =
+        'Por favor, responda se há coceira, sangramento ou dor';
     }
-    
+
     if (formData.mudancaPintasManchas === 'sim' && !formData.tempoAlteracoes) {
-      formErrors.tempoAlteracoes = "Por favor, indique há quanto tempo notou as alterações";
+      formErrors.tempoAlteracoes =
+        'Por favor, indique há quanto tempo notou as alterações';
     }
-    
-    if (formData.mudancaPintasManchas === 'sim' && !formData.caracteristicasLesoes) {
-      formErrors.caracteristicasLesoes = "Por favor, responda sobre as características das lesões";
+
+    if (
+      formData.mudancaPintasManchas === 'sim' &&
+      !formData.caracteristicasLesoes
+    ) {
+      formErrors.caracteristicasLesoes =
+        'Por favor, responda sobre as características das lesões';
     }
-    
+
     if (!formData.consultaMedica) {
-      formErrors.consultaMedica = "Por favor, responda se já procurou um médico";
+      formErrors.consultaMedica =
+        'Por favor, responda se já procurou um médico';
     }
-    
+
     if (formData.consultaMedica === 'sim' && !formData.diagnosticoLesoes) {
-      formErrors.diagnosticoLesoes = "Por favor, informe o diagnóstico recebido";
+      formErrors.diagnosticoLesoes =
+        'Por favor, informe o diagnóstico recebido';
     }
-    
+
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
   };
@@ -83,139 +100,179 @@ const InvestigacaoLesoes = () => {
   const handleSubmit = () => {
     if (validateForm()) {
       setSubmitting(true);
-      
+
       // Salvar os dados no Redux
       dispatch(atualizarInvestigacaoLesoes(formData));
-      
+
       // Simulando envio para o backend
       setTimeout(() => {
         setSubmitting(false);
         Alert.alert(
-          "Questionário Concluído",
-          "Suas respostas foram salvas com sucesso. Obrigado por completar o questionário de anamnese.",
+          'Questionário Concluído',
+          'Suas respostas foram salvas com sucesso. Obrigado por completar o questionário de anamnese.',
           [
-            { 
-              text: "OK", 
-              onPress: () => navigation.navigate('ResultadoAnamnese') 
-            }
-          ]
+            {
+              text: 'OK',
+              onPress: () => navigation.navigate('ResultadoAnamnese'),
+            },
+          ],
         );
       }, 1000);
     } else {
       Alert.alert(
-        "Campos incompletos",
-        "Por favor, preencha todos os campos obrigatórios antes de finalizar.",
-        [{ text: "OK" }]
+        'Campos incompletos',
+        'Por favor, preencha todos os campos obrigatórios antes de finalizar.',
+        [{ text: 'OK' }],
       );
     }
   };
 
   const handleOptionSelect = (field, value) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const renderRadioGroup = (field, options, errorKey) => (
     <View style={styles.radioGroupContainer}>
       <View style={styles.radioGroup}>
         {options.map((option, index) => (
-          <TouchableOpacity 
+          <TouchableOpacity
             key={index}
             style={styles.radioOption}
             onPress={() => handleOptionSelect(field, option.value)}
             activeOpacity={0.7}
           >
-            <View style={[
-              styles.radioCircle,
-              formData[field] === option.value && styles.radioSelected
-            ]}>
-              {formData[field] === option.value && <View style={styles.radioInner} />}
+            <View
+              style={[
+                styles.radioCircle,
+                formData[field] === option.value && styles.radioSelected,
+              ]}
+            >
+              {formData[field] === option.value && (
+                <View style={styles.radioInner} />
+              )}
             </View>
             <Text style={styles.radioText}>{option.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
-      {errors[errorKey] && <Text style={styles.errorText}>{errors[errorKey]}</Text>}
+      {errors[errorKey] && (
+        <Text style={styles.errorText}>{errors[errorKey]}</Text>
+      )}
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={handleBack}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
       <View style={styles.progressContainer}>
-        <ProgressSteps 
-          currentStep={5} 
+        <ProgressSteps
+          currentStep={5}
           totalSteps={5}
-          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+          stepLabels={[
+            'Questões Gerais',
+            'Avaliação Fototipo',
+            'Histórico Câncer',
+            'Fatores de Risco',
+            'Revisão',
+          ]}
         />
       </View>
 
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
- 
-        
-        <Text style={styles.sectionTitle}>Investigação de Câncer de Pele e Lesões Suspeitas</Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.sectionTitle}>
+          Investigação de Câncer de Pele e Lesões Suspeitas
+        </Text>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você tem pintas ou manchas que mudaram de cor, tamanho ou formato recentemente?</Text>
-          {renderRadioGroup('mudancaPintasManchas', 
-            [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'mudancaPintasManchas'
+          <Text style={styles.question}>
+            Você tem pintas ou manchas que mudaram de cor, tamanho ou formato
+            recentemente?
+          </Text>
+          {renderRadioGroup(
+            'mudancaPintasManchas',
+            [
+              { label: 'Sim', value: 'sim' },
+              { label: 'Não', value: 'não' },
+            ],
+            'mudancaPintasManchas',
           )}
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Essas manchas ou lesões causam coceira, sangramento ou dor?</Text>
-          {renderRadioGroup('sintomasLesoes', 
-            [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'sintomasLesoes'
+          <Text style={styles.question}>
+            Essas manchas ou lesões causam coceira, sangramento ou dor?
+          </Text>
+          {renderRadioGroup(
+            'sintomasLesoes',
+            [
+              { label: 'Sim', value: 'sim' },
+              { label: 'Não', value: 'não' },
+            ],
+            'sintomasLesoes',
           )}
         </View>
 
         {formData.mudancaPintasManchas === 'sim' && (
           <View style={styles.questionContainer}>
-            <Text style={styles.question}>Há quanto tempo você notou essas alterações?</Text>
-            {renderRadioGroup('tempoAlteracoes', [
-              { label: 'Menos de 1 mês', value: 'Menos de 1 mês' },
-              { label: '1-3 meses', value: '1-3 meses' },
-              { label: '3-6 meses', value: '3-6 meses' },
-              { label: 'Mais de 6 meses', value: 'Mais de 6 meses' }
-            ], 'tempoAlteracoes')}
+            <Text style={styles.question}>
+              Há quanto tempo você notou essas alterações?
+            </Text>
+            {renderRadioGroup(
+              'tempoAlteracoes',
+              [
+                { label: 'Menos de 1 mês', value: 'Menos de 1 mês' },
+                { label: '1-3 meses', value: '1-3 meses' },
+                { label: '3-6 meses', value: '3-6 meses' },
+                { label: 'Mais de 6 meses', value: 'Mais de 6 meses' },
+              ],
+              'tempoAlteracoes',
+            )}
           </View>
         )}
 
         {formData.mudancaPintasManchas === 'sim' && (
           <View style={styles.questionContainer}>
-            <Text style={styles.question}>Essas lesões têm bordas irregulares, múltiplas cores ou assimetria?</Text>
-            {renderRadioGroup('caracteristicasLesoes', 
-              [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-              'caracteristicasLesoes'
+            <Text style={styles.question}>
+              Essas lesões têm bordas irregulares, múltiplas cores ou
+              assimetria?
+            </Text>
+            {renderRadioGroup(
+              'caracteristicasLesoes',
+              [
+                { label: 'Sim', value: 'sim' },
+                { label: 'Não', value: 'não' },
+              ],
+              'caracteristicasLesoes',
             )}
           </View>
         )}
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Você já procurou um médico para avaliar essas lesões?</Text>
-          {renderRadioGroup('consultaMedica', 
-            [{ label: 'Sim', value: 'sim' }, { label: 'Não', value: 'não' }],
-            'consultaMedica'
+          <Text style={styles.question}>
+            Você já procurou um médico para avaliar essas lesões?
+          </Text>
+          {renderRadioGroup(
+            'consultaMedica',
+            [
+              { label: 'Sim', value: 'sim' },
+              { label: 'Não', value: 'não' },
+            ],
+            'consultaMedica',
           )}
 
           {formData.consultaMedica === 'sim' && (
             <View>
-              <Text style={styles.subQuestion}>Se sim, qual foi o diagnóstico?</Text>
+              <Text style={styles.subQuestion}>
+                Se sim, qual foi o diagnóstico?
+              </Text>
               <View style={styles.textInputContainer}>
                 <TextInput
                   style={styles.textInput}
@@ -224,10 +281,12 @@ const InvestigacaoLesoes = () => {
                   multiline={true}
                   numberOfLines={3}
                   value={formData.diagnosticoLesoes}
-                  onChangeText={(text) => setFormData(prev => ({
-                    ...prev,
-                    diagnosticoLesoes: text
-                  }))}
+                  onChangeText={(text) =>
+                    setFormData((prev) => ({
+                      ...prev,
+                      diagnosticoLesoes: text,
+                    }))
+                  }
                 />
               </View>
               {errors.diagnosticoLesoes && (
@@ -238,28 +297,39 @@ const InvestigacaoLesoes = () => {
         </View>
 
         <View style={styles.infoBox}>
-          <Icon name="info-outline" size={24} color="#1e3d59" style={styles.infoIcon} />
+          <Icon
+            name="info-outline"
+            size={24}
+            color="#1e3d59"
+            style={styles.infoIcon}
+          />
           <Text style={styles.infoText}>
-            Atenção: Oriente os pacientes a procurarem um dermatologista regularmente para exames de pele, 
-            especialmente se houver qualquer alteração em pintas ou manchas existentes.
+            Atenção: Oriente os pacientes a procurarem um dermatologista
+            regularmente para exames de pele, especialmente se houver qualquer
+            alteração em pintas ou manchas existentes.
           </Text>
         </View>
 
         <View style={styles.navigationButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.navigationButton, styles.backBtn]}
             onPress={handleBack}
             activeOpacity={0.7}
           >
-            <Icon name="arrow-back" size={18} color="#1e3d59" style={styles.buttonIcon} />
+            <Icon
+              name="arrow-back"
+              size={18}
+              color="#1e3d59"
+              style={styles.buttonIcon}
+            />
             <Text style={styles.backButtonText}>Voltar</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[
-              styles.navigationButton, 
-              styles.submitButton, 
-              submitting && styles.buttonDisabled
+              styles.navigationButton,
+              styles.submitButton,
+              submitting && styles.buttonDisabled,
             ]}
             onPress={handleSubmit}
             disabled={submitting}
@@ -267,13 +337,22 @@ const InvestigacaoLesoes = () => {
           >
             {submitting ? (
               <View style={styles.submitContent}>
-                <ActivityIndicator size="small" color="#fff" style={styles.submitLoader} />
+                <ActivityIndicator
+                  size="small"
+                  color="#fff"
+                  style={styles.submitLoader}
+                />
                 <Text style={styles.submitButtonText}>Enviando...</Text>
               </View>
             ) : (
               <View style={styles.submitContent}>
                 <Text style={styles.submitButtonText}>Concluir</Text>
-                <Icon name="check-circle" size={18} color="#fff" style={styles.buttonIcon} />
+                <Icon
+                  name="check-circle"
+                  size={18}
+                  color="#fff"
+                  style={styles.buttonIcon}
+                />
               </View>
             )}
           </TouchableOpacity>
@@ -311,30 +390,8 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
   },
-  headerInfo: {
-    backgroundColor: '#f8f8f8',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#eee',
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 4,
-  },
   infoIcon: {
     marginRight: 8,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
-  },
-  userText: {
-    fontSize: 14,
-    color: '#555',
   },
   sectionTitle: {
     fontSize: 18,

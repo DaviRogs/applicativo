@@ -1,10 +1,5 @@
 import React from 'react';
-import {
-  View,
-  Text,
-  ActivityIndicator,
-  StyleSheet,
-} from 'react-native';
+import { View, Text, ActivityIndicator, StyleSheet } from 'react-native';
 
 const LoadingScreen = () => {
   return (
@@ -12,7 +7,7 @@ const LoadingScreen = () => {
       <View style={styles.header}>
         <Text style={styles.headerText}>Primeiro acesso</Text>
       </View>
-      
+
       <View style={styles.content}>
         <ActivityIndicator size="large" color="#003366" />
       </View>

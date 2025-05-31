@@ -13,7 +13,11 @@ import {
   Easing,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import { useRoute, useNavigation, useFocusEffect } from '@react-navigation/native';
+import {
+  useRoute,
+  useNavigation,
+  useFocusEffect,
+} from '@react-navigation/native';
 import { API_URL } from '@env';
 import { BackHandler } from 'react-native';
 
@@ -21,7 +25,7 @@ const RegisterScreen = () => {
   const route = useRoute();
   const navigation = useNavigation();
   const [token, setToken] = useState('');
-  
+
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
 
@@ -33,20 +37,20 @@ const RegisterScreen = () => {
     React.useCallback(() => {
       const onBackPress = () => {
         navigation.navigate('Login');
-        return true; 
+        return true;
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   useEffect(() => {
     if (route.params?.token) {
       setToken(route.params.token);
-      console.log("token gg", route.params.token);
+      console.log('token gg', route.params.token);
     }
   }, [route.params]);
 
@@ -62,7 +66,7 @@ const RegisterScreen = () => {
         duration: 600,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   }, []);
 
@@ -82,17 +86,17 @@ const RegisterScreen = () => {
 
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState('');
+  const [, setError] = useState('');
 
   useEffect(() => {
-    if(token){
+    if (token) {
       fetchUserData();
     }
   }, [token]);
 
   const fetchUserData = async () => {
     try {
-      console.log("tokdadasdaen", token);
+      console.log('tokdadasdaen', token);
 
       const response = await fetch(
         `${API_URL}/dados-completar-cadastro?token=${token}`,
@@ -100,12 +104,12 @@ const RegisterScreen = () => {
           headers: {
             accept: 'application/json',
           },
-        }
+        },
       );
-      console.log("fasfas", response);
+      console.log('fasfas', response);
       if (response.ok) {
         const data = await response.json();
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           nome_usuario: data.nome_usuario,
           email: data.email,
@@ -116,7 +120,7 @@ const RegisterScreen = () => {
         setError('Token inválido ou expirado');
         Alert.alert('Erro', 'Token inválido ou expirado');
       }
-    } catch (err) {
+    } catch {
       setError('Erro ao carregar dados');
       Alert.alert('Erro', 'Erro ao carregar dados do usuário');
     } finally {
@@ -153,7 +157,7 @@ const RegisterScreen = () => {
 
   const handleSubmit = async () => {
     animateButton();
-    
+
     if (!validatePassword(formData.senha)) {
       Alert.alert('Erro', 'A senha não atende aos requisitos mínimos');
       return;
@@ -170,7 +174,7 @@ const RegisterScreen = () => {
       const response = await fetch(`${API_URL}/completar-cadastro`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          accept: 'application/json',
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -179,7 +183,7 @@ const RegisterScreen = () => {
           senha: formData.senha,
         }),
       });
-      console.log("response", response);  
+      console.log('response', response);
       if (response.ok) {
         Alert.alert('Sucesso', 'Cadastro completado com sucesso');
         navigation.navigate('Login');
@@ -187,7 +191,7 @@ const RegisterScreen = () => {
         const errorData = await response.json();
         Alert.alert('Erro', errorData.message || 'Erro ao completar cadastro');
       }
-    } catch (err) {
+    } catch {
       Alert.alert('Erro', 'Erro ao enviar dados');
     } finally {
       setSubmitting(false);
@@ -206,16 +210,16 @@ const RegisterScreen = () => {
   return (
     <SafeAreaView style={styles.container}>
       <ScrollView showsVerticalScrollIndicator={false}>
-        <Animated.View 
+        <Animated.View
           style={[
             styles.header,
             {
               opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
-            }
+              transform: [{ translateY: slideAnim }],
+            },
           ]}
         >
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => {
               animateButton();
@@ -228,13 +232,13 @@ const RegisterScreen = () => {
           <Text style={styles.headerTitle}>Criar senha</Text>
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           style={[
             styles.formContainer,
             {
               opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
-            }
+              transform: [{ translateY: slideAnim }],
+            },
           ]}
         >
           <Text style={styles.formTitle}>Finalizar cadastro</Text>
@@ -272,9 +276,9 @@ const RegisterScreen = () => {
               style={styles.input}
               value={formData.nome_usuario}
               editable={true}
-              onChangeText={(text) => 
-                setFormData(prev => ({ ...prev, nome_usuario: text }))
-              } 
+              onChangeText={(text) =>
+                setFormData((prev) => ({ ...prev, nome_usuario: text }))
+              }
             />
           </View>
 
@@ -288,18 +292,18 @@ const RegisterScreen = () => {
                 secureTextEntry={!passwordVisible}
                 value={formData.senha}
                 onChangeText={(text) => {
-                  setFormData(prev => ({ ...prev, senha: text }));
+                  setFormData((prev) => ({ ...prev, senha: text }));
                   validatePassword(text);
                 }}
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.passwordToggle}
                 onPress={() => setPasswordVisible(!passwordVisible)}
               >
-                <Icon 
-                  name={passwordVisible ? "visibility-off" : "visibility"} 
-                  size={20} 
-                  color="#666" 
+                <Icon
+                  name={passwordVisible ? 'visibility-off' : 'visibility'}
+                  size={20}
+                  color="#666"
                 />
               </TouchableOpacity>
             </View>
@@ -314,24 +318,28 @@ const RegisterScreen = () => {
                 placeholderTextColor="#999"
                 secureTextEntry={!confirmPasswordVisible}
                 value={formData.confirmarSenha}
-                onChangeText={(text) => 
-                  setFormData(prev => ({ ...prev, confirmarSenha: text }))
+                onChangeText={(text) =>
+                  setFormData((prev) => ({ ...prev, confirmarSenha: text }))
                 }
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.passwordToggle}
-                onPress={() => setConfirmPasswordVisible(!confirmPasswordVisible)}
+                onPress={() =>
+                  setConfirmPasswordVisible(!confirmPasswordVisible)
+                }
               >
-                <Icon 
-                  name={confirmPasswordVisible ? "visibility-off" : "visibility"} 
-                  size={20} 
-                  color="#666" 
+                <Icon
+                  name={
+                    confirmPasswordVisible ? 'visibility-off' : 'visibility'
+                  }
+                  size={20}
+                  color="#666"
                 />
               </TouchableOpacity>
             </View>
           </View>
 
-          <Animated.View 
+          <Animated.View
             style={styles.requirementsList}
             entering={Animated.spring({ velocity: 0.3 })}
           >
@@ -340,47 +348,71 @@ const RegisterScreen = () => {
               <Text style={styles.requirementText}>Requisitos para Senha</Text>
             </View>
             <View style={styles.requirementItem}>
-              <Animated.View style={{
-                transform: [{ 
-                  scale: passwordRequirements.hasEightChars ? 1.1 : 1 
-                }]
-              }}>
-                <Icon 
-                  name={passwordRequirements.hasEightChars ? "check" : "close"} 
-                  size={16} 
-                  color={passwordRequirements.hasEightChars ? "green" : "red"} 
+              <Animated.View
+                style={{
+                  transform: [
+                    {
+                      scale: passwordRequirements.hasEightChars ? 1.1 : 1,
+                    },
+                  ],
+                }}
+              >
+                <Icon
+                  name={passwordRequirements.hasEightChars ? 'check' : 'close'}
+                  size={16}
+                  color={passwordRequirements.hasEightChars ? 'green' : 'red'}
                 />
               </Animated.View>
-              <Text style={[
-                styles.requirementText, 
-                passwordRequirements.hasEightChars ? styles.requirementSuccess : styles.requirementFailed
-              ]}>
+              <Text
+                style={[
+                  styles.requirementText,
+                  passwordRequirements.hasEightChars
+                    ? styles.requirementSuccess
+                    : styles.requirementFailed,
+                ]}
+              >
                 Deve ter 8 dígitos
               </Text>
             </View>
             <View style={styles.requirementItem}>
-              <Animated.View style={{
-                transform: [{ 
-                  scale: passwordRequirements.hasLettersAndNumbers ? 1.1 : 1 
-                }]
-              }}>
-                <Icon 
-                  name={passwordRequirements.hasLettersAndNumbers ? "check" : "close"} 
-                  size={16} 
-                  color={passwordRequirements.hasLettersAndNumbers ? "green" : "red"} 
+              <Animated.View
+                style={{
+                  transform: [
+                    {
+                      scale: passwordRequirements.hasLettersAndNumbers
+                        ? 1.1
+                        : 1,
+                    },
+                  ],
+                }}
+              >
+                <Icon
+                  name={
+                    passwordRequirements.hasLettersAndNumbers
+                      ? 'check'
+                      : 'close'
+                  }
+                  size={16}
+                  color={
+                    passwordRequirements.hasLettersAndNumbers ? 'green' : 'red'
+                  }
                 />
               </Animated.View>
-              <Text style={[
-                styles.requirementText, 
-                passwordRequirements.hasLettersAndNumbers ? styles.requirementSuccess : styles.requirementFailed
-              ]}>
+              <Text
+                style={[
+                  styles.requirementText,
+                  passwordRequirements.hasLettersAndNumbers
+                    ? styles.requirementSuccess
+                    : styles.requirementFailed,
+                ]}
+              >
                 Deve conter letras e números
               </Text>
             </View>
           </Animated.View>
 
           <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.continueButton}
               onPress={handleSubmit}
               disabled={submitting}
@@ -394,7 +426,7 @@ const RegisterScreen = () => {
             </TouchableOpacity>
           </Animated.View>
 
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => navigation.navigate('Login')}
             disabled={submitting}
@@ -455,7 +487,7 @@ const styles = StyleSheet.create({
   },
   label: {
     fontSize: 14,
-    color: '#666', 
+    color: '#666',
     marginBottom: 4,
   },
   input: {
@@ -465,7 +497,7 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: '#333',
     marginBottom: 8,
-    paddingLeft: 0, 
+    paddingLeft: 0,
   },
   readOnlyInput: {
     backgroundColor: '#f5f5f5',
@@ -517,7 +549,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,

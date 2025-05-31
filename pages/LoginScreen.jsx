@@ -13,7 +13,7 @@ import {
   Platform,
   Animated,
   Easing,
-  Keyboard
+  Keyboard,
 } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
@@ -21,7 +21,7 @@ import { fetchCurrentUser } from '../store/userSlice';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 const LoginScreen = () => {
   const [cpf, setCpf] = useState('');
   const [formattedCpf, setFormattedCpf] = useState('');
@@ -29,13 +29,15 @@ const LoginScreen = () => {
   const [isPasswordVisible, setPasswordVisible] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  
+
   const dispatch = useDispatch();
-  const { loading: userLoading, error: userError } = useSelector((state) => state.user);
+  const { loading: userLoading, error: userError } = useSelector(
+    (state) => state.user,
+  );
   const navigation = useNavigation();
-  
-  const logo1 = require('../assets/logo1.png');
-  const logo2 = require('../assets/logo2.png');
+
+  // const logo1 = require('../assets/logo1.png');
+  // const logo2 = require('../assets/logo2.png');
   const dermaAlert = require('../assets/dermaalert.png');
 
   useFocusEffect(
@@ -44,12 +46,12 @@ const LoginScreen = () => {
         navigation.navigate('InitialScreen');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   // Animation values
@@ -70,7 +72,7 @@ const LoginScreen = () => {
         duration: 600,
         easing: Easing.out(Easing.cubic),
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   }, []);
 
@@ -79,7 +81,7 @@ const LoginScreen = () => {
     // Remove all non-digit characters
     const cleanedText = text.replace(/\D/g, '');
     setCpf(cleanedText);
-    
+
     // Format with dots and dash
     let formatted = cleanedText;
     if (cleanedText.length > 3) {
@@ -91,7 +93,7 @@ const LoginScreen = () => {
     if (cleanedText.length > 9) {
       formatted = formatted.substring(0, 11) + '-' + formatted.substring(11);
     }
-    
+
     setFormattedCpf(formatted);
   };
 
@@ -114,7 +116,7 @@ const LoginScreen = () => {
         toValue: 1,
         duration: 100,
         useNativeDriver: true,
-      })
+      }),
     ]).start();
   };
 
@@ -135,7 +137,7 @@ const LoginScreen = () => {
       const response = await fetch(`${API_URL}/token`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
+          accept: 'application/json',
           'Content-Type': 'application/x-www-form-urlencoded',
         },
         body: formData.toString(),
@@ -156,13 +158,14 @@ const LoginScreen = () => {
         type: 'auth/loginSuccess',
         payload: {
           access_token: data.access_token,
-          refresh_token: data.refresh_token
-        }
+          refresh_token: data.refresh_token,
+        },
       });
 
       return data;
     } catch (error) {
-      throw error;
+      setError(error.message || 'Erro ao realizar operação');
+      showError(error.message || 'Erro ao realizar operação');
     } finally {
       setLoading(false);
     }
@@ -171,7 +174,7 @@ const LoginScreen = () => {
   const handleLogin = async () => {
     animateButton();
     Keyboard.dismiss();
-    
+
     if (!cpf || !password) {
       showError('Preencha todos os campos');
       return;
@@ -183,10 +186,11 @@ const LoginScreen = () => {
     }
 
     try {
-      const loginData = await performLogin(cpf, password);
-      
+      // const loginData = await performLogin(cpf, password);
+      await performLogin(cpf, password);
+
       const userResult = await dispatch(fetchCurrentUser());
-      
+
       if (fetchCurrentUser.fulfilled.match(userResult)) {
         Animated.timing(fadeAnim, {
           toValue: 0,
@@ -213,8 +217,8 @@ const LoginScreen = () => {
     <SafeAreaView style={styles.container}>
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <View style={styles.header}>
-          <TouchableOpacity 
-            style={styles.backButton} 
+          <TouchableOpacity
+            style={styles.backButton}
             onPress={() => navigation.navigate('InitialScreen')}
             activeOpacity={0.7}
           >
@@ -223,33 +227,31 @@ const LoginScreen = () => {
           <Text style={styles.headerTitle}>Login</Text>
         </View>
 
-        <Animated.View 
+        <Animated.View
           style={[
-            styles.logoContainer, 
-            { 
+            styles.logoContainer,
+            {
               opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }] 
-            }
+              transform: [{ translateY: slideAnim }],
+            },
           ]}
         >
           <Image source={dermaAlert} style={styles.logo} />
         </Animated.View>
 
-        <Animated.View 
+        <Animated.View
           style={[
             styles.formContainer,
             {
               opacity: fadeAnim,
-              transform: [{ translateY: slideAnim }]
-            }
+              transform: [{ translateY: slideAnim }],
+            },
           ]}
         >
           <Text style={styles.formTitle}>Acesse sua conta</Text>
 
           {errorMessage && (
-            <Animated.View 
-              entering={Animated.spring({ velocity: 0.3 })}
-            >
+            <Animated.View entering={Animated.spring({ velocity: 0.3 })}>
               <Text style={styles.errorText}>{errorMessage}</Text>
             </Animated.View>
           )}
@@ -280,14 +282,14 @@ const LoginScreen = () => {
                 onChangeText={setPassword}
                 editable={!isLoading}
               />
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setPasswordVisible(!isPasswordVisible)}
                 style={styles.visibilityToggle}
               >
-                <Icon 
-                  name={isPasswordVisible ? "visibility-off" : "visibility"} 
-                  size={20} 
-                  color="#666" 
+                <Icon
+                  name={isPasswordVisible ? 'visibility-off' : 'visibility'}
+                  size={20}
+                  color="#666"
                 />
               </TouchableOpacity>
             </View>
@@ -303,11 +305,11 @@ const LoginScreen = () => {
 
           <View style={styles.buttonContainer}>
             <Animated.View style={{ transform: [{ scale: buttonScale }] }}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[
                   styles.continueButton,
-                  isLoading && styles.disabledButton
-                ]} 
+                  isLoading && styles.disabledButton,
+                ]}
                 onPress={handleLogin}
                 disabled={isLoading}
                 activeOpacity={0.8}
@@ -329,7 +331,7 @@ const LoginScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor:'#FCFCFC'
+    backgroundColor: '#FCFCFC',
   },
   scrollContainer: {
     flexGrow: 1,
@@ -357,11 +359,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   logo: {
-    width: "100%",
+    width: '100%',
     height: 280,
     resizeMode: 'contain',
-    backgroundColor:'FCFCFC',
-    borderWidth: 0, 
+    backgroundColor: 'FCFCFC',
+    borderWidth: 0,
   },
   formContainer: {
     padding: 16,
@@ -423,7 +425,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     alignItems: 'center',
     marginBottom: 12,
-    shadowColor: "#000",
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,

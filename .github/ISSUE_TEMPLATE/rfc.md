@@ -1,11 +1,10 @@
 ---
 name: 🧠 RFC - Discussão Técnica
 about: Sugira uma proposta de mudança maior (Request for Comments).
-title: "[RFC] "
+title: '[RFC] '
 labels: rfc
 assignees: ''
 ---
-
 
 <!---
 Obrigado por registrar um problema 😄! Antes de enviar, leia o seguinte:
@@ -27,4 +26,4 @@ Pesquise problemas abertos/fechados antes de enviar, pois alguém pode ter pergu
 
 <!--- Exemplos nos ajudam a entender melhor o recurso solicitado -->
 
-------
+---

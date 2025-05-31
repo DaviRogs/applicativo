@@ -11,12 +11,12 @@ import {
   RefreshControl,
   Alert,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
-import { selectIsAdmin } from '../../store/userSlice';
-import {API_URL} from '@env';
+// import { selectIsAdmin } from '../../store/userSlice';
+import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
@@ -29,13 +29,13 @@ export const HealthUnitListScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedUnit, setSelectedUnit] = useState(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
-  
-  const userData = useSelector(state => state.user.userData);
+
+  const userData = useSelector((state) => state.user.userData);
   const navigation = useNavigation();
-    
+
   // Get user role from Redux
-  const isAdmin = useSelector(selectIsAdmin);
-  const token = useSelector(state => state.auth.accessToken);
+  // const isAdmin = useSelector(selectIsAdmin);
+  const token = useSelector((state) => state.auth.accessToken);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -43,14 +43,14 @@ export const HealthUnitListScreen = () => {
         navigation.navigate('HomeAdmin');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
-  
+
   // Fetch health units
   const fetchHealthUnits = async () => {
     setIsLoading(true);
@@ -60,8 +60,8 @@ export const HealthUnitListScreen = () => {
       const response = await fetch(`${API_URL}/listar-unidades-saude`, {
         method: 'GET',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -73,7 +73,9 @@ export const HealthUnitListScreen = () => {
       setUnits(data);
       setFilteredUnits(data);
     } catch (err) {
-      setError(err.message || 'Ocorreu um erro ao buscar as unidades de saúde.');
+      setError(
+        err.message || 'Ocorreu um erro ao buscar as unidades de saúde.',
+      );
     } finally {
       setIsLoading(false);
       setRefreshing(false);
@@ -91,10 +93,16 @@ export const HealthUnitListScreen = () => {
       setFilteredUnits(units);
     } else {
       const filtered = units.filter(
-        unit => 
-          unit.nome_unidade_saude.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          unit.cidade_unidade_saude.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          unit.codigo_unidade_saude.toLowerCase().includes(searchQuery.toLowerCase())
+        (unit) =>
+          unit.nome_unidade_saude
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          unit.cidade_unidade_saude
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()) ||
+          unit.codigo_unidade_saude
+            .toLowerCase()
+            .includes(searchQuery.toLowerCase()),
       );
       setFilteredUnits(filtered);
     }
@@ -109,54 +117,61 @@ export const HealthUnitListScreen = () => {
   // Handle status change
   const handleStatusChange = async (status) => {
     if (!selectedUnit) return;
-    
+
     try {
       setIsLoading(true);
-      
-      const response = await fetch(`${API_URL}/editar-unidade-saude/${selectedUnit.id}`, {
-        method: 'POST',
-        headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+
+      const response = await fetch(
+        `${API_URL}/editar-unidade-saude/${selectedUnit.id}`,
+        {
+          method: 'POST',
+          headers: {
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            nome_unidade_saude: selectedUnit.nome_unidade_saude,
+            nome_localizacao: selectedUnit.nome_localizacao,
+            codigo_unidade_saude: selectedUnit.codigo_unidade_saude,
+            cidade_unidade_saude: selectedUnit.cidade_unidade_saude,
+            fl_ativo: status,
+          }),
         },
-        body: JSON.stringify({
-          nome_unidade_saude: selectedUnit.nome_unidade_saude,
-          nome_localizacao: selectedUnit.nome_localizacao,
-          codigo_unidade_saude: selectedUnit.codigo_unidade_saude,
-          cidade_unidade_saude: selectedUnit.cidade_unidade_saude,
-          fl_ativo: status
-        })
-      });
-      
+      );
+
       if (!response.ok) {
         throw new Error('Falha ao atualizar status da unidade de saúde.');
       }
-      
+
       // Update local state
-      const updatedUnits = units.map(unit => {
+      const updatedUnits = units.map((unit) => {
         if (unit.id === selectedUnit.id) {
           return { ...unit, fl_ativo: status };
         }
         return unit;
       });
-      
+
       setUnits(updatedUnits);
       setFilteredUnits(
-        filteredUnits.map(unit => {
+        filteredUnits.map((unit) => {
           if (unit.id === selectedUnit.id) {
             return { ...unit, fl_ativo: status };
           }
           return unit;
-        })
+        }),
       );
-      
+
       setStatusModalVisible(false);
       setSelectedUnit(null);
-      
     } catch (err) {
-      setError(err.message || 'Ocorreu um erro ao atualizar o status da unidade.');
-      Alert.alert('Erro', err.message || 'Ocorreu um erro ao atualizar o status da unidade.');
+      setError(
+        err.message || 'Ocorreu um erro ao atualizar o status da unidade.',
+      );
+      Alert.alert(
+        'Erro',
+        err.message || 'Ocorreu um erro ao atualizar o status da unidade.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -168,11 +183,23 @@ export const HealthUnitListScreen = () => {
       <View style={styles.unitInfo}>
         <Text style={styles.unitName}>{item.nome_unidade_saude}</Text>
         <View style={styles.unitDetail}>
-          <Icon name="local-offer" size={16} color="#666" style={styles.detailIcon} />
-          <Text style={styles.unitCode}>Código: {item.codigo_unidade_saude}</Text>
+          <Icon
+            name="local-offer"
+            size={16}
+            color="#666"
+            style={styles.detailIcon}
+          />
+          <Text style={styles.unitCode}>
+            Código: {item.codigo_unidade_saude}
+          </Text>
         </View>
         <View style={styles.unitDetail}>
-          <Icon name="location-city" size={16} color="#666" style={styles.detailIcon} />
+          <Icon
+            name="location-city"
+            size={16}
+            color="#666"
+            style={styles.detailIcon}
+          />
           <Text style={styles.unitCity}>{item.cidade_unidade_saude}</Text>
         </View>
         <View style={styles.unitDetail}>
@@ -181,22 +208,26 @@ export const HealthUnitListScreen = () => {
         </View>
       </View>
       <View style={styles.cardActions}>
-        <View style={[
-          styles.statusBadge,
-          item.fl_ativo ? styles.activeBadge : styles.inactiveBadge
-        ]}>
+        <View
+          style={[
+            styles.statusBadge,
+            item.fl_ativo ? styles.activeBadge : styles.inactiveBadge,
+          ]}
+        >
           <Text style={item.fl_ativo ? styles.activeText : styles.inactiveText}>
             {item.fl_ativo ? 'Ativo' : 'Inativo'}
           </Text>
         </View>
         <View style={styles.actionButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.editButton}
-            onPress={() => navigation.navigate('EditHealthUnit', { unit: item })}
+            onPress={() =>
+              navigation.navigate('EditHealthUnit', { unit: item })
+            }
           >
             <Icon name="edit" size={20} color="#1e3d59" />
           </TouchableOpacity>
-          <TouchableOpacity 
+          <TouchableOpacity
             onPress={() => {
               setSelectedUnit(item);
               setStatusModalVisible(true);
@@ -222,9 +253,9 @@ export const HealthUnitListScreen = () => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.navigate('HomeAdmin')}
           hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
@@ -239,9 +270,14 @@ export const HealthUnitListScreen = () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Unidades cadastradas</Text>
-          
+
           <View style={styles.searchContainer}>
-            <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+            <Icon
+              name="search"
+              size={20}
+              color="#999"
+              style={styles.searchIcon}
+            />
             <TextInput
               style={styles.searchInput}
               placeholder="Pesquisar por nome, código ou cidade"
@@ -250,7 +286,7 @@ export const HealthUnitListScreen = () => {
               onChangeText={setSearchQuery}
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setSearchQuery('')}
                 hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
               >
@@ -269,8 +305,8 @@ export const HealthUnitListScreen = () => {
           <View style={styles.errorContainer}>
             <Icon name="error-outline" size={48} color="#F44336" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity 
-              style={styles.retryButton} 
+            <TouchableOpacity
+              style={styles.retryButton}
               onPress={fetchHealthUnits}
               activeOpacity={0.8}
             >
@@ -285,20 +321,26 @@ export const HealthUnitListScreen = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContainer}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#1e3d59"]} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#1e3d59']}
+              />
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Icon name="business" size={60} color="#ddd" />
                 <Text style={styles.emptyText}>
-                  {searchQuery ? 'Nenhuma unidade encontrada para esta busca.' : 'Nenhuma unidade cadastrada.'}
+                  {searchQuery
+                    ? 'Nenhuma unidade encontrada para esta busca.'
+                    : 'Nenhuma unidade cadastrada.'}
                 </Text>
               </View>
             }
           />
         )}
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('RegisterHealthUnit')}
           activeOpacity={0.8}
@@ -315,15 +357,15 @@ export const HealthUnitListScreen = () => {
         animationType="fade"
         onRequestClose={() => setStatusModalVisible(false)}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={() => setStatusModalVisible(false)}
         >
-          <View 
+          <View
             style={styles.modalContainer}
             onStartShouldSetResponder={() => true}
-            onTouchEnd={e => {
+            onTouchEnd={(e) => {
               e.stopPropagation();
             }}
           >
@@ -335,17 +377,17 @@ export const HealthUnitListScreen = () => {
                 </Text>
               )}
             </View>
-            
+
             <View style={styles.modalContent}>
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={[styles.statusOption, styles.activeOption]}
                 onPress={() => handleStatusChange(true)}
               >
                 <Icon name="check-circle" size={24} color="#4CAF50" />
                 <Text style={styles.statusOptionText}>Ativo</Text>
               </TouchableOpacity>
-              
-              <TouchableOpacity 
+
+              <TouchableOpacity
                 style={[styles.statusOption, styles.inactiveOption]}
                 onPress={() => handleStatusChange(false)}
               >
@@ -353,8 +395,8 @@ export const HealthUnitListScreen = () => {
                 <Text style={styles.statusOptionText}>Inativo</Text>
               </TouchableOpacity>
             </View>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setStatusModalVisible(false)}
             >
@@ -411,11 +453,6 @@ const styles = StyleSheet.create({
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
     shadowRadius: 1,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
   },
   userText: {
     fontSize: 14,

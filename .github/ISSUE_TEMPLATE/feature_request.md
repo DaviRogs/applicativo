@@ -1,12 +1,12 @@
 ---
 name: ✨ Solicitar Funcionalidade
 about: Sugira uma nova funcionalidade ou melhoria.
-title: "[FEATURE] "
+title: '[FEATURE] '
 labels: enhancement
 assignees: ''
 ---
 
-----
+---
 
 <!---
 Obrigado por registrar um problema 😄! Antes de enviar, leia o seguinte:
@@ -26,7 +26,6 @@ Pesquise problemas abertos/fechados antes de enviar, pois alguém pode ter pergu
 
 <!--- Explique a diferença do comportamento atual -->
 
-
 ## 💁 Solução possível
 
 <!--- Ideias de como implementar esse recurso ou uma solução/solução alternativa semelhante que já exista -->
@@ -41,5 +40,4 @@ Pesquise problemas abertos/fechados antes de enviar, pois alguém pode ter pergu
 
 <!--- Exemplos nos ajudam a entender melhor o recurso solicitado -->
 
-------
-
+---

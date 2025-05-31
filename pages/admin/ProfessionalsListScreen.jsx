@@ -10,12 +10,12 @@ import {
   Modal,
   RefreshControl,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
@@ -28,20 +28,21 @@ const ProfessionalsListScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [selectedProfessional, setSelectedProfessional] = useState(null);
   const [statusModalVisible, setStatusModalVisible] = useState(false);
- 
 
   const navigation = useNavigation();
 
   // Get user role and unit from Redux
   const isAdmin = useSelector(selectIsAdmin);
-  const userUnit = useSelector(state => state.user.userData?.unidadeSaude[0]);
-  const userData = useSelector(state => state.user.userData);
-  const token = useSelector(state => state.auth.accessToken);
+  const userUnit = useSelector((state) => state.user.userData?.unidadeSaude[0]);
+  // const userData = useSelector((state) => state.user.userData);
+  const token = useSelector((state) => state.auth.accessToken);
+  /*
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 3 },
-    { id: 2, name: "Supervisor", nivel_acesso: 2 },
-    { id: 3, name: "Admin", nivel_acesso: 1 }
+    { id: 1, name: 'Pesquisador', nivel_acesso: 3 },
+    { id: 2, name: 'Supervisor', nivel_acesso: 2 },
+    { id: 3, name: 'Admin', nivel_acesso: 1 },
   ];
+  */
 
   useFocusEffect(
     React.useCallback(() => {
@@ -49,27 +50,27 @@ const ProfessionalsListScreen = () => {
         navigation.navigate('HomeAdmin');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
-  
+
   // Fetch professionals
   const fetchProfessionals = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const endpoint = `${API_URL}/listar-usuarios-unidade-saude/${userUnit.id}`
+      const endpoint = `${API_URL}/listar-usuarios-unidade-saude/${userUnit.id}`;
 
       const response = await fetch(endpoint, {
         method: 'GET',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
         },
       });
 
@@ -97,9 +98,9 @@ const ProfessionalsListScreen = () => {
       setFilteredProfessionals(professionals);
     } else {
       const filtered = professionals.filter(
-        prof => 
-          prof.nome_usuario.toLowerCase().includes(searchQuery.toLowerCase()) || 
-          prof.cpf.includes(searchQuery.replace(/\D/g, ''))
+        (prof) =>
+          prof.nome_usuario.toLowerCase().includes(searchQuery.toLowerCase()) ||
+          prof.cpf.includes(searchQuery.replace(/\D/g, '')),
       );
       setFilteredProfessionals(filtered);
     }
@@ -119,62 +120,64 @@ const ProfessionalsListScreen = () => {
   // Handle status change
   const handleStatusChange = async (status) => {
     if (!selectedProfessional) return;
-    
+
     try {
       setIsLoading(true);
-      
+
       // Use the endpoints from curl examples
       const endpoint = isAdmin
         ? `${API_URL}/admin/editar-usuario`
         : `${API_URL}/supervisor/editar-usuario`;
-      
+
       const requestBody = {
         cpf: selectedProfessional.cpf,
         role_id: selectedProfessional.nivel_acesso,
-        fl_ativo: status
+        fl_ativo: status,
       };
-      
+
       // Add unidade_saude for admin users as per API requirements
       if (isAdmin) {
-        requestBody.unidade_saude = selectedProfessional.unidade_saude || userUnit.id;
+        requestBody.unidade_saude =
+          selectedProfessional.unidade_saude || userUnit.id;
       }
-      
+
       const response = await fetch(endpoint, {
         method: 'POST', // Using POST as shown in curl examples
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
-      
+
       if (!response.ok) {
         throw new Error('Falha ao atualizar status do profissional.');
       }
-      
-      const updatedProfessionals = professionals.map(prof => {
+
+      const updatedProfessionals = professionals.map((prof) => {
         if (prof.id === selectedProfessional.id) {
           return { ...prof, fl_ativo: status };
         }
         return prof;
       });
-      
+
       setProfessionals(updatedProfessionals);
       setFilteredProfessionals(
-        filteredProfessionals.map(prof => {
+        filteredProfessionals.map((prof) => {
           if (prof.id === selectedProfessional.id) {
             return { ...prof, fl_ativo: status };
           }
           return prof;
-        })
+        }),
       );
-      
+
       setStatusModalVisible(false);
       setSelectedProfessional(null);
-      
     } catch (err) {
-      setError(err.message || 'Ocorreu um erro ao atualizar o status do profissional.');
+      setError(
+        err.message || 'Ocorreu um erro ao atualizar o status do profissional.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -182,9 +185,11 @@ const ProfessionalsListScreen = () => {
 
   // Render each professional card
   const renderProfessionalItem = ({ item }) => (
-    <TouchableOpacity 
+    <TouchableOpacity
       style={styles.professionalCard}
-      onPress={() => navigation.navigate('EditProfessional', { professional: item })}
+      onPress={() =>
+        navigation.navigate('EditProfessional', { professional: item })
+      }
       activeOpacity={0.7}
     >
       <View style={styles.cardContent}>
@@ -198,15 +203,17 @@ const ProfessionalsListScreen = () => {
         </View>
       </View>
       <View style={styles.cardActions}>
-        <View style={[
-          styles.statusBadge,
-          item.fl_ativo ? styles.activeBadge : styles.inactiveBadge
-        ]}>
+        <View
+          style={[
+            styles.statusBadge,
+            item.fl_ativo ? styles.activeBadge : styles.inactiveBadge,
+          ]}
+        >
           <Text style={item.fl_ativo ? styles.activeText : styles.inactiveText}>
             {item.fl_ativo ? 'Ativo' : 'Inativo'}
           </Text>
         </View>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => {
             setSelectedProfessional(item);
             setStatusModalVisible(true);
@@ -220,14 +227,12 @@ const ProfessionalsListScreen = () => {
     </TouchableOpacity>
   );
 
-
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           onPress={() => navigation.navigate('HomeAdmin')}
           style={styles.backButton}
           hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -252,9 +257,14 @@ const ProfessionalsListScreen = () => {
 
         <View style={styles.sectionHeader}>
           <Text style={styles.sectionTitle}>Profissionais cadastrados</Text>
-          
+
           <View style={styles.searchContainer}>
-            <Icon name="search" size={20} color="#999" style={styles.searchIcon} />
+            <Icon
+              name="search"
+              size={20}
+              color="#999"
+              style={styles.searchIcon}
+            />
             <TextInput
               style={styles.searchInput}
               placeholder="Pesquisar por nome ou CPF"
@@ -263,7 +273,7 @@ const ProfessionalsListScreen = () => {
               onChangeText={setSearchQuery}
             />
             {searchQuery.length > 0 && (
-              <TouchableOpacity 
+              <TouchableOpacity
                 onPress={() => setSearchQuery('')}
                 hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
               >
@@ -282,7 +292,10 @@ const ProfessionalsListScreen = () => {
           <View style={styles.errorContainer}>
             <Icon name="error-outline" size={48} color="#F44336" />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity style={styles.retryButton} onPress={fetchProfessionals}>
+            <TouchableOpacity
+              style={styles.retryButton}
+              onPress={fetchProfessionals}
+            >
               <Text style={styles.retryButtonText}>Tentar novamente</Text>
             </TouchableOpacity>
           </View>
@@ -294,20 +307,26 @@ const ProfessionalsListScreen = () => {
             showsVerticalScrollIndicator={false}
             contentContainerStyle={styles.listContainer}
             refreshControl={
-              <RefreshControl refreshing={refreshing} onRefresh={onRefresh} colors={["#1e3d59"]} />
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                colors={['#1e3d59']}
+              />
             }
             ListEmptyComponent={
               <View style={styles.emptyContainer}>
                 <Icon name="person-search" size={60} color="#ddd" />
                 <Text style={styles.emptyText}>
-                  {searchQuery ? 'Nenhum profissional encontrado para esta busca.' : 'Nenhum profissional cadastrado.'}
+                  {searchQuery
+                    ? 'Nenhum profissional encontrado para esta busca.'
+                    : 'Nenhum profissional cadastrado.'}
                 </Text>
               </View>
             }
           />
         )}
 
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.addButton}
           onPress={() => navigation.navigate('RegisterProfessional')}
           activeOpacity={0.8}
@@ -324,15 +343,15 @@ const ProfessionalsListScreen = () => {
         animationType="fade"
         onRequestClose={() => setStatusModalVisible(false)}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={() => setStatusModalVisible(false)}
         >
-          <View 
+          <View
             style={styles.modalContainer}
             onStartShouldSetResponder={() => true}
-            onTouchEnd={e => {
+            onTouchEnd={(e) => {
               e.stopPropagation();
             }}
           >
@@ -344,24 +363,24 @@ const ProfessionalsListScreen = () => {
                 </Text>
               )}
             </View>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={[styles.statusOption, styles.activeOption]}
               onPress={() => handleStatusChange(true)}
             >
               <Icon name="check-circle" size={24} color="#4CAF50" />
               <Text style={styles.statusOptionText}>Ativo</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={[styles.statusOption, styles.inactiveOption]}
               onPress={() => handleStatusChange(false)}
             >
               <Icon name="cancel" size={24} color="#F44336" />
               <Text style={styles.statusOptionText}>Inativo</Text>
             </TouchableOpacity>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.cancelButton}
               onPress={() => setStatusModalVisible(false)}
             >
@@ -440,34 +459,6 @@ const styles = StyleSheet.create({
   unitAddress: {
     fontSize: 14,
     color: '#666',
-  },
-  headerInfo: {
-    backgroundColor: '#fff',
-    padding: 16,
-    borderRadius: 12,
-    marginBottom: 16,
-    elevation: 2,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-  },
-  userInfoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  infoIcon: {
-    marginRight: 8,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
-  },
-  userText: {
-    fontSize: 14,
-    color: '#555',
   },
   sectionHeader: {
     marginBottom: 16,

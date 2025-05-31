@@ -8,30 +8,40 @@ import {
   ScrollView,
   Alert,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
 import { useNavigation } from '@react-navigation/native';
 import { useDispatch, useSelector } from 'react-redux';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import ProgressSteps from '../../../components/ProgressBar';
-import { atualizarAvaliacaoFototipo, avancarEtapa, voltarEtapa } from '../../../store/anamnesisSlice';
+import {
+  atualizarAvaliacaoFototipo,
+  avancarEtapa,
+  voltarEtapa,
+} from '../../../store/anamnesisSlice';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
 const AvaliacaoFototipo = () => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
-  const avaliacaoFototipoState = useSelector(state => state.anamnesis.avaliacaoFototipo);
-  const progressoQuestionario = useSelector(state => state.anamnesis.progressoQuestionario);
-  
+  const avaliacaoFototipoState = useSelector(
+    (state) => state.anamnesis.avaliacaoFototipo,
+  );
+  /*
+  const progressoQuestionario = useSelector(
+    (state) => state.anamnesis.progressoQuestionario,
+  );
+  */
+
   const [formData, setFormData] = useState(avaliacaoFototipoState);
   const [errors, setErrors] = useState({});
 
   const handleOptionSelection = (field, value, points) => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       [field]: value,
-      [field + 'Pontos']: points
+      [field + 'Pontos']: points,
     }));
   };
 
@@ -41,41 +51,41 @@ const AvaliacaoFototipo = () => {
         handleBack();
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   // Calcula o fototipo baseado na pontuação
   useEffect(() => {
     const calcularPontos = () => {
       const campos = [
-        'corPelePontos', 
-        'corOlhosPontos', 
-        'corCabeloPontos', 
-        'quantidadeSardasPontos', 
-        'reacaoSolPontos', 
-        'bronzeamentoPontos', 
-        'sensibilidadeSolarPontos'
+        'corPelePontos',
+        'corOlhosPontos',
+        'corCabeloPontos',
+        'quantidadeSardasPontos',
+        'reacaoSolPontos',
+        'bronzeamentoPontos',
+        'sensibilidadeSolarPontos',
       ];
-      
+
       let pontosTotal = 0;
       let temTodosCampos = true;
-      
-      campos.forEach(campo => {
+
+      campos.forEach((campo) => {
         if (formData[campo] !== undefined) {
           pontosTotal += formData[campo];
         } else {
           temTodosCampos = false;
         }
       });
-      
+
       if (temTodosCampos) {
         let fototipo = '';
-        
+
         if (pontosTotal >= 0 && pontosTotal <= 7) {
           fototipo = 'Fototipo I';
         } else if (pontosTotal >= 8 && pontosTotal <= 16) {
@@ -87,39 +97,44 @@ const AvaliacaoFototipo = () => {
         } else if (pontosTotal > 30) {
           fototipo = 'Fototipo V-VI';
         }
-        
-        setFormData(prev => ({
+
+        setFormData((prev) => ({
           ...prev,
           pontosTotal,
-          fototipo
+          fototipo,
         }));
       }
     };
-    
+
     calcularPontos();
   }, [
-    formData.corPelePontos, 
-    formData.corOlhosPontos, 
-    formData.corCabeloPontos, 
-    formData.quantidadeSardasPontos, 
-    formData.reacaoSolPontos, 
-    formData.bronzeamentoPontos, 
-    formData.sensibilidadeSolarPontos
+    formData.corPelePontos,
+    formData.corOlhosPontos,
+    formData.corCabeloPontos,
+    formData.quantidadeSardasPontos,
+    formData.reacaoSolPontos,
+    formData.bronzeamentoPontos,
+    formData.sensibilidadeSolarPontos,
   ]);
 
   const validateForm = () => {
     let formErrors = {};
     const requiredFields = [
-      'corPele', 'corOlhos', 'corCabelo', 'quantidadeSardas', 
-      'reacaoSol', 'bronzeamento', 'sensibilidadeSolar'
+      'corPele',
+      'corOlhos',
+      'corCabelo',
+      'quantidadeSardas',
+      'reacaoSol',
+      'bronzeamento',
+      'sensibilidadeSolar',
     ];
-    
-    requiredFields.forEach(field => {
+
+    requiredFields.forEach((field) => {
       if (!formData[field]) {
         formErrors[field] = `Por favor, selecione uma opção`;
       }
     });
-    
+
     setErrors(formErrors);
     return Object.keys(formErrors).length === 0;
   };
@@ -136,9 +151,9 @@ const AvaliacaoFototipo = () => {
       navigation.navigate('HistoricoCancer');
     } else {
       Alert.alert(
-        "Campos incompletos",
-        "Por favor, responda todas as perguntas para avaliar seu fototipo.",
-        [{ text: "OK" }]
+        'Campos incompletos',
+        'Por favor, responda todas as perguntas para avaliar seu fototipo.',
+        [{ text: 'OK' }],
       );
     }
   };
@@ -146,76 +161,87 @@ const AvaliacaoFototipo = () => {
   const renderOptions = (field, options) => (
     <View style={styles.optionsContainer}>
       {options.map((option, index) => (
-        <TouchableOpacity 
+        <TouchableOpacity
           key={index}
           style={[
             styles.optionButton,
-            formData[field] === option.label && styles.selectedOption
+            formData[field] === option.label && styles.selectedOption,
           ]}
-          onPress={() => handleOptionSelection(field, option.label, option.points)}
+          onPress={() =>
+            handleOptionSelection(field, option.label, option.points)
+          }
           activeOpacity={0.7}
         >
-          <Text style={[
-            styles.optionText,
-            formData[field] === option.label && styles.selectedOptionText
-          ]}>
+          <Text
+            style={[
+              styles.optionText,
+              formData[field] === option.label && styles.selectedOptionText,
+            ]}
+          >
             {option.label}
           </Text>
         </TouchableOpacity>
       ))}
-      {errors[field] && (
-        <Text style={styles.errorText}>
-          {errors[field]}
-        </Text>
-      )}
+      {errors[field] && <Text style={styles.errorText}>{errors[field]}</Text>}
     </View>
   );
 
   const getFototipoColor = (fototipo) => {
-    switch(fototipo) {
-      case 'Fototipo I': return '#ffdbdb';
-      case 'Fototipo II': return '#ffe8db';
-      case 'Fototipo III': return '#fff3db';
-      case 'Fototipo IV': return '#e8f0dc';
-      case 'Fototipo V-VI': return '#daeaf2';
-      default: return '#f5f5f5';
+    switch (fototipo) {
+      case 'Fototipo I':
+        return '#ffdbdb';
+      case 'Fototipo II':
+        return '#ffe8db';
+      case 'Fototipo III':
+        return '#fff3db';
+      case 'Fototipo IV':
+        return '#e8f0dc';
+      case 'Fototipo V-VI':
+        return '#daeaf2';
+      default:
+        return '#f5f5f5';
     }
   };
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
-          style={styles.backButton}
-          onPress={handleBack}
-        >
+        <TouchableOpacity style={styles.backButton} onPress={handleBack}>
           <Icon name="arrow-back" size={24} color="#fff" />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Anamnese</Text>
       </View>
 
       <View style={styles.progressContainer}>
-        <ProgressSteps 
-          currentStep={2} 
+        <ProgressSteps
+          currentStep={2}
           totalSteps={5}
-          stepLabels={["Questões Gerais", "Avaliação Fototipo", "Histórico Câncer", "Fatores de Risco", "Revisão"]}
+          stepLabels={[
+            'Questões Gerais',
+            'Avaliação Fototipo',
+            'Histórico Câncer',
+            'Fatores de Risco',
+            'Revisão',
+          ]}
         />
       </View>
 
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-        <Text style={styles.sectionTitle}>Avaliação de Fototipo (Classificação de Fitzpatrick)</Text>
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
+        <Text style={styles.sectionTitle}>
+          Avaliação de Fototipo (Classificação de Fitzpatrick)
+        </Text>
         <Text style={styles.sectionDescription}>
-          Esta seção utiliza a Escala de Fitzpatrick para determinar o fototipo da sua pele.
-          Cada resposta tem uma pontuação associada, e a soma total determinará seu fototipo.
+          Esta seção utiliza a Escala de Fitzpatrick para determinar o fototipo
+          da sua pele. Cada resposta tem uma pontuação associada, e a soma total
+          determinará seu fototipo.
         </Text>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Qual é a cor natural da sua pele (áreas não expostas ao sol)?</Text>
+          <Text style={styles.question}>
+            Qual é a cor natural da sua pele (áreas não expostas ao sol)?
+          </Text>
           {renderOptions('corPele', [
             { label: 'Branca leitosa', points: 0 },
             { label: 'Branca', points: 2 },
@@ -239,7 +265,9 @@ const AvaliacaoFototipo = () => {
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Qual é a cor natural do seu cabelo?</Text>
+          <Text style={styles.question}>
+            Qual é a cor natural do seu cabelo?
+          </Text>
           {renderOptions('corCabelo', [
             { label: 'Ruivo, loiro claro', points: 0 },
             { label: 'Loiro, castanho claro', points: 1 },
@@ -250,7 +278,9 @@ const AvaliacaoFototipo = () => {
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Quantas sardas você tem em áreas não expostas?</Text>
+          <Text style={styles.question}>
+            Quantas sardas você tem em áreas não expostas?
+          </Text>
           {renderOptions('quantidadeSardas', [
             { label: 'Muitas', points: 0 },
             { label: 'Algumas', points: 1 },
@@ -260,7 +290,9 @@ const AvaliacaoFototipo = () => {
         </View>
 
         <View style={styles.questionContainer}>
-          <Text style={styles.question}>Como sua pele reage quando fica muito tempo exposta ao sol?</Text>
+          <Text style={styles.question}>
+            Como sua pele reage quando fica muito tempo exposta ao sol?
+          </Text>
           {renderOptions('reacaoSol', [
             { label: 'Fica vermelha, dolorida, descasca', points: 0 },
             { label: 'Fica vermelha, descasca um pouco', points: 2 },
@@ -292,10 +324,12 @@ const AvaliacaoFototipo = () => {
         </View>
 
         {formData.fototipo && (
-          <View style={[
-            styles.resultContainer,
-            {backgroundColor: getFototipoColor(formData.fototipo)}
-          ]}>
+          <View
+            style={[
+              styles.resultContainer,
+              { backgroundColor: getFototipoColor(formData.fototipo) },
+            ]}
+          >
             <View style={styles.resultHeader}>
               <Text style={styles.resultTitle}>Resultado</Text>
               <Text style={styles.resultScore}>
@@ -305,33 +339,48 @@ const AvaliacaoFototipo = () => {
             <View style={styles.resultContent}>
               <Text style={styles.resultFototipo}>{formData.fototipo}</Text>
               <Text style={styles.resultDescription}>
-                {formData.fototipo === 'Fototipo I' && 'Pele extremamente clara, sempre queima, nunca bronzeia.'}
-                {formData.fototipo === 'Fototipo II' && 'Pele clara, queima com facilidade, bronzeia minimamente.'}
-                {formData.fototipo === 'Fototipo III' && 'Pele menos clara, queima moderadamente, bronzeia gradualmente.'}
-                {formData.fototipo === 'Fototipo IV' && 'Pele morena clara, queima minimamente, sempre bronzeia.'}
-                {formData.fototipo === 'Fototipo V-VI' && 'Pele morena escura a negra, raramente queima, bronzeia facilmente.'}
+                {formData.fototipo === 'Fototipo I' &&
+                  'Pele extremamente clara, sempre queima, nunca bronzeia.'}
+                {formData.fototipo === 'Fototipo II' &&
+                  'Pele clara, queima com facilidade, bronzeia minimamente.'}
+                {formData.fototipo === 'Fototipo III' &&
+                  'Pele menos clara, queima moderadamente, bronzeia gradualmente.'}
+                {formData.fototipo === 'Fototipo IV' &&
+                  'Pele morena clara, queima minimamente, sempre bronzeia.'}
+                {formData.fototipo === 'Fototipo V-VI' &&
+                  'Pele morena escura a negra, raramente queima, bronzeia facilmente.'}
               </Text>
             </View>
           </View>
         )}
 
         <View style={styles.navigationButtons}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.navigationButton, styles.backBtn]}
             onPress={handleBack}
             activeOpacity={0.7}
           >
-            <Icon name="arrow-back" size={18} color="#1e3d59" style={styles.buttonIcon} />
+            <Icon
+              name="arrow-back"
+              size={18}
+              color="#1e3d59"
+              style={styles.buttonIcon}
+            />
             <Text style={styles.backButtonText}>Voltar</Text>
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={[styles.navigationButton, styles.advanceButton]}
             onPress={handleAdvance}
             activeOpacity={0.7}
           >
             <Text style={styles.advanceButtonText}>Avançar</Text>
-            <Icon name="arrow-forward" size={18} color="#fff" style={styles.buttonIcon} />
+            <Icon
+              name="arrow-forward"
+              size={18}
+              color="#fff"
+              style={styles.buttonIcon}
+            />
           </TouchableOpacity>
         </View>
       </ScrollView>

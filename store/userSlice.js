@@ -1,7 +1,7 @@
 import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
 import { logout } from './authSlice';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 
 const initialState = {
   userData: null,
@@ -24,15 +24,15 @@ export const fetchCurrentUser = createAsyncThunk(
       const response = await fetch(`${API_URL}/token/get-current-user`, {
         method: 'GET',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
       if (response.status === 401) {
         await AsyncStorage.removeItem('accessToken');
         await AsyncStorage.removeItem('refreshToken');
-        await AsyncStorage.removeItem('selectedAdminUnit'); 
+        await AsyncStorage.removeItem('selectedAdminUnit');
         dispatch(logout());
         return rejectWithValue('Token invalid or expired');
       }
@@ -42,8 +42,11 @@ export const fetchCurrentUser = createAsyncThunk(
       }
 
       const data = await response.json();
-      
-      if (data.roles && (data.roles[0].name === 'Admin' || data.roles[0].nivel_acesso === 1)) {
+
+      if (
+        data.roles &&
+        (data.roles[0].name === 'Admin' || data.roles[0].nivel_acesso === 1)
+      ) {
         try {
           const storedUnit = await AsyncStorage.getItem('selectedAdminUnit');
           if (storedUnit) {
@@ -53,12 +56,12 @@ export const fetchCurrentUser = createAsyncThunk(
           console.error('Error retrieving stored unit:', error);
         }
       }
-      
+
       return data;
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 export const fetchHealthUnits = createAsyncThunk(
@@ -66,12 +69,12 @@ export const fetchHealthUnits = createAsyncThunk(
   async (_, { getState, rejectWithValue }) => {
     try {
       const { accessToken } = getState().auth;
-      
+
       const response = await fetch(`${API_URL}/listar-unidades-saude`, {
         method: 'GET',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -84,7 +87,7 @@ export const fetchHealthUnits = createAsyncThunk(
     } catch (error) {
       return rejectWithValue(error.message);
     }
-  }
+  },
 );
 
 const userSlice = createSlice({
@@ -96,8 +99,8 @@ const userSlice = createSlice({
       state.userRole = null;
       state.unidadeSaude = null;
       state.error = null;
-      AsyncStorage.removeItem('selectedAdminUnit').catch(error => 
-        console.error('Error removing stored unit:', error)
+      AsyncStorage.removeItem('selectedAdminUnit').catch((error) =>
+        console.error('Error removing stored unit:', error),
       );
     },
     updateUnidadeSaude: (state, action) => {
@@ -106,7 +109,7 @@ const userSlice = createSlice({
         state.userData = {
           ...state.userData,
           unidadeSaude: action.payload,
-          selectedUnit: action.payload[0] // Store the selected unit
+          selectedUnit: action.payload[0], // Store the selected unit
         };
       }
     },
@@ -135,15 +138,15 @@ const userSlice = createSlice({
         state.userRole = null;
         state.unidadeSaude = null;
         state.error = null;
-        AsyncStorage.removeItem('selectedAdminUnit').catch(error => 
-          console.error('Error removing stored unit:', error)
+        AsyncStorage.removeItem('selectedAdminUnit').catch((error) =>
+          console.error('Error removing stored unit:', error),
         );
       })
       .addCase(fetchHealthUnits.pending, (state) => {
         state.loading = true;
         state.error = null;
       })
-      .addCase(fetchHealthUnits.fulfilled, (state, action) => {
+      .addCase(fetchHealthUnits.fulfilled, (state /*action*/) => {
         state.loading = false;
       })
       .addCase(fetchHealthUnits.rejected, (state, action) => {

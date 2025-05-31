@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -10,31 +10,31 @@ import {
   StatusBar,
   Alert,
   ActivityIndicator,
-  Image
+  Image,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
 import {
   resetForm,
   deleteInjury,
-  setInjuries,
+  // setInjuries,
   setLoading,
   setSaving,
 } from '../../../store/injurySlice';
 import { useFocusEffect } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
-const generateUniqueId = () => {
-  return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
-};
+// const generateUniqueId = () => {
+//   return `${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+// };
 
 const InjuryListScreen = ({ navigation, route }) => {
   const dispatch = useDispatch();
-  
-  const injuries = useSelector(state => state.injury.injuries);
-  const isLoading = useSelector(state => state.injury.isLoading);
-  const isSaving = useSelector(state => state.injury.isSaving);
-  
+
+  const injuries = useSelector((state) => state.injury.injuries);
+  const isLoading = useSelector((state) => state.injury.isLoading);
+  const isSaving = useSelector((state) => state.injury.isSaving);
+
   const patientData = route.params?.patientData;
 
   useFocusEffect(
@@ -43,25 +43,25 @@ const InjuryListScreen = ({ navigation, route }) => {
         navigation.navigate('NovoPaciente');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   const handleDeleteInjury = (injury) => {
     Alert.alert(
-      "Excluir lesão",
+      'Excluir lesão',
       `Tem certeza que deseja excluir "${injury.location}"?`,
       [
         {
-          text: "Cancelar",
-          style: "cancel"
+          text: 'Cancelar',
+          style: 'cancel',
         },
         {
-          text: "Excluir",
+          text: 'Excluir',
           onPress: async () => {
             try {
               dispatch(setLoading(true));
@@ -73,14 +73,14 @@ const InjuryListScreen = ({ navigation, route }) => {
               dispatch(setLoading(false));
             }
           },
-          style: "destructive"
-        }
-      ]
+          style: 'destructive',
+        },
+      ],
     );
   };
 
   const handleEditInjury = (injury) => {
-    dispatch(resetForm()); 
+    dispatch(resetForm());
     navigation.navigate('AddInjury', { injury });
   };
 
@@ -94,32 +94,31 @@ const InjuryListScreen = ({ navigation, route }) => {
       Alert.alert('Aviso', 'Não há lesões para salvar.');
       return;
     }
-    
+
     dispatch(setSaving(true));
-    
+
     try {
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
       dispatch(setSaving(false));
-      Alert.alert(
-        'Sucesso', 
-        'Todas as lesões foram salvas com sucesso!',
-        [
-          { 
-            text: 'OK', 
-            onPress: () => {
-              navigation.navigate('NovoPaciente', { 
-                patientData,
-                injuries
-              });
-            }
-          }
-        ]
-      );
+      Alert.alert('Sucesso', 'Todas as lesões foram salvas com sucesso!', [
+        {
+          text: 'OK',
+          onPress: () => {
+            navigation.navigate('NovoPaciente', {
+              patientData,
+              injuries,
+            });
+          },
+        },
+      ]);
     } catch (error) {
       console.error('Error saving injuries:', error);
       dispatch(setSaving(false));
-      Alert.alert('Erro', 'Ocorreu um erro ao salvar as lesões. Tente novamente.');
+      Alert.alert(
+        'Erro',
+        'Ocorreu um erro ao salvar as lesões. Tente novamente.',
+      );
     }
   };
 
@@ -137,8 +136,15 @@ const InjuryListScreen = ({ navigation, route }) => {
         onPress={handleAddNewInjury}
         activeOpacity={0.8}
       >
-        <Icon name="add-circle" size={20} color="#fff" style={styles.buttonIcon} />
-        <Text style={styles.emptyStateButtonText}>Registrar primeira lesão</Text>
+        <Icon
+          name="add-circle"
+          size={20}
+          color="#fff"
+          style={styles.buttonIcon}
+        />
+        <Text style={styles.emptyStateButtonText}>
+          Registrar primeira lesão
+        </Text>
       </TouchableOpacity>
     </View>
   );
@@ -148,7 +154,7 @@ const InjuryListScreen = ({ navigation, route }) => {
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('NovoPaciente')}
             disabled={isSaving}
@@ -176,14 +182,18 @@ const InjuryListScreen = ({ navigation, route }) => {
             {injuries.length === 0 ? (
               renderEmptyState()
             ) : (
-              <ScrollView 
+              <ScrollView
                 style={styles.content}
                 contentContainerStyle={styles.contentContainer}
                 showsVerticalScrollIndicator={false}
               >
                 {injuries.map((injury, index) => (
-                  <View 
-                    key={injury.id ? `injury-${injury.id}` : `injury-index-${index}`} 
+                  <View
+                    key={
+                      injury.id
+                        ? `injury-${injury.id}`
+                        : `injury-index-${index}`
+                    }
                     style={styles.injuryCard}
                   >
                     <TouchableOpacity
@@ -192,37 +202,49 @@ const InjuryListScreen = ({ navigation, route }) => {
                       activeOpacity={0.8}
                     >
                       <View style={styles.injuryHeader}>
-                        <Text style={styles.injuryLocation}>{injury.location}</Text>
+                        <Text style={styles.injuryLocation}>
+                          {injury.location}
+                        </Text>
                         <Text style={styles.dateInfo}>
                           {new Date(injury.date).toLocaleDateString('pt-BR')}
                         </Text>
                       </View>
-                      
+
                       <Text style={styles.injuryDescription} numberOfLines={2}>
                         {injury.description}
                       </Text>
-                      
+
                       {injury.photos && injury.photos.length > 0 && (
                         <View style={styles.photoSection}>
                           <View style={styles.photoInfoContainer}>
-                            <Icon name="photo-library" size={16} color="#1e3d59" />
+                            <Icon
+                              name="photo-library"
+                              size={16}
+                              color="#1e3d59"
+                            />
                             <Text style={styles.photosInfo}>
-                              {injury.photos.length} {injury.photos.length === 1 ? 'foto' : 'fotos'} anexada{injury.photos.length === 1 ? '' : 's'}
+                              {injury.photos.length}{' '}
+                              {injury.photos.length === 1 ? 'foto' : 'fotos'}{' '}
+                              anexada{injury.photos.length === 1 ? '' : 's'}
                             </Text>
                           </View>
-                          
+
                           {injury.photos.length > 0 && (
                             <View style={styles.thumbnailContainer}>
-                              {injury.photos.slice(0, 3).map((photo, photoIndex) => (
-                                <Image 
-                                  key={`photo-${photoIndex}`}
-                                  source={{ uri: photo.uri }}
-                                  style={styles.thumbnail}
-                                />
-                              ))}
+                              {injury.photos
+                                .slice(0, 3)
+                                .map((photo, photoIndex) => (
+                                  <Image
+                                    key={`photo-${photoIndex}`}
+                                    source={{ uri: photo.uri }}
+                                    style={styles.thumbnail}
+                                  />
+                                ))}
                               {injury.photos.length > 3 && (
                                 <View style={styles.morePhotosIndicator}>
-                                  <Text style={styles.morePhotosText}>+{injury.photos.length - 3}</Text>
+                                  <Text style={styles.morePhotosText}>
+                                    +{injury.photos.length - 3}
+                                  </Text>
                                 </View>
                               )}
                             </View>
@@ -230,7 +252,7 @@ const InjuryListScreen = ({ navigation, route }) => {
                         </View>
                       )}
                     </TouchableOpacity>
-                    
+
                     <View style={styles.injuryActions}>
                       <TouchableOpacity
                         style={styles.actionButton}
@@ -243,7 +265,7 @@ const InjuryListScreen = ({ navigation, route }) => {
                         </View>
                         <Text style={styles.actionText}>Editar</Text>
                       </TouchableOpacity>
-                      
+
                       <TouchableOpacity
                         style={styles.actionButton}
                         onPress={() => handleDeleteInjury(injury)}
@@ -253,7 +275,9 @@ const InjuryListScreen = ({ navigation, route }) => {
                         <View style={[styles.actionIcon, styles.deleteIcon]}>
                           <Icon name="delete" size={18} color="#e74c3c" />
                         </View>
-                        <Text style={[styles.actionText, styles.deleteText]}>Excluir</Text>
+                        <Text style={[styles.actionText, styles.deleteText]}>
+                          Excluir
+                        </Text>
                       </TouchableOpacity>
                     </View>
                   </View>
@@ -272,7 +296,9 @@ const InjuryListScreen = ({ navigation, route }) => {
               activeOpacity={0.8}
             >
               <Icon name="add" size={24} color="#fff" />
-              <Text style={styles.floatingButtonText}>Registrar nova lesão</Text>
+              <Text style={styles.floatingButtonText}>
+                Registrar nova lesão
+              </Text>
             </TouchableOpacity>
 
             <TouchableOpacity
@@ -284,7 +310,9 @@ const InjuryListScreen = ({ navigation, route }) => {
               {isSaving ? (
                 <View style={styles.savingContainer}>
                   <ActivityIndicator size="small" color="#fff" />
-                  <Text style={styles.saveButtonText}>Salvando registros...</Text>
+                  <Text style={styles.saveButtonText}>
+                    Salvando registros...
+                  </Text>
                 </View>
               ) : (
                 <View style={styles.buttonContentContainer}>

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState /*useEffect*/ } from 'react';
 import {
   View,
   Text,
@@ -10,7 +10,7 @@ import {
   Modal,
   StatusBar,
   ScrollView,
-  Platform
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
@@ -21,16 +21,18 @@ import { BackHandler } from 'react-native';
 
 const EditProfessionalScreen = ({ route }) => {
   const { professional } = route.params || {};
-  
+
   const isAdmin = useSelector(selectIsAdmin);
-  const userUnit = useSelector(state => state.user.userData?.unidadeSaude[0]);
-  const userData = useSelector(state => state.user.userData);
-  const token = useSelector(state => state.auth.accessToken);
-  
+  const userUnit = useSelector((state) => state.user.userData?.unidadeSaude[0]);
+  // const userData = useSelector((state) => state.user.userData);
+  const token = useSelector((state) => state.auth.accessToken);
+
   const [isActive, setIsActive] = useState(professional?.fl_ativo || false);
-  const [selectedRole, setSelectedRole] = useState(professional?.nivel_acesso || 1);
+  const [selectedRole, setSelectedRole] = useState(
+    professional?.nivel_acesso || 1,
+  );
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState(null);
+  const [, setError] = useState(null);
   const [roleModalVisible, setRoleModalVisible] = useState(false);
 
   const navigation = useNavigation();
@@ -41,23 +43,23 @@ const EditProfessionalScreen = ({ route }) => {
         navigation.navigate('ProfessionalsList');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   const roles = [
-    { id: 1, name: "Pesquisador", nivel_acesso: 3, icon: "science" },
-    { id: 2, name: "Supervisor", nivel_acesso: 2, icon: "supervisor-account" },
-    { id: 3, name: "Admin", nivel_acesso: 1, icon: "admin-panel-settings" }
+    { id: 1, name: 'Pesquisador', nivel_acesso: 3, icon: 'science' },
+    { id: 2, name: 'Supervisor', nivel_acesso: 2, icon: 'supervisor-account' },
+    { id: 3, name: 'Admin', nivel_acesso: 1, icon: 'admin-panel-settings' },
   ];
 
-  const availableRoles = isAdmin 
-    ? roles 
-    : roles.filter(role => role.nivel_acesso !== 1); 
+  const availableRoles = isAdmin
+    ? roles
+    : roles.filter((role) => role.nivel_acesso !== 1);
 
   const formatCPF = (cpf) => {
     if (!cpf) return '';
@@ -67,13 +69,13 @@ const EditProfessionalScreen = ({ route }) => {
 
   // Get role name by nivel_acesso
   const getRoleName = (nivelAcesso) => {
-    const role = roles.find(r => r.nivel_acesso === nivelAcesso);
+    const role = roles.find((r) => r.nivel_acesso === nivelAcesso);
     return role ? role.name : 'Não definido';
   };
 
   // Get role icon by nivel_acesso
   const getRoleIcon = (nivelAcesso) => {
-    const role = roles.find(r => r.nivel_acesso === nivelAcesso);
+    const role = roles.find((r) => r.nivel_acesso === nivelAcesso);
     return role ? role.icon : 'help-outline';
   };
 
@@ -81,44 +83,44 @@ const EditProfessionalScreen = ({ route }) => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const endpoint = isAdmin
         ? `${API_URL}/admin/editar-usuario`
         : `${API_URL}/supervisor/editar-usuario`;
-      
+
       const requestBody = {
         cpf: professional.cpf,
         role_id: selectedRole,
-        fl_ativo: isActive
+        fl_ativo: isActive,
       };
-      
+
       if (isAdmin) {
         requestBody.unidade_saude = professional.unidade_saude || userUnit.id;
       }
-      
+
       const response = await fetch(endpoint, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify(requestBody)
+        body: JSON.stringify(requestBody),
       });
-      
+
       if (!response.ok) {
         throw new Error('Falha ao atualizar o profissional.');
       }
 
-      Alert.alert(
-        "Sucesso",
-        "Dados do profissional atualizados com sucesso!",
-        [{ text: "OK", onPress: () => navigation.navigate('ProfessionalsList')}]
-      );
-      
+      Alert.alert('Sucesso', 'Dados do profissional atualizados com sucesso!', [
+        { text: 'OK', onPress: () => navigation.navigate('ProfessionalsList') },
+      ]);
     } catch (err) {
       setError(err.message || 'Ocorreu um erro ao atualizar o profissional.');
-      Alert.alert("Erro", err.message || 'Ocorreu um erro ao atualizar o profissional.');
+      Alert.alert(
+        'Erro',
+        err.message || 'Ocorreu um erro ao atualizar o profissional.',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -127,7 +129,7 @@ const EditProfessionalScreen = ({ route }) => {
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
         <TouchableOpacity
           style={styles.backButton}
@@ -139,7 +141,7 @@ const EditProfessionalScreen = ({ route }) => {
         <Text style={styles.headerTitle}>Editar Profissional</Text>
       </View>
 
-      <ScrollView 
+      <ScrollView
         style={styles.scrollView}
         contentContainerStyle={styles.contentContainer}
         showsVerticalScrollIndicator={false}
@@ -150,9 +152,15 @@ const EditProfessionalScreen = ({ route }) => {
               <Icon name="person" size={36} color="#fff" />
             </View>
             <View style={styles.profileInfo}>
-              <Text style={styles.profileName}>{professional?.nome_usuario || 'Nome não disponível'}</Text>
-              <Text style={styles.profileCpf}>{formatCPF(professional?.cpf) || 'CPF não disponível'}</Text>
-              <Text style={styles.profileEmail}>{professional?.email || 'Email não disponível'}</Text>
+              <Text style={styles.profileName}>
+                {professional?.nome_usuario || 'Nome não disponível'}
+              </Text>
+              <Text style={styles.profileCpf}>
+                {formatCPF(professional?.cpf) || 'CPF não disponível'}
+              </Text>
+              <Text style={styles.profileEmail}>
+                {professional?.email || 'Email não disponível'}
+              </Text>
             </View>
           </View>
 
@@ -160,17 +168,29 @@ const EditProfessionalScreen = ({ route }) => {
 
           <View style={styles.unitSection}>
             <View style={styles.unitRow}>
-              <Icon name="business" size={20} color="#1e3d59" style={styles.rowIcon} />
-              <Text style={styles.unitText}>{userUnit?.nome_unidade_saude || 'Unidade não disponível'}</Text>
+              <Icon
+                name="business"
+                size={20}
+                color="#1e3d59"
+                style={styles.rowIcon}
+              />
+              <Text style={styles.unitText}>
+                {userUnit?.nome_unidade_saude || 'Unidade não disponível'}
+              </Text>
             </View>
             <View style={styles.unitRow}>
-              <Icon name="location-on" size={20} color="#1e3d59" style={styles.rowIcon} />
-              <Text style={styles.unitText}>{userUnit?.nome_localizacao || 'Localização não disponível'}</Text>
+              <Icon
+                name="location-on"
+                size={20}
+                color="#1e3d59"
+                style={styles.rowIcon}
+              />
+              <Text style={styles.unitText}>
+                {userUnit?.nome_localizacao || 'Localização não disponível'}
+              </Text>
             </View>
           </View>
         </View>
-
-
 
         <View style={styles.card}>
           <View style={styles.sectionTitle}>
@@ -180,12 +200,16 @@ const EditProfessionalScreen = ({ route }) => {
 
           <View style={styles.formGroup}>
             <Text style={styles.label}>Nível de Acesso</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.selectButton}
               onPress={() => setRoleModalVisible(true)}
             >
               <View style={styles.roleInfo}>
-                <Icon name={getRoleIcon(selectedRole)} size={22} color="#1e3d59" />
+                <Icon
+                  name={getRoleIcon(selectedRole)}
+                  size={22}
+                  color="#1e3d59"
+                />
                 <Text style={styles.selectButtonText}>
                   {getRoleName(selectedRole)}
                 </Text>
@@ -198,24 +222,26 @@ const EditProfessionalScreen = ({ route }) => {
             <Text style={styles.label}>Status do Usuário</Text>
             <View style={styles.statusContainer}>
               <View style={styles.statusTextContainer}>
-                <Icon 
-                  name={isActive ? "check-circle" : "cancel"} 
-                  size={22} 
-                  color={isActive ? "#4CAF50" : "#F44336"}
+                <Icon
+                  name={isActive ? 'check-circle' : 'cancel'}
+                  size={22}
+                  color={isActive ? '#4CAF50' : '#F44336'}
                   style={styles.statusIcon}
                 />
-                <Text style={[
-                  styles.statusText,
-                  isActive ? styles.activeText : styles.inactiveText
-                ]}>
-                  {isActive ? "Usuário Ativo" : "Usuário Inativo"}
+                <Text
+                  style={[
+                    styles.statusText,
+                    isActive ? styles.activeText : styles.inactiveText,
+                  ]}
+                >
+                  {isActive ? 'Usuário Ativo' : 'Usuário Inativo'}
                 </Text>
               </View>
               <Switch
                 value={isActive}
                 onValueChange={setIsActive}
-                trackColor={{ false: "#ffcdd2", true: "#c8e6c9" }}
-                thumbColor={isActive ? "#4CAF50" : "#F44336"}
+                trackColor={{ false: '#ffcdd2', true: '#c8e6c9' }}
+                thumbColor={isActive ? '#4CAF50' : '#F44336'}
                 ios_backgroundColor="#ffcdd2"
               />
             </View>
@@ -223,7 +249,7 @@ const EditProfessionalScreen = ({ route }) => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.saveButton, isLoading && styles.disabledButton]}
             onPress={handleSaveChanges}
             disabled={isLoading}
@@ -232,19 +258,29 @@ const EditProfessionalScreen = ({ route }) => {
               <ActivityIndicator size="small" color="#fff" />
             ) : (
               <View style={styles.buttonContent}>
-                <Icon name="save" size={20} color="#fff" style={styles.buttonIcon} />
+                <Icon
+                  name="save"
+                  size={20}
+                  color="#fff"
+                  style={styles.buttonIcon}
+                />
                 <Text style={styles.saveButtonText}>Salvar alterações</Text>
               </View>
             )}
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.cancelButton}
             onPress={() => navigation.navigate('ProfessionalsList')}
             disabled={isLoading}
           >
             <View style={styles.buttonContent}>
-              <Icon name="close" size={20} color="#666" style={styles.buttonIcon} />
+              <Icon
+                name="close"
+                size={20}
+                color="#666"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.cancelButtonText}>Cancelar</Text>
             </View>
           </TouchableOpacity>
@@ -257,27 +293,28 @@ const EditProfessionalScreen = ({ route }) => {
         animationType="fade"
         onRequestClose={() => setRoleModalVisible(false)}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.modalOverlay}
           activeOpacity={1}
           onPress={() => setRoleModalVisible(false)}
         >
-          <View 
+          <View
             style={styles.modalContainer}
             onStartShouldSetResponder={() => true}
-            onTouchEnd={e => e.stopPropagation()}
+            onTouchEnd={(e) => e.stopPropagation()}
           >
             <View style={styles.modalHeader}>
               <Text style={styles.modalTitle}>Selecionar Nível de Acesso</Text>
             </View>
-            
+
             <View style={styles.modalContent}>
               {availableRoles.map((role) => (
-                <TouchableOpacity 
+                <TouchableOpacity
                   key={role.id}
                   style={[
                     styles.roleOption,
-                    selectedRole === role.nivel_acesso && styles.selectedRoleOption
+                    selectedRole === role.nivel_acesso &&
+                      styles.selectedRoleOption,
                   ]}
                   onPress={() => {
                     setSelectedRole(role.nivel_acesso);
@@ -285,16 +322,19 @@ const EditProfessionalScreen = ({ route }) => {
                   }}
                 >
                   <View style={styles.roleOptionContent}>
-                    <Icon 
-                      name={role.icon} 
-                      size={22} 
-                      color={selectedRole === role.nivel_acesso ? "#1e3d59" : "#666"} 
+                    <Icon
+                      name={role.icon}
+                      size={22}
+                      color={
+                        selectedRole === role.nivel_acesso ? '#1e3d59' : '#666'
+                      }
                       style={styles.roleIcon}
                     />
-                    <Text 
+                    <Text
                       style={[
                         styles.roleOptionText,
-                        selectedRole === role.nivel_acesso && styles.selectedRoleText
+                        selectedRole === role.nivel_acesso &&
+                          styles.selectedRoleText,
                       ]}
                     >
                       {role.name}
@@ -306,8 +346,8 @@ const EditProfessionalScreen = ({ route }) => {
                 </TouchableOpacity>
               ))}
             </View>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.modalCancelButton}
               onPress={() => setRoleModalVisible(false)}
             >
@@ -432,25 +472,6 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     color: '#1e3d59',
     marginLeft: 8,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 12,
-  },
-  infoIcon: {
-    marginRight: 8,
-  },
-  infoLabel: {
-    fontSize: 14,
-    color: '#666',
-    width: 60,
-  },
-  infoValue: {
-    fontSize: 14,
-    color: '#333',
-    fontWeight: '500',
-    flex: 1,
   },
   formGroup: {
     marginBottom: 20,

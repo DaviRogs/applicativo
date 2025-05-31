@@ -2,28 +2,33 @@ import React from 'react';
 import { View, Text, StyleSheet, useWindowDimensions } from 'react-native';
 import Icon from 'react-native-vector-icons/Feather';
 
-const ProgressSteps = ({ 
-  currentStep = 1, 
-  totalSteps = 5, 
+const ProgressSteps = ({
+  currentStep = 1,
+  totalSteps = 5,
   stepLabels = [],
   currentDate,
-  currentUser
+  currentUser,
 }) => {
   // Use window dimensions to make the component responsive
   const { width } = useWindowDimensions();
-  
+
   // Calculate sizes based on screen width
   const isSmallScreen = width < 360;
-  
+
   // Circle size and connector width calculations
-  const circleSize = isSmallScreen ? 28 : Math.min(36, (width - 32) / (totalSteps * 1.8));
+  const circleSize = isSmallScreen
+    ? 28
+    : Math.min(36, (width - 32) / (totalSteps * 1.8));
   const fontSize = isSmallScreen ? 12 : 14;
-  
+
   // Calculate connector width to fill available space
   const availableWidth = width - 32; // Subtract container padding
   const totalCirclesWidth = circleSize * totalSteps;
-  const connectorWidth = Math.max(4, (availableWidth - totalCirclesWidth) / (totalSteps - 1) - 2);
-  
+  const connectorWidth = Math.max(
+    4,
+    (availableWidth - totalCirclesWidth) / (totalSteps - 1) - 2,
+  );
+
   // Generate an array of steps from 1 to totalSteps
   const steps = Array.from({ length: totalSteps }, (_, i) => i + 1);
 
@@ -34,17 +39,29 @@ const ProgressSteps = ({
         <View style={styles.infoRow}>
           {currentDate && (
             <Text style={styles.infoText}>
-              <Icon name="clock" size={12} color="#666" style={styles.infoIcon} /> {currentDate}
+              <Icon
+                name="clock"
+                size={12}
+                color="#666"
+                style={styles.infoIcon}
+              />{' '}
+              {currentDate}
             </Text>
           )}
           {currentUser && (
             <Text style={styles.infoText}>
-              <Icon name="user" size={12} color="#666" style={styles.infoIcon} /> {currentUser}
+              <Icon
+                name="user"
+                size={12}
+                color="#666"
+                style={styles.infoIcon}
+              />{' '}
+              {currentUser}
             </Text>
           )}
         </View>
       )}
-      
+
       {/* Progress Steps */}
       <View style={styles.stepsRow}>
         {steps.map((step, index) => (
@@ -59,63 +76,71 @@ const ProgressSteps = ({
                   : step < currentStep
                     ? styles.completedStep
                     : styles.futureStep,
-                step === currentStep && styles.currentStepShadow
+                step === currentStep && styles.currentStepShadow,
               ]}
             >
               {step < currentStep ? (
-                <Icon name="check" size={isSmallScreen ? 14 : 16} color="#fff" />
+                <Icon
+                  name="check"
+                  size={isSmallScreen ? 14 : 16}
+                  color="#fff"
+                />
               ) : (
                 <Text
                   style={[
                     styles.stepText,
                     { fontSize },
-                    step === currentStep ? styles.currentStepText : styles.futureStepText,
+                    step === currentStep
+                      ? styles.currentStepText
+                      : styles.futureStepText,
                   ]}
                 >
                   {step}
                 </Text>
               )}
             </View>
-            
+
             {/* Connecting Line (if not the last step) */}
             {index < totalSteps - 1 && (
               <View
                 style={[
                   styles.connector,
                   { width: connectorWidth },
-                  step < currentStep ? styles.activeConnector : styles.inactiveConnector,
+                  step < currentStep
+                    ? styles.activeConnector
+                    : styles.inactiveConnector,
                 ]}
               />
             )}
           </React.Fragment>
         ))}
       </View>
-      
+
       {/* Step Labels - show all labels */}
       {stepLabels.length > 0 && (
         <View style={styles.labelsContainer}>
           {steps.map((step, index) => {
             if (!stepLabels[index]) return null;
-            
+
             const labelWidth = (width - 32) / totalSteps;
             const isCurrent = step === currentStep;
-            
+
             return (
-              <View 
-                key={`label-${step}`} 
+              <View
+                key={`label-${step}`}
                 style={[
-                  styles.labelWrapper, 
-                  { 
+                  styles.labelWrapper,
+                  {
                     width: labelWidth,
-                    left: `${((index) / (totalSteps - 1)) * 100}%`,
-                    transform: [{ translateX: -labelWidth/2 }]
-                  }
+                    left: `${(index / (totalSteps - 1)) * 100}%`,
+                    transform: [{ translateX: -labelWidth / 2 }],
+                  },
                 ]}
               >
-                <Text 
+                <Text
                   style={[
                     styles.stepLabel,
-                    isCurrent && styles.currentStepLabel
+                    isCurrent && styles.currentStepLabel,
                   ]}
                   numberOfLines={1}
                   ellipsizeMode="tail"
@@ -224,7 +249,7 @@ const styles = StyleSheet.create({
     color: '#1e3d59',
     fontWeight: '600',
     fontSize: 11,
-  }
+  },
 });
 
 export default ProgressSteps;

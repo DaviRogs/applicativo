@@ -12,14 +12,16 @@ export const apiService = {
         {
           method: 'POST',
           headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`
-          }
-        }
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        },
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Unknown error' }));
         throw new Error(errorData.message || 'Failed to register attendance');
       }
 
@@ -34,20 +36,20 @@ export const apiService = {
   uploadConsentTerm: async (attendanceId, signaturePhoto, token) => {
     try {
       console.log(`Uploading consent term for attendanceId: ${attendanceId}`);
-      
+
       // Check if signaturePhoto exists
       if (!signaturePhoto) {
         throw new Error('Signature photo is required');
       }
-      
+
       // Create form data
       const formData = new FormData();
-      
+
       // Handle different signature photo formats
       let fileUri;
       let fileType;
       let fileName = 'signature.png';
-      
+
       if (typeof signaturePhoto === 'string') {
         // - could be a base64 or a file URI
         if (signaturePhoto.startsWith('data:image')) {
@@ -67,11 +69,11 @@ export const apiService = {
       } else {
         throw new Error('Invalid signature photo format');
       }
-      
+
       formData.append('file', {
         uri: fileUri,
         name: fileName,
-        type: fileType
+        type: fileType,
       });
 
       const response = await fetch(
@@ -79,16 +81,18 @@ export const apiService = {
         {
           method: 'POST',
           headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'multipart/form-data'
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'multipart/form-data',
           },
-          body: formData
-        }
+          body: formData,
+        },
       );
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Unknown error' }));
         throw new Error(errorData.message || 'Failed to upload consent term');
       }
 
@@ -102,23 +106,27 @@ export const apiService = {
   // Submit anamnesis data
   submitAnamnesisData: async (attendanceId, anamnesisData, token) => {
     try {
-      console.log(`Submitting anamnesis data for attendanceId: ${attendanceId}`);
+      console.log(
+        `Submitting anamnesis data for attendanceId: ${attendanceId}`,
+      );
       const response = await fetch(
         `${API_URL}/cadastrar-informacoes-completas?atendimento_id=${attendanceId}`,
         {
           method: 'POST',
           headers: {
-            'accept': 'application/json',
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json'
+            accept: 'application/json',
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
           },
-          body: JSON.stringify(anamnesisData)
-        }
+          body: JSON.stringify(anamnesisData),
+        },
       );
       const responseData = await response.json();
       if (!response.ok) {
         console.error('API Error Response:', responseData);
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Unknown error' }));
         throw new Error(errorData.message || 'Failed to submit anamnesis data');
       }
 
@@ -157,7 +165,9 @@ export const apiService = {
               continue;
             }
 
-            const file = new File([blob], `lesion_image_${i}.jpg`, { type: 'image/jpeg' });
+            const file = new File([blob], `lesion_image_${i}.jpg`, {
+              type: 'image/jpeg',
+            });
             formData.append('files', file);
             console.log(`Added image ${i} to form data`);
           } catch (error) {
@@ -169,39 +179,41 @@ export const apiService = {
       const response = await fetch(`${API_URL}/cadastrar-lesao`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
         },
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ message: 'Unknown error' }));
         throw new Error(errorData.message || 'Failed to register lesion');
       }
 
       const responseData = await response.json();
-      
+
       return {
         message: responseData.message,
         lesao: {
           id: responseData.lesao.id,
           local_lesao_id: responseData.lesao.local_lesao_id,
           local_lesao_nome: responseData.lesao.local_lesao_nome,
-          descricao_lesao: responseData.lesao.descricao_lesao
+          descricao_lesao: responseData.lesao.descricao_lesao,
         },
         imagens: responseData.imagens || [],
         tipos: responseData.tipos || [],
         prediagnosticos: responseData.prediagnosticos || [],
         descricoes_lesao: responseData['descricoes-lesao'] || [],
         location: undefined,
-        description: undefined
+        description: undefined,
       };
     } catch (error) {
       console.error('Error in registerLesion:', error);
       throw error;
     }
-  }
+  },
 };
 
 // Helper function to create a file from base64 data
@@ -210,17 +222,17 @@ const createFileFromBase64 = async (base64Data, filename) => {
   if (!base64Data) {
     throw new Error('base64Data is undefined');
   }
-  
+
   if (Platform.OS === 'ios') {
     // For iOS, we can use the base64 data directly
     return base64Data;
   } else {
     // For Android, we need to create a file
     const fileUri = `${FileSystem.cacheDirectory}${filename}`;
-    
+
     // Make sure we're working with the correct format of base64 data
     let base64Content = base64Data;
-    
+
     // Check if the data includes the data URL scheme
     if (base64Data.includes && base64Data.includes(',')) {
       base64Content = base64Data.split(',')[1];
@@ -228,11 +240,11 @@ const createFileFromBase64 = async (base64Data, filename) => {
       // Alternative check if includes is not available
       base64Content = base64Data.substring(base64Data.indexOf(',') + 1);
     }
-    
+
     await FileSystem.writeAsStringAsync(fileUri, base64Content, {
-      encoding: FileSystem.EncodingType.Base64
+      encoding: FileSystem.EncodingType.Base64,
     });
-    
+
     return fileUri;
   }
 };

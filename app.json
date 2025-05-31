@@ -19,9 +19,7 @@
         "NSPhotoLibraryUsageDescription": "This app uses the photo library to select injury images"
       },
       "bundleIdentifier": "com.anonymous.applicativo",
-      "associatedDomains": [
-        "applinks:dermalert.example.com"
-      ]
+      "associatedDomains": ["applinks:dermalert.example.com"]
     },
     "android": {
       "adaptiveIcon": {
@@ -52,10 +50,7 @@
               "scheme": "dermalert"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },

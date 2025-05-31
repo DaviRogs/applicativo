@@ -10,7 +10,7 @@ import {
   StatusBar,
   FlatList,
   ActivityIndicator,
-  Keyboard
+  Keyboard,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
@@ -23,75 +23,87 @@ export const InjuryLocationScreen = ({ navigation }) => {
   const [searchQuery, setSearchQuery] = useState('');
   const dispatch = useDispatch();
   const [keyboardVisible, setKeyboardVisible] = useState(false);
-  
-  const currentLocation = useSelector(state => state.injury.formState.location);
-  const currentLocationId = useSelector(state => state.injury.formState.injuryId);
-  
-  const [selectedLocationName, setSelectedLocationName] = useState(currentLocation || '');
+
+  const currentLocation = useSelector(
+    (state) => state.injury.formState.location,
+  );
+  const currentLocationId = useSelector(
+    (state) => state.injury.formState.injuryId,
+  );
+
+  const [selectedLocationName, setSelectedLocationName] = useState(
+    currentLocation || '',
+  );
   const [selectedLocationObj, setSelectedLocationObj] = useState(null);
-  
+
   const [locations, setLocations] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
-  
+
   const fetchLocations = async () => {
     try {
       setIsLoading(true);
       setError(null);
-      
+
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); 
-      
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
+
       const response = await fetch(`${API_URL}/locais-lesao`, {
         signal: controller.signal,
       });
-      
+
       clearTimeout(timeoutId);
-      
+
       if (!response.ok) {
         throw new Error(`HTTP error! Status: ${response.status}`);
       }
-      
+
       const data = await response.json();
-      
-      const transformedData = data.map(item => ({
+
+      const transformedData = data.map((item) => ({
         id: item.id,
-        name: item.nome
+        name: item.nome,
       }));
-      
+
       setLocations(transformedData);
-      
+
       if (currentLocation && currentLocationId) {
-        const matchingLocation = transformedData.find(loc => loc.id === currentLocationId);
+        const matchingLocation = transformedData.find(
+          (loc) => loc.id === currentLocationId,
+        );
         if (matchingLocation) {
           setSelectedLocationObj(matchingLocation);
         }
       }
     } catch (err) {
       console.error('Error fetching injury locations:', err);
-      
+
       if (err.name === 'AbortError') {
-        setError('Tempo limite excedido. Verifique sua conexão e tente novamente.');
+        setError(
+          'Tempo limite excedido. Verifique sua conexão e tente novamente.',
+        );
       } else {
-        setError('Não foi possível carregar os locais de lesão. Por favor, tente novamente.');
+        setError(
+          'Não foi possível carregar os locais de lesão. Por favor, tente novamente.',
+        );
       }
     } finally {
       setIsLoading(false);
     }
   };
-  
+
   useEffect(() => {
     const keyboardDidShowListener = Keyboard.addListener(
       'keyboardDidShow',
       () => {
         setKeyboardVisible(true);
-      }
+      },
     );
     const keyboardDidHideListener = Keyboard.addListener(
       'keyboardDidHide',
       () => {
         setKeyboardVisible(false);
-      }
+      },
     );
 
     return () => {
@@ -99,23 +111,24 @@ export const InjuryLocationScreen = ({ navigation }) => {
       keyboardDidHideListener.remove();
     };
   }, []);
-  
+
   useFocusEffect(
     React.useCallback(() => {
       const onBackPress = () => {
         navigation.navigate('AddInjury');
         return true;
       };
-      
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-      return () => BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+      return () =>
+        BackHandler.removeEventListener('hardwareBackPress', onBackPress);
+    }, [navigation]),
   );
-  
+
   useEffect(() => {
     fetchLocations();
   }, []);
-  
+
   useEffect(() => {
     if (currentLocation) {
       setSelectedLocationName(currentLocation);
@@ -123,8 +136,8 @@ export const InjuryLocationScreen = ({ navigation }) => {
   }, [currentLocation]);
 
   const filteredLocations = searchQuery
-    ? locations.filter(location =>
-        location.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ? locations.filter((location) =>
+        location.name.toLowerCase().includes(searchQuery.toLowerCase()),
       )
     : locations;
 
@@ -136,42 +149,45 @@ export const InjuryLocationScreen = ({ navigation }) => {
 
   const handleSaveLocation = () => {
     if (selectedLocationObj) {
-      dispatch(updateFormField({
-        field: 'location',
-        value: selectedLocationName,
-      }));
-      
-      dispatch(updateFormField({
-        field: 'injuryId',
-        value: selectedLocationObj.id,
-      }));
-      
+      dispatch(
+        updateFormField({
+          field: 'location',
+          value: selectedLocationName,
+        }),
+      );
+
+      dispatch(
+        updateFormField({
+          field: 'injuryId',
+          value: selectedLocationObj.id,
+        }),
+      );
+
       navigation.navigate('AddInjury');
     }
   };
 
   const renderLocationItem = ({ item }) => {
     const isSelected = selectedLocationName === item.name;
-    
+
     return (
       <TouchableOpacity
-        style={[
-          styles.locationItem,
-          isSelected && styles.selectedLocation
-        ]}
+        style={[styles.locationItem, isSelected && styles.selectedLocation]}
         onPress={() => handleLocationSelect(item)}
         activeOpacity={0.7}
         accessibilityRole="button"
         accessibilityLabel={`Selecionar ${item.name}`}
         accessibilityState={{ selected: isSelected }}
       >
-        <Text style={[
-          styles.locationText,
-          isSelected && styles.selectedLocationText
-        ]}>
+        <Text
+          style={[
+            styles.locationText,
+            isSelected && styles.selectedLocationText,
+          ]}
+        >
           {item.name}
         </Text>
-        
+
         {isSelected && (
           <View style={styles.checkIconContainer}>
             <Icon name="check-circle" size={22} color="#1e3d59" />
@@ -187,7 +203,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
         <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <View style={styles.container}>
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.navigate('AddInjury')}
               accessibilityLabel="Voltar"
@@ -199,7 +215,9 @@ export const InjuryLocationScreen = ({ navigation }) => {
           </View>
           <View style={[styles.content, styles.centerContent]}>
             <ActivityIndicator size="large" color="#1e3d59" />
-            <Text style={styles.loadingText}>Carregando locais de lesão...</Text>
+            <Text style={styles.loadingText}>
+              Carregando locais de lesão...
+            </Text>
           </View>
         </View>
       </SafeAreaView>
@@ -213,7 +231,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
         <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
         <View style={styles.container}>
           <View style={styles.header}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.backButton}
               onPress={() => navigation.navigate('AddInjury')}
               accessibilityLabel="Voltar"
@@ -227,13 +245,18 @@ export const InjuryLocationScreen = ({ navigation }) => {
             <Icon name="error-outline" size={48} color="#e74c3c" />
             <Text style={styles.errorTitle}>Falha na conexão</Text>
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.retryButton}
               onPress={fetchLocations}
               accessibilityLabel="Tentar novamente"
               activeOpacity={0.8}
             >
-              <Icon name="refresh" size={18} color="#fff" style={styles.buttonIcon} />
+              <Icon
+                name="refresh"
+                size={18}
+                color="#fff"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.retryButtonText}>Tentar novamente</Text>
             </TouchableOpacity>
           </View>
@@ -247,7 +270,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
       <View style={styles.container}>
         <View style={styles.header}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={styles.backButton}
             onPress={() => navigation.navigate('AddInjury')}
             accessibilityLabel="Voltar"
@@ -261,11 +284,18 @@ export const InjuryLocationScreen = ({ navigation }) => {
         <View style={styles.content}>
           <View style={styles.searchContainer}>
             <Text style={styles.label}>Selecione o local da lesão</Text>
-            <View style={[
-              styles.searchInputContainer,
-              searchQuery.length > 0 && styles.activeSearchInputContainer
-            ]}>
-              <Icon name="search" size={20} color={searchQuery.length > 0 ? "#1e3d59" : "#999"} style={styles.searchIcon} />
+            <View
+              style={[
+                styles.searchInputContainer,
+                searchQuery.length > 0 && styles.activeSearchInputContainer,
+              ]}
+            >
+              <Icon
+                name="search"
+                size={20}
+                color={searchQuery.length > 0 ? '#1e3d59' : '#999'}
+                style={styles.searchIcon}
+              />
               <TextInput
                 style={styles.searchInput}
                 placeholder="Busque por um local específico..."
@@ -276,7 +306,7 @@ export const InjuryLocationScreen = ({ navigation }) => {
                 autoCapitalize="none"
               />
               {searchQuery !== '' && (
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setSearchQuery('')}
                   style={styles.clearButton}
                   accessibilityLabel="Limpar busca"
@@ -290,21 +320,21 @@ export const InjuryLocationScreen = ({ navigation }) => {
 
           <FlatList
             data={filteredLocations}
-            keyExtractor={item => item.id.toString()}
+            keyExtractor={(item) => item.id.toString()}
             renderItem={renderLocationItem}
             style={styles.locationList}
             contentContainerStyle={[
               styles.listContentContainer,
-              filteredLocations.length === 0 && styles.emptyList
+              filteredLocations.length === 0 && styles.emptyList,
             ]}
             showsVerticalScrollIndicator={false}
             ListEmptyComponent={() => (
               <View style={styles.noResultsContainer}>
                 <Icon name="search-off" size={48} color="#999" />
                 <Text style={styles.noResultsText}>
-                  Nenhum local encontrado para "{searchQuery}"
+                  Nenhum local encontrado para &quot;{searchQuery}&quot;
                 </Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   onPress={() => setSearchQuery('')}
                   style={styles.clearSearchButton}
                 >
@@ -317,10 +347,10 @@ export const InjuryLocationScreen = ({ navigation }) => {
 
         {!keyboardVisible && (
           <View style={styles.footer}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[
                 styles.saveButton,
-                !selectedLocationObj && styles.disabledButton
+                !selectedLocationObj && styles.disabledButton,
               ]}
               onPress={handleSaveLocation}
               disabled={!selectedLocationObj}
@@ -329,10 +359,17 @@ export const InjuryLocationScreen = ({ navigation }) => {
               activeOpacity={selectedLocationObj ? 0.8 : 1}
             >
               <Text style={styles.saveButtonText}>
-                {selectedLocationObj ? 'Confirmar seleção' : 'Selecione um local'}
+                {selectedLocationObj
+                  ? 'Confirmar seleção'
+                  : 'Selecione um local'}
               </Text>
               {selectedLocationObj && (
-                <Icon name="check" size={20} color="#fff" style={styles.saveButtonIcon} />
+                <Icon
+                  name="check"
+                  size={20}
+                  color="#fff"
+                  style={styles.saveButtonIcon}
+                />
               )}
             </TouchableOpacity>
           </View>

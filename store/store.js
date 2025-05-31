@@ -17,12 +17,12 @@ const store = configureStore({
     anamnesis: anamnesisReducer,
     consentTerm: consentTermReducer,
     formSubmission: formSubmissionReducer,
-    patient: patientSlice
+    patient: patientSlice,
   },
   middleware: (getDefaultMiddleware) =>
     getDefaultMiddleware({
-      serializableCheck: false, 
-    }).concat(formValidationMiddleware)  
+      serializableCheck: false,
+    }).concat(formValidationMiddleware),
 });
 
 export default store;

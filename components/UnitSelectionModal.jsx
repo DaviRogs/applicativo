@@ -12,14 +12,18 @@ import {
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector, useDispatch } from 'react-redux';
-import { selectHasAdminAccess, updateUnidadeSaude, selectIsAdmin } from '../store/userSlice';
-import {API_URL} from '@env';
+import {
+  // selectHasAdminAccess,
+  updateUnidadeSaude,
+  selectIsAdmin,
+} from '../store/userSlice';
+import { API_URL } from '@env';
 
 const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   const dispatch = useDispatch();
   const hasAdminAccess = useSelector(selectIsAdmin);
-  const accessToken = useSelector(state => state.auth.accessToken);
-  
+  const accessToken = useSelector((state) => state.auth.accessToken);
+
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [healthUnits, setHealthUnits] = useState([]);
@@ -35,8 +39,8 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       const response = await fetch(`${API_URL}/listar-unidades-saude`, {
         method: 'GET',
         headers: {
-          'Accept': 'application/json',
-          'Authorization': `Bearer ${accessToken}`,
+          Accept: 'application/json',
+          Authorization: `Bearer ${accessToken}`,
         },
       });
 
@@ -49,11 +53,11 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
     } catch (err) {
       console.error('Error fetching health units:', err);
       setError('Erro ao carregar unidades de saúde');
-      
+
       Alert.alert(
         'Erro',
         'Não foi possível carregar as unidades de saúde. Por favor, tente novamente.',
-        [{ text: 'OK', onPress: onClose }]
+        [{ text: 'OK', onPress: onClose }],
       );
     } finally {
       setLoading(false);
@@ -71,7 +75,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       Alert.alert(
         'Unidade Inativa',
         'Esta unidade de saúde está inativa no momento.',
-        [{ text: 'OK' }]
+        [{ text: 'OK' }],
       );
       return;
     }
@@ -84,18 +88,18 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
       cidade_unidade_saude: unit.cidade_unidade_saude,
       is_active: unit.fl_ativo,
       data_criacao: unit.data_criacao,
-      data_atualizacao: unit.data_atualizacao
+      data_atualizacao: unit.data_atualizacao,
     };
 
     // Dispatch the update action directly
     dispatch(updateUnidadeSaude([formattedUnit]));
-    
+
     // Call the original onSelectUnit function if provided
     if (onSelectUnit) {
-      console.log('formattedUnit',formattedUnit);
+      console.log('formattedUnit', formattedUnit);
       onSelectUnit(formattedUnit);
     }
-    
+
     onClose();
   };
 
@@ -108,50 +112,45 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
   }
 
   // Filter health units based on search query
-  const filteredUnits = healthUnits.filter(unit => {
+  const filteredUnits = healthUnits.filter((unit) => {
     const query = searchQuery.toLowerCase();
     return (
       unit.nome_unidade_saude.toLowerCase().includes(query) ||
       unit.nome_localizacao.toLowerCase().includes(query) ||
       unit.codigo_unidade_saude.toLowerCase().includes(query) ||
-      (unit.cidade_unidade_saude && unit.cidade_unidade_saude.toLowerCase().includes(query))
+      (unit.cidade_unidade_saude &&
+        unit.cidade_unidade_saude.toLowerCase().includes(query))
     );
   });
 
   const renderUnitItem = (unit) => (
     <TouchableOpacity
       key={unit.id}
-      style={[
-        styles.unitItem,
-        !unit.fl_ativo && styles.inactiveUnit
-      ]}
+      style={[styles.unitItem, !unit.fl_ativo && styles.inactiveUnit]}
       onPress={() => handleUnitSelection(unit)}
     >
-      <Icon 
-        name="business" 
-        size={24} 
-        color={unit.fl_ativo ? "#1e3d59" : "#999"} 
+      <Icon
+        name="business"
+        size={24}
+        color={unit.fl_ativo ? '#1e3d59' : '#999'}
       />
       <View style={styles.unitItemContent}>
-        <Text style={[
-          styles.unitItemName,
-          !unit.fl_ativo && styles.inactiveText
-        ]}>
+        <Text
+          style={[styles.unitItemName, !unit.fl_ativo && styles.inactiveText]}
+        >
           {unit.nome_unidade_saude}
         </Text>
-        <Text style={[
-          styles.unitItemAddress,
-          !unit.fl_ativo && styles.inactiveText
-        ]}>
+        <Text
+          style={[
+            styles.unitItemAddress,
+            !unit.fl_ativo && styles.inactiveText,
+          ]}
+        >
           {unit.nome_localizacao}
         </Text>
         <View style={styles.unitItemFooter}>
-          <Text style={styles.unitItemCode}>
-            {unit.codigo_unidade_saude}
-          </Text>
-          {!unit.fl_ativo && (
-            <Text style={styles.inactiveLabel}>Inativa</Text>
-          )}
+          <Text style={styles.unitItemCode}>{unit.codigo_unidade_saude}</Text>
+          {!unit.fl_ativo && <Text style={styles.inactiveLabel}>Inativa</Text>}
         </View>
       </View>
     </TouchableOpacity>
@@ -170,7 +169,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
             <Text style={styles.modalTitle}>
               Escolha a Unidade a ser gerenciada
             </Text>
-            <TouchableOpacity 
+            <TouchableOpacity
               onPress={onClose}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
@@ -181,9 +180,7 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
           {loading ? (
             <View style={styles.centerContainer}>
               <ActivityIndicator size="large" color="#1e3d59" />
-              <Text style={styles.loadingText}>
-                Carregando unidades...
-              </Text>
+              <Text style={styles.loadingText}>Carregando unidades...</Text>
             </View>
           ) : error ? (
             <View style={styles.centerContainer}>
@@ -206,7 +203,12 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
           ) : (
             <>
               <View style={styles.searchContainer}>
-                <Icon name="search" size={20} color="#666" style={styles.searchIcon} />
+                <Icon
+                  name="search"
+                  size={20}
+                  color="#666"
+                  style={styles.searchIcon}
+                />
                 <TextInput
                   style={styles.searchInput}
                   placeholder="Pesquisar unidades..."
@@ -217,20 +219,25 @@ const UnitSelectionModal = ({ visible, onClose, onSelectUnit }) => {
                 />
                 {searchQuery.length > 0 && (
                   <TouchableOpacity onPress={() => setSearchQuery('')}>
-                    <Icon name="cancel" size={20} color="#999" style={styles.clearIcon} />
+                    <Icon
+                      name="cancel"
+                      size={20}
+                      color="#999"
+                      style={styles.clearIcon}
+                    />
                   </TouchableOpacity>
                 )}
               </View>
-              
+
               {filteredUnits.length === 0 ? (
                 <View style={styles.centerContainer}>
                   <Icon name="search-off" size={48} color="#666" />
                   <Text style={styles.emptyText}>
-                    Nenhuma unidade encontrada para "{searchQuery}"
+                    Nenhuma unidade encontrada para &quot;{searchQuery}&quot;
                   </Text>
                 </View>
               ) : (
-                <ScrollView 
+                <ScrollView
                   style={styles.unitList}
                   showsVerticalScrollIndicator={false}
                 >

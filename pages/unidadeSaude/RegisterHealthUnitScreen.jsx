@@ -11,12 +11,12 @@ import {
   ScrollView,
   Switch,
   StatusBar,
-  Platform
+  Platform,
 } from 'react-native';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import { useSelector } from 'react-redux';
 import { selectIsAdmin } from '../../store/userSlice';
-import {API_URL} from '@env';
+import { API_URL } from '@env';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { BackHandler } from 'react-native';
 
@@ -30,12 +30,11 @@ const RegisterHealthUnitScreen = () => {
   const [error, setError] = useState(null);
   const [successModalVisible, setSuccessModalVisible] = useState(false);
 
-
   const navigation = useNavigation();
-  
+
   // Get user role from Redux
   const isAdmin = useSelector(selectIsAdmin);
-  const token = useSelector(state => state.auth.accessToken);
+  const token = useSelector((state) => state.auth.accessToken);
 
   useFocusEffect(
     React.useCallback(() => {
@@ -43,12 +42,12 @@ const RegisterHealthUnitScreen = () => {
         navigation.navigate('HealthUnitList');
         return true; // Prevent default behavior
       };
-  
+
       BackHandler.addEventListener('hardwareBackPress', onBackPress);
-  
-      return () => 
+
+      return () =>
         BackHandler.removeEventListener('hardwareBackPress', onBackPress);
-    }, [navigation])
+    }, [navigation]),
   );
 
   useEffect(() => {
@@ -57,7 +56,7 @@ const RegisterHealthUnitScreen = () => {
       Alert.alert(
         'Acesso Negado',
         'Você não tem permissão para acessar esta página.',
-        [{ text: 'OK', onPress: () => navigation.navigate('HealthUnitList') }]
+        [{ text: 'OK', onPress: () => navigation.navigate('HealthUnitList') }],
       );
     }
   }, [isAdmin, navigation]);
@@ -92,8 +91,8 @@ const RegisterHealthUnitScreen = () => {
       const response = await fetch(`${API_URL}/cadastrar-unidade-saude`, {
         method: 'POST',
         headers: {
-          'accept': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          accept: 'application/json',
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
@@ -101,12 +100,12 @@ const RegisterHealthUnitScreen = () => {
           nome_localizacao: location,
           codigo_unidade_saude: unitCode,
           cidade_unidade_saude: city,
-          fl_ativo: isActive
-        })
+          fl_ativo: isActive,
+        }),
       });
 
       const data = await response.json();
-      
+
       if (!response.ok) {
         throw new Error(data.detail || 'Erro ao cadastrar unidade de saúde');
       }
@@ -115,7 +114,9 @@ const RegisterHealthUnitScreen = () => {
       setSuccessModalVisible(true);
       resetForm();
     } catch (err) {
-      setError(err.message || 'Ocorreu um erro ao tentar cadastrar a unidade de saúde');
+      setError(
+        err.message || 'Ocorreu um erro ao tentar cadastrar a unidade de saúde',
+      );
     } finally {
       setIsLoading(false);
     }
@@ -135,14 +136,12 @@ const RegisterHealthUnitScreen = () => {
     navigation.navigate('HealthUnitList');
   };
 
-
-
   return (
     <View style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1e3d59" />
-      
+
       <View style={styles.header}>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.backButton}
           onPress={() => navigation.navigate('HealthUnitList')}
           hitSlop={{ top: 10, right: 10, bottom: 10, left: 10 }}
@@ -152,14 +151,15 @@ const RegisterHealthUnitScreen = () => {
         <Text style={styles.headerTitle}>Cadastrar Unidade de Saúde</Text>
       </View>
 
-      <ScrollView 
-        style={styles.content}
-        showsVerticalScrollIndicator={false}
-      >
-
+      <ScrollView style={styles.content} showsVerticalScrollIndicator={false}>
         {error && (
           <View style={styles.errorContainer}>
-            <Icon name="error-outline" size={20} color="#B71C1C" style={styles.errorIcon} />
+            <Icon
+              name="error-outline"
+              size={20}
+              color="#B71C1C"
+              style={styles.errorIcon}
+            />
             <Text style={styles.errorText}>{error}</Text>
           </View>
         )}
@@ -173,7 +173,12 @@ const RegisterHealthUnitScreen = () => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Nome da Unidade</Text>
             <View style={styles.inputContainer}>
-              <Icon name="domain" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="domain"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={unitName}
@@ -187,7 +192,12 @@ const RegisterHealthUnitScreen = () => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Código</Text>
             <View style={styles.inputContainer}>
-              <Icon name="local-offer" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="local-offer"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={unitCode}
@@ -201,7 +211,12 @@ const RegisterHealthUnitScreen = () => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Cidade</Text>
             <View style={styles.inputContainer}>
-              <Icon name="location-city" size={20} color="#666" style={styles.inputIcon} />
+              <Icon
+                name="location-city"
+                size={20}
+                color="#666"
+                style={styles.inputIcon}
+              />
               <TextInput
                 style={styles.input}
                 value={city}
@@ -215,7 +230,12 @@ const RegisterHealthUnitScreen = () => {
           <View style={styles.formGroup}>
             <Text style={styles.label}>Endereço Completo</Text>
             <View style={[styles.inputContainer, styles.multilineContainer]}>
-              <Icon name="place" size={20} color="#666" style={[styles.inputIcon, styles.multilineIcon]} />
+              <Icon
+                name="place"
+                size={20}
+                color="#666"
+                style={[styles.inputIcon, styles.multilineIcon]}
+              />
               <TextInput
                 style={[styles.input, styles.multilineInput]}
                 value={location}
@@ -231,7 +251,9 @@ const RegisterHealthUnitScreen = () => {
           <View style={styles.switchContainer}>
             <Text style={styles.label}>Status da Unidade</Text>
             <View style={styles.switchWrapper}>
-              <Text style={isActive ? styles.inactiveText : styles.activeTextBold}>
+              <Text
+                style={isActive ? styles.inactiveText : styles.activeTextBold}
+              >
                 Inativo
               </Text>
               <Switch
@@ -241,7 +263,9 @@ const RegisterHealthUnitScreen = () => {
                 thumbColor={isActive ? '#4CAF50' : '#F44336'}
                 style={styles.switch}
               />
-              <Text style={isActive ? styles.activeTextBold : styles.inactiveText}>
+              <Text
+                style={isActive ? styles.activeTextBold : styles.inactiveText}
+              >
                 Ativo
               </Text>
             </View>
@@ -249,7 +273,7 @@ const RegisterHealthUnitScreen = () => {
         </View>
 
         <View style={styles.buttonContainer}>
-          <TouchableOpacity 
+          <TouchableOpacity
             style={[styles.primaryButton, isLoading && styles.disabledButton]}
             onPress={handleRegister}
             disabled={isLoading}
@@ -259,20 +283,30 @@ const RegisterHealthUnitScreen = () => {
               <ActivityIndicator color="#fff" size="small" />
             ) : (
               <View style={styles.buttonContent}>
-                <Icon name="save" size={20} color="#fff" style={styles.buttonIcon} />
+                <Icon
+                  name="save"
+                  size={20}
+                  color="#fff"
+                  style={styles.buttonIcon}
+                />
                 <Text style={styles.primaryButtonText}>Cadastrar Unidade</Text>
               </View>
             )}
           </TouchableOpacity>
-          
-          <TouchableOpacity 
+
+          <TouchableOpacity
             style={styles.secondaryButton}
             onPress={() => navigation.navigate('HealthUnitList')}
             disabled={isLoading}
             activeOpacity={0.8}
           >
             <View style={styles.buttonContent}>
-              <Icon name="close" size={20} color="#666" style={styles.buttonIcon} />
+              <Icon
+                name="close"
+                size={20}
+                color="#666"
+                style={styles.buttonIcon}
+              />
               <Text style={styles.secondaryButtonText}>Cancelar</Text>
             </View>
           </TouchableOpacity>
@@ -290,13 +324,13 @@ const RegisterHealthUnitScreen = () => {
             <View style={styles.successIconContainer}>
               <Icon name="check-circle" size={80} color="#4CAF50" />
             </View>
-            
+
             <Text style={styles.successModalTitle}>Unidade Cadastrada!</Text>
             <Text style={styles.successModalText}>
               A unidade foi cadastrada com sucesso no sistema.
             </Text>
-            
-            <TouchableOpacity 
+
+            <TouchableOpacity
               style={styles.successModalButton}
               onPress={handleCloseSuccessModal}
               activeOpacity={0.8}
@@ -341,36 +375,6 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 16,
-  },
-  headerInfo: {
-    backgroundColor: '#fff',
-    padding: 14,
-    borderRadius: 10,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: '#e0e0e0',
-    elevation: 1,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 1,
-  },
-  infoRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 6,
-  },
-  infoIcon: {
-    marginRight: 8,
-  },
-  dateText: {
-    fontSize: 14,
-    color: '#555',
-    fontWeight: '500',
-  },
-  userText: {
-    fontSize: 14,
-    color: '#555',
   },
   card: {
     backgroundColor: '#fff',
@@ -578,7 +582,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600',
-  }
+  },
 });
 
 export default RegisterHealthUnitScreen;
