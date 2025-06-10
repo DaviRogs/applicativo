@@ -252,50 +252,58 @@ const NovoPacienteScreen = ({ route }) => {
       >
         <View style={styles.modalContainer}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Resultados da Análise</Text>
-
-            <ScrollView style={styles.resultsContainer}>
-              {lesionsResults.map((lesao, index) => (
-                <View key={index} style={styles.lesaoItem}>
-                  <Text style={styles.tipo}>
-                    Tipo:{' '}
-                    {lesao.tipos ? lesao.tipos.join(', ') : 'Não disponível'}
-                  </Text>
-                  <Text style={styles.preDiagnostico}>
-                    Pré-diagnóstico:{' '}
-                    {lesao.prediagnosticos
-                      ? lesao.prediagnosticos.join(', ')
-                      : 'Não disponível'}
-                  </Text>
-                  <Text style={styles.lesaoDescription}>
-                    Descrição da Lesão:{' '}
-                    {lesao.description ? lesao.description : 'Não disponível'}
-                  </Text>
-                  <Text style={styles.detalhesLesao}>
-                    Detalhes:{' '}
-                    {lesao.descricoes_lesao
-                      ? lesao.descricoes_lesao.join('\n')
-                      : 'Não disponível'}
-                  </Text>
-                  <Text style={styles.detalhesLesao}>
-                    Data do pré-diagnóstico:{' '}
-                    {new Date().toLocaleDateString('pt-BR', {
-                      day: '2-digit',
-                      month: '2-digit',
-                      year: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                    })}
-                  </Text>
-                  {lesao.imagens && lesao.imagens.length > 0 && (
-                    <Text style={styles.imagens}>
-                      Imagens registradas: {lesao.imagens.length}
+            <Text style={styles.modalTitle}>Resultado da Análise</Text>
+            <ScrollView style={{ maxHeight: '60%' }}>
+              {lesionsResults.map((lesao, index) => {
+                const isAtencao = lesao.prediagnosticos?.some(pred =>
+                  pred.toLowerCase().includes('ceratose') || pred.toLowerCase().includes('atenção')
+                );
+                return (
+                  <View
+                    key={index}
+                    style={isAtencao ? styles.resultBlockAttention : styles.resultBlockOk}
+                  >
+                    <View style={styles.resultHeader}>
+                      <Icon
+                        name={isAtencao ? "search" : "check-circle"}
+                        size={28}
+                        color={isAtencao ? "#f1c40f" : "#1e3d59"}
+                        style={{ marginRight: 8 }}
+                      />
+                      <Text style={isAtencao ? styles.resultTitleAttention : styles.resultTitleOk}>
+                        Resultado: {isAtencao ? "Atenção Reforçada" : "Sem Preocupações"}
+                      </Text>
+                    </View>
+                    <Text style={styles.resultCondition}>
+                      Possível condição identificada: <Text style={{ fontWeight: 'bold' }}>{lesao.prediagnosticos?.join(', ') || 'Não disponível'}</Text>
                     </Text>
-                  )}
-                </View>
-              ))}
+                    {lesao.description && (
+                      <Text style={styles.resultObservation}>
+                        Descrição da Lesão: {lesao.description}
+                      </Text>
+                    )}
+                    {lesao.descricoes_lesao && (
+                      <Text style={styles.resultNote}>
+                        Nota: {lesao.descricoes_lesao.join(' ')}
+                      </Text>
+                    )}
+                    {isAtencao && (
+                      <View style={styles.medicalAdviceBlock}>
+                        <Icon name="warning" size={20} color="#f39c12" style={{ marginRight: 6 }} />
+                        <Text style={styles.medicalAdviceText}>Procure um médico para avaliação presencial.</Text>
+                      </View>
+                    )}
+                  </View>
+                );
+              })}
             </ScrollView>
-
+            {/* Mensagem informativa */}
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 10, marginBottom: 10 }}>
+              <Icon name="warning" size={18} color="#f39c12" style={{ marginRight: 6, marginTop: 2 }} />
+              <Text style={styles.infoTextNoBg}>
+                Este é um pré-diagnóstico gerado por inteligência artificial. Recomendamos a confirmação com um profissional de saúde. Muitas condições têm tratamento simples quando detectadas precocemente.
+              </Text>
+            </View>
             <TouchableOpacity
               style={styles.closeButton}
               onPress={() => {
@@ -965,6 +973,74 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 14,
     fontWeight: '600',
+  },
+  resultBlockAttention: {
+    backgroundColor: '#fffbe6', // amarelo claro
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 5,
+    borderLeftColor: '#f1c40f',
+  },
+  resultBlockOk: {
+    backgroundColor: '#eaf4fb', // azul claro
+    borderRadius: 12,
+    padding: 16,
+    marginBottom: 16,
+    borderLeftWidth: 5,
+    borderLeftColor: '#1e3d59',
+  },
+  resultHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  resultTitleAttention: {
+    color: '#b38600',
+    fontWeight: 'bold',
+    fontSize: 17,
+  },
+  resultTitleOk: {
+    color: '#1e3d59',
+    fontWeight: 'bold',
+    fontSize: 17,
+  },
+  resultCondition: {
+    fontSize: 15,
+    marginBottom: 4,
+  },
+  resultObservation: {
+    fontSize: 14,
+    marginBottom: 2,
+    fontStyle: 'italic',
+  },
+  resultNote: {
+    fontSize: 14,
+    color: '#333',
+    fontStyle: 'italic',
+  },
+  medicalAdviceBlock: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff3cd',
+    borderRadius: 6,
+    padding: 8,
+    marginTop: 10,
+    marginBottom: 2,
+  },
+  medicalAdviceText: {
+    color: '#b38600',
+    fontSize: 14,
+    fontWeight: 'bold',
+    flex: 1,
+  },
+  infoTextNoBg: {
+    color: '#666',
+    fontSize: 13,
+    fontStyle: 'italic',
+    marginTop: 10,
+    marginBottom: 10,
+    textAlign: 'left',
   },
 });
 
