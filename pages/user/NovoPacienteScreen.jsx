@@ -255,27 +255,43 @@ const NovoPacienteScreen = ({ route }) => {
             <Text style={styles.modalTitle}>Resultado da Análise</Text>
             <ScrollView style={{ maxHeight: '60%' }}>
               {lesionsResults.map((lesao, index) => {
-                const isAtencao = lesao.prediagnosticos?.some(pred =>
-                  pred.toLowerCase().includes('ceratose') || pred.toLowerCase().includes('atenção')
+                const isAtencao = lesao.prediagnosticos?.some(
+                  (pred) =>
+                    pred.toLowerCase().includes('ceratose') ||
+                    pred.toLowerCase().includes('atenção'),
                 );
                 return (
                   <View
                     key={index}
-                    style={isAtencao ? styles.resultBlockAttention : styles.resultBlockOk}
+                    style={
+                      isAtencao
+                        ? styles.resultBlockAttention
+                        : styles.resultBlockOk
+                    }
                   >
                     <View style={styles.resultHeader}>
                       <Icon
-                        name={isAtencao ? "search" : "check-circle"}
+                        name={isAtencao ? 'search' : 'check-circle'}
                         size={28}
-                        color={isAtencao ? "#f1c40f" : "#1e3d59"}
+                        color={isAtencao ? '#f1c40f' : '#1e3d59'}
                         style={{ marginRight: 8 }}
                       />
-                      <Text style={isAtencao ? styles.resultTitleAttention : styles.resultTitleOk}>
-                        Resultado: {isAtencao ? "Atenção Reforçada" : "Sem Preocupações"}
+                      <Text
+                        style={
+                          isAtencao
+                            ? styles.resultTitleAttention
+                            : styles.resultTitleOk
+                        }
+                      >
+                        Resultado:{' '}
+                        {isAtencao ? 'Atenção Reforçada' : 'Sem Preocupações'}
                       </Text>
                     </View>
                     <Text style={styles.resultCondition}>
-                      Possível condição identificada: <Text style={{ fontWeight: 'bold' }}>{lesao.prediagnosticos?.join(', ') || 'Não disponível'}</Text>
+                      Possível condição identificada:{' '}
+                      <Text style={{ fontWeight: 'bold' }}>
+                        {lesao.prediagnosticos?.join(', ') || 'Não disponível'}
+                      </Text>
                     </Text>
                     {lesao.description && (
                       <Text style={styles.resultObservation}>
@@ -289,8 +305,15 @@ const NovoPacienteScreen = ({ route }) => {
                     )}
                     {isAtencao && (
                       <View style={styles.medicalAdviceBlock}>
-                        <Icon name="warning" size={20} color="#f39c12" style={{ marginRight: 6 }} />
-                        <Text style={styles.medicalAdviceText}>Procure um médico para avaliação presencial.</Text>
+                        <Icon
+                          name="warning"
+                          size={20}
+                          color="#f39c12"
+                          style={{ marginRight: 6 }}
+                        />
+                        <Text style={styles.medicalAdviceText}>
+                          Procure um médico para avaliação presencial.
+                        </Text>
                       </View>
                     )}
                   </View>
@@ -298,10 +321,24 @@ const NovoPacienteScreen = ({ route }) => {
               })}
             </ScrollView>
             {/* Mensagem informativa */}
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', marginTop: 10, marginBottom: 10 }}>
-              <Icon name="warning" size={18} color="#f39c12" style={{ marginRight: 6, marginTop: 2 }} />
+            <View
+              style={{
+                flexDirection: 'row',
+                alignItems: 'flex-start',
+                marginTop: 10,
+                marginBottom: 10,
+              }}
+            >
+              <Icon
+                name="warning"
+                size={18}
+                color="#f39c12"
+                style={{ marginRight: 6, marginTop: 2 }}
+              />
               <Text style={styles.infoTextNoBg}>
-                Este é um pré-diagnóstico gerado por inteligência artificial. Recomendamos a confirmação com um profissional de saúde. Muitas condições têm tratamento simples quando detectadas precocemente.
+                Este é um pré-diagnóstico gerado por inteligência artificial.
+                Recomendamos a confirmação com um profissional de saúde. Muitas
+                condições têm tratamento simples quando detectadas precocemente.
               </Text>
             </View>
             <TouchableOpacity
@@ -861,62 +898,6 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: 20,
     color: '#1e3d59',
-  },
-  resultsContainer: {
-    maxHeight: '70%',
-    backgroundColor: '#f7f9fc',
-  },
-  lesaoItem: {
-    backgroundColor: '#ffffff',
-    borderRadius: 12,
-    padding: 16,
-    marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 3,
-    borderWidth: 1,
-    borderColor: '#e8edf3',
-  },
-  tipo: {
-    fontSize: 16,
-    color: '#1e3d59',
-    fontWeight: '600',
-    marginBottom: 8,
-  },
-  preDiagnostico: {
-    fontSize: 16,
-    color: '#1e3d59',
-    fontWeight: '700',
-    marginBottom: 8,
-    backgroundColor: '#e8f4ff',
-    padding: 8,
-    borderRadius: 6,
-    borderLeftWidth: 4,
-    borderLeftColor: '#1e3d59',
-  },
-  lesaoDescription: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 8,
-    fontStyle: 'italic',
-  },
-  detalhesLesao: {
-    fontSize: 15,
-    color: '#666',
-    lineHeight: 22,
-    marginBottom: 8,
-    fontStyle: 'italic',
-  },
-  imagens: {
-    fontSize: 15,
-    color: '#1e3d59',
-    fontWeight: '500',
-    marginTop: 5,
   },
   closeButton: {
     backgroundColor: '#1e3d59',
